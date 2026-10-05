@@ -199,6 +199,48 @@
       .page{display:block!important}.page:not(#history):not(#fichas){display:none!important}
       .day-body{display:block!important}.muted,.item-meta,label{color:#555}
     }
+
+    /* ===== AVALIAÇÃO FÍSICA ===== */
+    .av-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border:1px solid var(--line);
+      border-radius:14px;background:#101813;flex-wrap:wrap}
+    .av-row.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+    .av-row .d{font-weight:800}
+    .av-row .m{color:var(--muted);font-size:12px;margin-top:2px}
+    .av-arrow{font-size:11px;font-weight:800;padding:2px 7px;border-radius:999px;margin-left:6px;white-space:nowrap}
+    .av-arrow.up{color:#0f2a1a;background:var(--ok)}
+    .av-arrow.down{color:#2c1210;background:var(--danger)}
+    .av-arrow.flat{color:var(--muted);background:#24312a}
+    .av-cmp{width:100%;border-collapse:collapse}
+    .av-cmp th,.av-cmp td{padding:9px 8px;border-bottom:1px solid var(--line);font-size:13px}
+    .av-cmp th{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);background:#101813}
+    .av-cmp td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+    .av-cmp tr:last-child td{border-bottom:0}
+    .av-src{font-size:10px;color:var(--muted);margin-top:2px}
+    .photo-compare{position:relative;width:100%;aspect-ratio:3/4;max-height:72vh;margin-top:12px;background:#0d1511;
+      border:1px solid var(--line);border-radius:14px;overflow:hidden;display:grid;place-items:center;touch-action:none}
+    .photo-compare img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;
+      user-select:none;-webkit-user-drag:none}
+    .photo-compare img.after{clip-path:inset(0 0 0 var(--split,50%))}
+    .photo-compare .pc-handle{position:absolute;top:0;bottom:0;left:var(--split,50%);width:3px;margin-left:-1.5px;
+      background:var(--accent);cursor:ew-resize;touch-action:none;z-index:3}
+    .photo-compare .pc-handle::after{content:'⇄';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+      width:38px;height:38px;border-radius:50%;background:var(--accent);color:#1c1608;display:grid;place-items:center;
+      font-weight:900;box-shadow:0 6px 18px #0008}
+    .photo-compare .pc-tag{position:absolute;top:10px;padding:4px 9px;border-radius:999px;background:#000000b0;color:#fff;
+      font-size:11px;font-weight:700;z-index:2;pointer-events:none}
+    .photo-compare .pc-tag.l{left:10px}.photo-compare .pc-tag.r{right:10px}
+    .photo-thumbs{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .photo-thumbs figure{margin:0;position:relative}
+    .photo-thumbs img{width:76px;height:100px;object-fit:cover;border-radius:10px;border:1px solid var(--line);display:block;background:#0d1511}
+    .photo-thumbs button{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;border:1px solid #633833;
+      background:#3c2422;color:#ffc6c3;font-size:13px;line-height:1;padding:0}
+    .av-imp-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px;border:1px solid var(--line);
+      border-radius:12px;background:#101813;flex-wrap:wrap}
+    .av-imp-row select{max-width:260px}
+    @media(max-width:700px){
+      .av-cmp th,.av-cmp td{padding:7px 5px;font-size:12px}
+      .photo-thumbs img{width:62px;height:82px}
+    }
   </style>
 </head>
 <body>
@@ -268,6 +310,7 @@
     <button class="tab" data-page="session">Registrar treino</button>
     <button class="tab" data-page="periodization">Periodização</button>
     <button class="tab" data-page="history">Histórico</button>
+    <button class="tab" data-page="aval">Avaliação física</button>
     <button class="tab" data-page="data">Dados e backup</button>
   </nav>
 
@@ -365,6 +408,117 @@
       <tbody id="historyBody"></tbody></table></div></article>
   </div></section>
 
+  <section class="page" id="aval"><div class="grid">
+
+    <!-- 1. ALUNO + HISTÓRICO -->
+    <article class="card">
+      <div class="actions" style="justify-content:space-between;margin-bottom:14px">
+        <h2 style="margin:0">Avaliação física</h2>
+        <div class="actions">
+          <button class="btn secondary" id="avImportBtn">Importar avaliações</button>
+          <input type="file" id="avImportFile" accept="application/json,.json" class="hidden">
+          <button class="btn" id="avNewBtn">+ Nova avaliação</button>
+        </div>
+      </div>
+      <div class="form">
+        <div class="span6"><label for="avStudent">Aluno</label><select id="avStudent"></select></div>
+        <div class="span6"><label>Resumo</label><p class="hint" id="avStudentInfo" style="margin:0"></p></div>
+      </div>
+      <h3 style="margin:18px 0 10px">Histórico de avaliações</h3>
+      <div class="list" id="avHistory"></div>
+    </article>
+
+    <!-- 2-5. FORMULÁRIO -->
+    <article class="card" id="avFormCard" hidden>
+      <h2 id="avFormTitle">Nova avaliação</h2>
+
+      <h3>Dados básicos</h3>
+      <div class="form">
+        <div class="span3"><label for="avDate">Data</label><input type="date" id="avDate"></div>
+        <div class="span3"><label for="avSex">Sexo</label><select id="avSex">
+          <option value="">—</option><option value="Feminino">Feminino</option><option value="Masculino">Masculino</option>
+        </select></div>
+        <div class="span3"><label for="avBirth">Nascimento</label><input type="date" id="avBirth"></div>
+        <div class="span3"><label for="avAge">Idade</label><input type="number" id="avAge" min="1" max="120" placeholder="—"></div>
+        <div class="span3"><label for="avHeight">Altura (cm)</label><input type="number" id="avHeight" min="60" max="260" step="0.1" placeholder="—"></div>
+        <div class="span3"><label for="avWeight">Peso (kg)</label><input type="number" id="avWeight" min="15" max="400" step="0.1" placeholder="—"></div>
+        <div class="span3"><label for="avBmi">IMC</label><input id="avBmi" readonly placeholder="—"></div>
+        <div class="span3"><label for="avBmiClass">Classificação</label><input id="avBmiClass" readonly placeholder="—"></div>
+      </div>
+
+      <h3 style="margin-top:18px">Medidas (cm) — aceita campos vazios</h3>
+      <div class="form" id="avMeasures"></div>
+
+      <h3 style="margin-top:18px">Sete dobras (mm)</h3>
+      <div class="form" id="avFolds"></div>
+      <p class="hint" id="avFoldSum"></p>
+
+      <h3 style="margin-top:18px">Composição corporal</h3>
+      <div class="form">
+        <div class="span3"><label for="avBfCalc">% gordura calculado</label><input id="avBfCalc" readonly placeholder="—"><div class="av-src" id="avBfCalcSrc"></div></div>
+        <div class="span3"><label for="avBfInf">% gordura informado</label><input type="number" id="avBfInf" min="0" max="70" step="0.1" placeholder="—"></div>
+        <div class="span3"><label for="avFatMass">Massa gorda (kg)</label><input id="avFatMass" readonly placeholder="—"></div>
+        <div class="span3"><label for="avLeanMass">Massa magra (kg)</label><input id="avLeanMass" readonly placeholder="—"></div>
+        <div class="span6"><label for="avExaminer">Avaliador</label><input id="avExaminer" maxlength="80" placeholder="—"></div>
+        <div class="span6"><label for="avNotes">Observações</label><input id="avNotes" maxlength="200" placeholder="—"></div>
+      </div>
+      <p class="hint" id="avFormWarn"></p>
+
+      <div class="actions" style="margin-top:16px">
+        <button class="btn" id="avSaveBtn">Salvar avaliação</button>
+        <button class="btn ghost" id="avCancelBtn">Cancelar</button>
+        <button class="btn danger hidden" id="avDeleteBtn">Excluir</button>
+      </div>
+    </article>
+
+    <!-- 6. RESULTADOS -->
+    <article class="card">
+      <h2>Resultados</h2>
+      <div class="summary" id="avResults"></div>
+      <p class="hint" id="avMissing"></p>
+    </article>
+
+    <!-- 7. COMPARAÇÃO -->
+    <article class="card">
+      <h2>Comparação entre avaliações</h2>
+      <div class="form">
+        <div class="span4"><label for="avCmpA">Data inicial</label><select id="avCmpA"></select></div>
+        <div class="span4"><label for="avCmpB">Data final</label><select id="avCmpB"></select></div>
+      </div>
+      <div id="avCmpTable" style="margin-top:14px"></div>
+      <div class="chart-box" style="margin-top:14px"><canvas id="avCmpChart"></canvas></div>
+    </article>
+
+    <!-- 8. FOTOS -->
+    <article class="card">
+      <h2>Fotos</h2>
+      <p class="muted">Estrutura pronta para uso. Nenhuma foto foi importada ou criada — adicione quando quiser.
+        As imagens ficam no dispositivo (IndexedDB) e apenas a referência entra no backup JSON.</p>
+      <div class="form">
+        <div class="span4"><label for="avPhotoDate">Data da avaliação</label><select id="avPhotoDate"></select></div>
+        <div class="span4"><label for="avPhotoAngle">Ângulo</label><select id="avPhotoAngle"></select></div>
+        <div class="span4"><label for="avPhotoFile">Adicionar foto</label><input type="file" id="avPhotoFile" accept="image/*" multiple></div>
+      </div>
+      <div class="photo-thumbs" id="avPhotoList"></div>
+    </article>
+
+    <!-- 9. COMPARADOR DE FOTOS -->
+    <article class="card">
+      <h2>Comparador de fotos</h2>
+      <div class="form">
+        <div class="span4"><label for="avCmpPhotoA">Data inicial</label><select id="avCmpPhotoA"></select></div>
+        <div class="span4"><label for="avCmpPhotoB">Data final</label><select id="avCmpPhotoB"></select></div>
+        <div class="span4"><label for="avCmpAngle">Ângulo</label><select id="avCmpAngle"></select></div>
+      </div>
+      <div id="avCompareBox"><div class="empty" style="margin-top:12px">Adicione fotos do mesmo ângulo em duas datas para comparar.</div></div>
+      <div class="actions" style="margin-top:10px">
+        <button class="btn ghost" id="avCompareReset">Voltar a 50%</button>
+        <span class="hint" style="margin:0">Arraste a barra com mouse, toque ou caneta.</span>
+      </div>
+    </article>
+
+  </div></section>
+
   <section class="page" id="data"><div class="grid">
     <article class="card half"><h2>Backup local</h2>
       <p class="muted">Exporte todos os alunos, fichas, sessões e periodizações em um arquivo JSON.</p>
@@ -434,6 +588,7 @@
 
 <script>
   const GH_SEED = [{"id":"lorena","name":"Lorena Araújo Minelli da Silva","goal":"Emagrecimento; foco em reduzir gordura abdominal.","level":"Intermediário","tag":"ATIVO · SEM TREINO","plans":[]},{"id":"polyana","name":"Polyana da Costa Araújo","goal":"41 anos · Feminino · Objetivo: definição e ganho de massa muscular; fortalecer joelhos, reduzir gordura abdominal e definir pernas.","level":"Intermediário","tag":"ATIVO · SEM TREINO","plans":[]},{"id":"rueny","name":"Rueny Araújo","goal":"Emagrecimento e hipertrofia; reduzir gordura corporal.","level":"Intermediário","tag":"ATIVO · 1 TREINO","plans":[{"title":"GH Performance — Upper/Lower 4x | Plano do PDF · 7 blocos · 60 itens","days":[{"title":"Segunda — Upper A (Empurrar + Braços + Abdômen)","items":["Aquecimento — bike ou esteira leve + mobilidade: 5 min leve; mobilidade de ombro, quadril e tornozelo.","Supino reto com barra — 4×6–8; 90 s; RIR 2.","Supino inclinado com halteres — 3×8–10; 75 s; RIR 2.","Desenvolvimento militar com halteres — 3×8–10; 75 s; RIR 2.","Elevação lateral com halteres — 3×12–15; 60 s; RIR 1.","Tríceps corda na polia — 3×10–12; 60 s; RIR 1.","Tríceps testa com barra EZ — 3×10–12; 60 s; RIR 1.","Abdominal na polia (crunch) — 3×12–15; 45 s; contração forte.","Prancha frontal — 3×40–60 s; 45 s; core estável.","Cardio pós-treino — 20–25 min caminhada inclinada ou bicicleta."]},{"title":"Terça — Lower A (Quadríceps + Panturrilha + Core)","items":["Aquecimento — 5 min de bike/esteira e mobilidade.","Agachamento livre ou Smith — 4×6–8; 120 s; RIR 2.","Leg press 45° — 3×10–12; 90 s; RIR 2.","Cadeira extensora — 3×12–15; 60 s; RIR 1.","Afundo com halteres — 3×10–12 por perna; 75 s.","Panturrilha em pé — 4×12–15; 45 s.","Panturrilha sentado — 3×15–20; 45 s.","Abdominal infra — 3×12–15; prancha lateral — 3×30–45 s por lado.","Cardio pós-treino — 20–25 min bicicleta ou elíptico."]},{"title":"Quarta — Descanso ativo (cardio leve)","items":["Caminhada leve — 30–40 min em Zona 2; alternativa: bike ou elíptico, mesma duração.","Mobilidade opcional — 10 min quadril, ombro e tornozelo."]},{"title":"Quinta — Upper B (Puxar + Braços + Abdômen)","items":["Aquecimento — 5 min cardio leve + mobilidade.","Barra fixa ou puxada alta — 4×6–10; 90 s; RIR 2.","Remada curvada com barra — 3×8–10; 90 s; RIR 2.","Remada unilateral com halter — 3×10–12; 75 s; RIR 2.","Face pull — 3×12–15; 60 s.","Rosca direta com barra — 3×10–12; 60 s; RIR 1.","Rosca martelo com halteres — 3×10–12; 60 s; RIR 1.","Abdominal oblíquo na polia — 3×12–15 por lado; elevação de pernas suspenso — 3×10–12.","Cardio pós-treino — 20–25 min caminhada inclinada."]},{"title":"Sexta — Lower B (Posterior + Glúteo + Core) · duplicado na ficha","items":["Aquecimento/cardio leve + mobilidade — 5 min.","Levantamento terra romeno — 4×6–8; 120 s; RIR 2.","Mesa flexora — 3×10–12; 75 s; RIR 2; cadeira flexora — 3×12–15; 60 s; RIR 1.","Hip thrust com barra — 3×10–12; 90 s; RIR 2.","Glúteo coice na polia — 3×12–15 por perna; 60 s.","Panturrilha no leg press — 3×15–20; abdominal na roda/prancha com peso — 3×10–12; prancha com elevação de braço — 3×30–45 s.","Cardio — 20–25 min bicicleta ou elíptico.","A ficha contém um segundo bloco de sexta com os mesmos exercícios e prescrições muito semelhantes."]},{"title":"Sábado e domingo — descanso total; orientações e progressão","items":["Descanso total, sem musculação/cardio programado; priorizar recuperação, sono e relaxamento.","Semanas 1–2: técnica e consistência com cargas moderadas. Semanas 3–4: aumentar carga ao atingir topo da faixa com RIR 2.","Semanas 5–6: variações conforme necessário; reavaliar peso, cintura, dobras e fotos a cada 4–6 semanas.","Registrar carga, séries, repetições, energia, fome e sono; priorizar técnica, hidratação e consistência.","Cardio semanal indicado no texto: 150–200 min; quarta descanso ativo e fim de semana descanso total."]}]}]},{"id":"giovanna","name":"Giovanna Garcia Araújo","goal":"Definição, qualidade de vida e ganho de massa magra; ênfase em pernas e glúteos.","level":"Intermediário","tag":"ATIVO · 5 TREINOS","plans":[{"title":"Treino A — Inferior Posterior/Glúteo (Segunda) · 3 blocos · 10 itens","days":[{"title":"Aquecimento / principal / finalização","items":["Aquecimento: caminhada 3 min leve, mobilidade de quadril 2 min, agachamento sem peso 10 reps.","Stiff com halteres — 3×12, descida 2 s/subida 1 s; cadeira flexora — 3×12–15, 60 s.","Leg press 45° — 3×12–15, pés no meio; elevação pélvica máquina — 3×15, pausa 2 s.","Cadeira abdutora — 3×15–18; alongamento posterior e glúteo — 2×30 s cada lado."]}]},{"title":"Cardio — Esteira 40 min (Quinta) · 1 bloco · 3 itens","days":[{"title":"Cardio — Esteira 40 min (Quinta) · 1 bloco · 3 itens","items":["5 min aquecimento 4–5 km/h","30 min LISS moderado 5.5–6.5 km/h (RPE 5–6/10, ritmo conversável)","5 min desaquecimento 3.5–4 km/h"]}]}]},{"id":"ariana","name":"Ariana Costa de Faria","goal":"Emagrecimento.","level":"Intermediário","tag":"ATIVO · SEM TREINO","plans":[]},{"id":"luiz","name":"Luiz Otávio de Assis de Paula","goal":"emagrecimento, definição e melhora corporal com foco em braços e abdômen.","level":"Intermediário","tag":"ATIVO · 1 TREINO","plans":[{"title":"GH Performance — Mês 1 | Luiz Otávio · 7 blocos · 45 itens","days":[{"title":"Orientações gerais do bloco","items":["Objetivo: sair da estagnação, melhorar definição e retomar progressão; 3 dias superiores e 1 inferior. Preferência por máquinas devido a desconforto no ombro.","Cardio: 40 min segunda a sexta, Zona 2, após musculação quando possível.","Cadência 2-0-2; descanso 60–90 s isoladores e 90–120 s principais. Progressão: S1 RIR3, S2 RIR2, S3 RIR1, S4 manter/elevar conforme recuperação.","Cluster base 4+2+2, 15–20 s; só em exercícios estáveis e interromper ao perder técnica/estabilidade/conforto.","Ombro: máquinas convergentes, remadas apoiadas, pegadas neutras; evitar press livre pesado acima da cabeça e amplitudes forçadas. Ajustar ou retirar se dor além de desconforto leve."]},{"title":"Treino A — Upper 1","items":["Supino máquina convergente — 3×8–10, última cluster; remada articulada apoiada — 4×8–10.","Peck deck — 3×10–12; puxada alta neutra — 3×10–12.","Rosca Scott máquina — 3×8–10, última cluster; tríceps máquina/pulley V — 3×10–12; rosca martelo corda — 2×12–15; abdominal banco declinado — 3×12–15."]},{"title":"Treino B — Lower","items":["Leg press 45° — 4×8–10, última cluster; mesa flexora — 4×10–12; agachamento hack — 3×8–10; cadeira extensora — 3×12–15.","Stiff halteres — 3×8–10; abdutora — 3×15–20; panturrilha máquina/Smith — 4×12–15; prancha com elevação de joelhos — 3×30–40 s."]},{"title":"Quarta-feira — Cardio e Recuperação","items":["Cardio contínuo moderado 40 min, Zona 2","esteira inclinada, bike ou elíptico"]},{"title":"Treino C — Upper 2","items":["Remada baixa máquina triângulo — 4×8–10, última cluster; puxada articulada unilateral — 3×8–10.","Desenvolvimento máquina neutra — 3×8–10, amplitude confortável; elevação lateral máquina/polia — 3×12–15; face pull — 3×12–15.","Rosca direta barra W no cabo — 3×10–12; tríceps corda — 3×10–12, última cluster; abdominal infra — 3×12–15."]},{"title":"Treino D — Upper 3","items":["Supino inclinado halteres — 4×8–10; remada unilateral máquina — 3×10–12; crucifixo máquina/crossover guiado — 3×12–15.","Pulldown neutro — 3×10–12; rosca bíceps máquina unilateral — 3×8–10, última cluster; tríceps francês cabo unilateral — 3×10–12.","Rosca inversa cabo — 2×12–15; cable crunch — 3×12–15; prancha lateral — 2×30 s por lado."]},{"title":"Progressão semanal","items":["S1 adaptação técnica RIR 3","S2 consolidar, subir 2,5–5% se topo da faixa, RIR 2","S3 pico, RIR 1 e cluster selecionado","S4 manter/subir levemente ou reduzir 1 série se fadiga. Subir carga ao atingir topo da faixa com boa execução. Exemplo cluster 4+2+2 com pausas 15–20 s"]}]}]},{"id":"sebastiao","name":"Sebastião Joaquim da Silva","goal":"qualidade de vida, força, massa muscular, mobilidade, equilíbrio, redução de dores e condicionamento.","level":"Intermediário","tag":"ATIVO · 1 TREINO","plans":[{"title":"GH Performance — Treino Inicial Quinta-feira · 4 blocos · 16 itens","days":[{"title":"Aquecimento e preparo articular","items":["Bicicleta ou caminhada leve — 5–7 min, RPE 3–4.","Retração escapular — 2×10; deslizamento na parede — 1–2×8 em amplitude confortável."]},{"title":"Fortalecimento do ombro","items":["Rotação externa com elástico — 2×12–15, leve; face pull — 2×12–15, leve.","Elevação lateral curta — 2×10–12 leve; remada baixa máquina — 2×10–12."]},{"title":"Bloco principal — corpo todo","items":["Leg press 45° — 3×10–12 leve/moderado, amplitude segura.","Puxada frente — 2×10–12; peck deck — 2×10–12 somente se não piorar dor.","Rosca martelo — 4×12; FacePull — 4×12; cadeira extensora — 4×12; mesa flexora — 4×12."]},{"title":"Core e estabilidade","items":["Dead bug adaptado — 2×6–8 por lado; prancha alta no banco — 2×20–30 s.","Interromper/ajustar exercícios caso aumentem sintomas no ombro; manter amplitude confortável."]}]}]},{"id":"amanda","name":"Amanda Messias de Freitas","goal":"emagrecimento, definição, ganho de massa com foco em pernas e glúteos, condicionamento e saúde.","level":"Intermediário","tag":"ATIVO · 1 TREINO","plans":[{"title":"GH Performance — Amanda — Fase 1 · 7 blocos · 49 itens","days":[{"title":"Protocolo repetido no início dos treinos","items":["Respiração diafragmática 1×5 ciclos + gato-vaca 1×8 + rotação torácica quadrupedia 1×8/lado + dead bug 1×6/lado + bird-dog 1×6/lado + caminhada lateral miniband 1×10 passos/lado"]},{"title":"Segunda — Inferiores A","items":["Elevação pélvica — 4×8–10; agachamento sumô — 3×8–10; cadeira flexora — 3×10–12.","Pull-through — 3×12–15; abdutora inclinada — 3×15–20; Pallof press — 2×12/lado; cardio bike/elíptico 20 min Zona 2.","Coice máquina — 4×15; consta ainda item “Novo exercício” sem nome/prescrição."]},{"title":"Terça — Superiores A","items":["Remada máquina apoio peito — 4×8–10; puxada neutra — 3×10–12; supino máquina — 3×10–12.","Face pull — 3×12–15; elevação lateral sentada — 3×12–15; tríceps corda — 2×12–15; prancha inclinada — 2×20–30 s; cardio 20 min."]},{"title":"Quarta — Inferiores B","items":["Leg press 45° — 4×10–12; hack squat — 3×10; step-up — 3×8–10/perna; extensora — 2×12–15 em amplitude confortável.","Elevação pélvica — 3×10–12; panturrilha Smith — 3×12–15; prancha lateral — 2×20–30 s/lado; cardio 20 min."]},{"title":"Quinta — Superiores B","items":["Remada unilateral apoiada — 3×10–12; puxada alta triângulo — 3×10–12; desenvolvimento máquina — 3×8–10.","Peck deck/crucifixo — 2×12–15; crucifixo inverso — 3×12–15; rosca martelo — 2×12–15; Pallof press — 2×12/lado; cardio 20 min."]},{"title":"Sexta — Inferiores C","items":["Agachamento sumô Smith — 3×8–10; flexora unilateral — 3×10–12/perna; elevação pélvica — 3×10–12.","Coice máquina — 3×12–15/perna; abdução máquina — 3×15–20; frog pump — 2×20; cardio 20 min."]},{"title":"Sábado e domingo — recuperação ativa","items":["Cardio leve 20 min nos dois dias","mobilidade opcional 5 min no sábado e alongamentos leves 5 min no domingo"]}]}]},{"id":"silvana","name":"Silvana Paiva","goal":"hipertrofia, emagrecimento, performance, definição muscular e força.","level":"Intermediário","tag":"ATIVO · 5 TREINOS","plans":[{"title":"Treino A — Peito + Tríceps | GH Performance · 1 bloco · 6 itens","days":[{"title":"Treino A — Peito + Tríceps | GH Performance · 1 bloco · 6 itens","items":["Supino reto barra 4×10–12 RIR2/90s","supino inclinado halteres 4×(6+4) cluster 15s intra-set/2 min","peck deck 3×12–15","tríceps corda 4×12","tríceps testa W 4×(6+4) cluster","supino máquina 4×15"]}]},{"title":"Treino B — Costas + Bíceps | GH Performance · 1 bloco · 7 itens","days":[{"title":"Treino B — Costas + Bíceps | GH Performance · 1 bloco · 7 itens","items":["Puxada neutra 4×10–12","remada cavalinho máquina 4×(6+4) cluster","remada unilateral máquina 4×10–12 cada","pullover halteres 3×12","rosca direta W 4×10–12","rosca alternada 4×(6+4) cluster","rosca martelo 3×12"]}]},{"title":"Treino C — Quadríceps (Cluster Set) | GH Performance · 1 bloco · 6 itens","days":[{"title":"Treino C — Quadríceps (Cluster Set) | GH Performance · 1 bloco · 6 itens","items":["Agachamento Smith 5×(5+3+2) cluster máximo/20s/2,5 min","leg press 45° 4×(6+4)","hack squat 4×(6+4)","extensora 4×15 RIR1","panturrilha Smith 4×20 RIR1","afundo com avanço Smith 4×15"]}]},{"title":"Treino D — Ombros | GH Performance · 1 bloco · 6 itens","days":[{"title":"Treino D — Ombros | GH Performance · 1 bloco · 6 itens","items":["Desenvolvimento articulado 4×10–12","elevação lateral halteres 4×(8+6) cluster","elevação frontal halteres 3×12","encolhimento halteres 4×12","abdominal banco 4×15","cardio esteira 40 min"]}]},{"title":"Treino E — Glúteos + Posterior | GH Performance · 2 blocos · 12 itens","days":[{"title":"Treino E — Glúteos + Posterior | GH Performance · 2 blocos · 12 itens","items":["Stiff barra 4×(6+4) cluster","agachamento sumô haltere 4×12–15","elevação pélvica 5×(6+4) cluster máximo","cadeira flexora 4×12–15","abdução cabo 3×15/lado","flexão nórdica barra 4×6–8. Bloco corretivo: respiração diafragmática 2×10, gato-vaca 2×10, rotação torácica 2×8/lado, dead bug 2×10, bird-dog 2×10/lado, prancha 2×30–45 s"]}]}]},{"id":"renata","name":"Renata Pereira Muroni","goal":"definição com foco em pernas e glúteos, cintura mais fina, condicionamento e saúde.","level":"Intermediário","tag":"ATIVO · 1 TREINO","plans":[{"title":"GH Performance — ABCD Renata · 4 blocos · 34 itens","days":[{"title":"Treino A — Inferiores 1","items":["Extensora 3×12–15","leg press 45° 4×10–12","hack machine 3×10–12","afundo Smith 3×10/perna","abdutora 4×15–20","glúteo máquina 3×12–15/perna","panturrilha 4×15–20","cardio 40 min moderado"]},{"title":"Treino B — Superiores 1","items":["Puxada frontal 4×10–12","remada baixa 3×10–12","supino máquina 3×10–12","crucifixo máquina 3×12–15","desenvolvimento máquina 3×10–12","elevação lateral 3×12–15","tríceps corda 3×12–15","rosca máquina 3×12–15","cardio 40 min"]},{"title":"Treino C — Inferiores 2","items":["Mesa flexora 4×12–15","stiff Smith 3×10–12","leg press 180° 4×10–12","elevação pélvica 4×10–12","abdutora 3×15–20","glúteo máquina/polia 3×12–15/perna","panturrilha leg 4×15–20","cardio 40 min"]},{"title":"Treino D — Superiores 2","items":["Puxada articulada 4×10–12","remada articulada 3×10–12","pulldown 3×12–15","desenvolvimento máquina 3×10–12","elevação lateral 3×12–15","face pull 3×12–15","rosca direta W 3×12","tríceps polia 3×12–15","cardio 40 min moderado"]}]}]},{"id":"janaina","name":"JANAÍNA MARA DA SILVA","goal":"emagrecimento, hipertrofia, condicionamento e reabilitação.","level":"Intermediário","tag":"ATIVO · 1 TREINO","plans":[{"title":"GH Performance | Janaína | ABCDE · 6 blocos · 44 itens","days":[{"title":"Segunda — Superiores 1","items":["Puxada frente 4×10–12","remada neutra 4×10–12","supino máquina 3×10–12","desenvolvimento halteres 3×10–12","elevação lateral 3×12–15","tríceps corda 3×12–15","tríceps testa W 4×12 (observação de técnica)","rosca direta polia 4×12"]},{"title":"Terça — Quadríceps","items":["Leg press 45° 4×10–12","agachamento Smith 4×8–10","extensora 4×12–15","panturrilha máquina 4×12–15","adutora 4×15","hack squat 4×8"]},{"title":"Quarta — Superiores 2","items":["Remada articulada 4×8–10","puxada supinada 3×10–12","supino inclinado barra 3×10–12","crucifixo reto halteres 3×12–15","rosca alternada 3×10–12","tríceps testa polia 3×12–15","tríceps polia alta 3×12/lado"]},{"title":"Quinta — Posterior + Glúteos","items":["Elevação pélvica 4×8–10","leg press 180° pés altos/abertos 4×10–12","afundo Smith 3×10–12","abdutora 4×15–20","back extension 45° foco glúteo 3×12–15","agachamento sumô máquina/livre","coice máquina 4×15"]},{"title":"Sexta — Inferior Completo","items":["Hip thrust barra 4×10","leg press 45° 4×10–12","extensora 3×12–15","afundo Smith/halteres 3×10/lado","glúteo máquina 3×12–15/lado","panturrilha em pé/Smith 4×12–15"]},{"title":"Extra — Ciclo menstrual | Mobilidade + Core","items":["Usar em dias de desconforto/fadiga: respiração 2×6–8 ciclos","gato-vaca 2×8–10","rotação torácica 2×8/lado","mobilidade quadril 90/90 2×6–8/lado","dead bug 3×8–10/lado","bird-dog 3×8/lado","Pallof isométrico 3×20–30 s/lado","prancha lateral joelhos apoiados 2–3×20–30 s","ponte glúteo isométrica 3×25–30 s"]}]}]},{"id":"daniele","name":"Daniele de A. Paula","goal":"emagrecimento e ganho de massa muscular.","level":"Intermediário","tag":"ATIVO · 1 TREINO","plans":[{"title":"GH Performance — Treino 3x Semana · 4 blocos · 27 itens","days":[{"title":"Treino A — Inferiores 1","items":["Elevação pélvica 4×8–10, RIR2, 110 kg","coice máquina 4×8–10, RIR2, 10 kg","flexora 3×10–12, 32,5 kg","afundo Smith 3×10/perna, 20 kg","abdutora 3×15–20, 50 kg","panturrilha em pé 3×12–15, 40 kg"]},{"title":"Treino B — Superiores","items":["Remada alta máquina 4×8–10","remada articulada 3×10–12","supino máquina 3×10–12","tri-set ombro 3×12–15","rosca direta crossover 2×12","tríceps polia alta 2×12–15","FacePull 3×12"]},{"title":"Treino C — Inferiores 2","items":["Leg press 45° 4×10–12, 120 kg","extensora 3×12–15, 29 kg","agachamento búlgaro 3×8–10/perna, 16 kg","hack machine 3×10–12","adutora 2×18–20","panturrilha sentada 3×12–15. Contém instruções específicas de progressão para todos os exercícios principais"]},{"title":"Sábado — Cardio + Mobilidade + Core","items":["Escolher caminhada acelerada 35–45 min, bike 30–40 min ou elíptico 30–35 min, RPE 6/10. Prancha frontal 3×30–40 s, lateral 2×25–30 s/lado, dead bug 2×10/lado, bird-dog 2×8/lado, Pallof press 2×12/lado"]}]}]},{"id":"luciana","name":"Luciana Marques de Lima","goal":"emagrecimento e definição corporal.","level":"Intermediário","tag":"ATIVO · 1 TREINO","plans":[{"title":"GH Performance | ABCDE - Luciana Marques de Lima · 5 blocos · 44 itens","days":[{"title":"Aquecimento corretivo repetido nos treinos","items":["Respiração 2×6 ciclos, gato-vaca 1×10, rotação torácica 1×8/lado, dead bug 2×8/lado, bird-dog 2×8/lado, prancha 2×20–30 s"]},{"title":"Treino A — Inferiores | Glúteos e Posterior","items":["Bi-set: hip thrust 4×12 + stiff halteres 4×10","mesa flexora 3×12 + afundo reverso 3×10/perna","abdutora 3×15 + glúteo cabo 3×12/perna","caminhada inclinada 10–12 min"]},{"title":"Treino B — Superiores | Costas, Ombros e Braços","items":["Puxada frontal 4×10 + desenvolvimento halteres 4×10","remada baixa 3×12 + elevação lateral 3×12","rosca direta 3×12 + tríceps corda 3×12","face pull 3×15 + rosca martelo 3×12","esteira 10 min"]},{"title":"Treino C — Inferiores | Quadríceps","items":["Agachamento guiado 4×10 + leg press 45° 4×12","extensora 3×15 + passada 3×10/perna","sumô halter 3×12 + panturrilha leg press 3×15","caminhada leve 8–10 min"]},{"title":"Treino D — Superiores completos","items":["Remada articulada 4×10 + supino máquina 4×10","crucifixo máquina 3×12 + puxada neutra 3×12","elevação lateral 3×15 + tríceps testa polia 3×12","rosca alternada 3×12 + face pull 3×15","cardio leve 10 min"]},{"title":"Treino E — Inferiores | Glúteos, Posterior e Acabamento","items":["Romeno halteres 4×10 + elevação pélvica máquina 4×12","flexora sentada 3×12 + step-up 3×10/perna","abdutora 3×15 + coice cabo 3×12/perna","caminhada inclinada 12–15 min. Bi-sets prescritos em RPE 7–8 com descansos conforme ficha"]}]}]},{"id":"leticia","name":"Letícia Aparecida Teodoro","goal":"hipertrofia e definição.","level":"Intermediário","tag":"ATIVO · 1 TREINO","plans":[{"title":"GH METHOD - ABCDE Hipertrofia Feminina | Semana 1-4 · 6 blocos · 31 itens","days":[{"title":"Bloco corretivo (5–8 min) — todos os treinos","items":["Respiração diafragmática 3×10 (inspire/expire 4 s)","gato-vaca 4×5","rotação torácica 3×5/lado","dead bug 3×8","bird-dog 3×8/lado","prancha 3×20–30 s"]},{"title":"Treino A — Glúteos + Posterior","items":["Agachamento livre 4×8–10 (aprendizado)","leg press 4×10–12 moderado","extensora 3×12–15 leve","rosca direta sentado 3×10–12","abdominal máquina 3×15–20"]},{"title":"Treino B — Costas + Bíceps","items":["Puxada frontal 4×8–10","remada máquina 4×10–12","remada unilateral haltere 3×10–12/lado","rosca direta em pé 3×10–12","rosca concentrada 3×12–15"]},{"title":"Treino C — Peito + Tríceps","items":["Supino horizontal máquina 4×8–10","crucifixo máquina 3×12–15","flexão assistida 3×8–12","extensão tríceps corda 3×12–15","mergulho assistido 3×8–12"]},{"title":"Treino D — Glúteos + Isquios + Adutores","items":["Deadlift romeno 4×8–10","cadeira flexora 4×10–12","abdutor e adutor máquina 3×12–15 cada","glute kickback unilateral 3×12–15/perna"]},{"title":"Treino E — Ombros + Abdominais","items":["Desenvolvimento sentado máquina 4×8–10","elevação lateral 3×12–15","encolhimento 3×15–20","“rosca inversa (posterior)” 3×12–15 conforme cadastro","abdominal declinada + lateral 3×15–20"]}]}]},{"id":"fabiana","name":"Fabiana Aparecida dos Santos Teodoro","goal":"ganho de massa muscular.","level":"Intermediário","tag":"ATIVO · SEM TREINO","plans":[]},{"id":"giovanni","name":"GIOVANNI HENRIQUE SOARES","goal":"Déficit calórico.","level":"Intermediário","tag":"ATIVO · 1 TREINO","plans":[{"title":"GH Performance — Upper/Lower 4x (Déficit + Progressão de Carga) · 5 blocos · 31 itens","days":[{"title":"Periodização — 6 semanas","items":["Semanas 1–2: força técnica, ajuste de carga base, RPE 8–9","semana 2 cluster no último set de exercícios-âncora. Semanas 3–4: hipertrofia controlada e rest-pause seletivo em um isolador por sessão. Semana 5: pico com cluster/rest-pause seletivos. Semana 6: deload 35–40% menos volume, 10–15% menos carga, sem intensificadores"]},{"title":"Segunda — Lower A (Glúteo/Posterior + Força Segura)","items":["Mobilidade: respiração 2 min, gato-vaca 10, rotação torácica 8/lado, dead bug 10, bird-dog 8/lado, prancha 20–30 s.","Hip thrust com pausa — 4×6–8, RPE 8–9, 120 s; Smith agachamento 1/4 — 3×6–8, amplitude 0–30°, RPE8.","Rosca nórdica assistida — 2×5–6; leg curl — 3×8–10; adução máquina/cabo — 2×12–15; Pallof press — 2×10–12/lado."]},{"title":"Terça — Upper A (Peito/Tríceps/Ombro)","items":["Mobilidade corretiva padrão (5–8 min).","Supino reto com pausa — 4×6–8; supino inclinado máquina — 3×8–10; desenvolvimento máquina neutra — 2×8–10.","Pec deck — 2×10–12; tríceps corda — 3×8–12; elevação lateral — 3×12–15. Rest-pause opcional conforme semana e fadiga."]},{"title":"Quinta — Lower B (Posterior Global + Joelho Seguro)","items":["Mobilidade corretiva padrão; rack pull — 4×4–6; belt squat parcial — 3×8–10.","Leg curl sentado — 3×8–10; glute bridge/hip thrust leve — 2×10–12; abdutor máquina — 2×12–15.","Panturrilha máquina — 4×10–15; prancha lateral — 2×30–40 s/lado."]},{"title":"Sexta — Upper B (Costas/Bíceps/Ombro Posterior)","items":["Mobilidade corretiva padrão; puxada frente com pausa — 4×6–8; remada apoiada máquina/T-bar — 3×8–10; puxada unilateral neutra — 2×10–12.","Face pull/reverse fly — 3×12–15; rosca direta W — 3×6–8; rosca alternada cabo — 2×10–12; encolhimento escapular/hang ativo — 2×12."]},{"title":"Progressão, cardio e deload","items":["Divisão semanal: seg Lower A, ter Upper A, qua cardio leve + mobilidade, qui Lower B, sex Upper B, sábado opcional leve, domingo descanso. Cardio 2–3×20–30 min leve/moderado","progressão quando topo da faixa com técnica, subir 2–5%. Semana 6 reduzir volume/carga conforme detalhamento dos blocos. Ajustar volume/cardio se recuperação cair","observações de ficha citam retatrutida e pré-treino alimentar"]}]}]},{"id":"fabiana-cristina","name":"FABIANA CRISTINA FIGUEIREDO DE MOURA","goal":"emagrecimento e hipertrofia.","level":"Intermediário","tag":"ATIVO · 1 TREINO","plans":[{"title":"GH METHOD — Upper/Lower Squat Strength Cut | Fabiana Cristina · 5 blocos · 38 itens","days":[{"title":"Lower A — Força em Agachamento","items":["Agachamento Smith — back-off técnico 3×5 após lift principal nas semanas 1, 2 e 5; 8–12% abaixo da carga principal.","Leg press 45° — 4×10–12; afundo búlgaro — 3×8–10/perna; extensora — 3×12–15 com pausa 1 s.","Elevação pélvica — 4×8–10; panturrilha em pé — 4×12–15; prancha frontal — 3×30–40 s."]},{"title":"Upper A — Base Superior","items":["Bloco corretivo 8 min: respiração, gato-vaca, rotação torácica, dead bug, bird-dog, ponte glúteo, caminhada lateral miniband.","Supino reto halteres/máquina — 4×6–8; remada baixa — 4×8–10; puxada frontal — 3×10–12.","Desenvolvimento halteres — 3×8–10; elevação lateral — 3×12–15; rosca direta e tríceps corda — 3×10–12 cada."]},{"title":"Lower B — Técnica + Posterior","items":["Bloco corretivo 8 min; agachamento com pausa — 3×4–6, pausa 2 s, RIR 2–3.","Stiff/terra romeno — 4×6–8; mesa flexora — 4×10–12; passada reversa — 3×8–10/perna.","Abdutora — 3×15–20; glute bridge — 3×10–12; panturrilha sentada — 4×12–15."]},{"title":"Upper B — Costas + Deltoides","items":["Bloco corretivo 8 min; remada articulada/cavalinho apoiada — 4×6–8; puxada neutra — 3×8–10.","Supino inclinado halteres — 3×8–10; face pull — 3×12–15; elevação lateral sentada — 3×12–15.","Rosca martelo — 3×10–12; tríceps francês halter — 3×10–12."]},{"title":"Progressão, deload e cardio semanal","items":["Seg Lower A","ter Upper A","qua cardio leve/mobilidade","qui Lower B","sex Upper B","sábado cardio opcional/caminhada","domingo descanso. Cardio 2–3×20–30 min. Compostos RIR2, acessórios RIR1–2","aumentar 2–5% após topo da faixa com técnica. Semana 6 deload, reduzir carga/volume. A ficha orienta monitorar resposta individual a sintomas de náusea/menor ingestão e manter comunicação profissional"]}]}]}];
+  const GH_AVAL_SEED = {"formato":"GH-AVALIACOES-TEXTO-1","alunos":[{"id":"1951a370-858e-4007-bc2f-8fa4aa9dd9f1","nome":"Amanda Messias","objetivo":"Hipertrofia","nivel":"Não informado","ativo":true,"birthDate":"1996-06-16","avaliacoes":[{"id":"b2fe6003-0567-4cc1-8f8c-67a492a73ac6","date":"2026-08-29T15:00:00Z","weight":98,"waist":102,"chest":114,"hip":120,"bodyFat":29.1,"details":{"height":166,"sex":"Feminino","age":null,"examiner":"","circumferences":{"abdomen":106,"armRight":32,"armLeft":31,"thighRight":61,"thighLeft":64},"folds":{"chest":20,"midaxillary":22,"triceps":24,"subscapular":33,"abdominal":25,"suprailiac":21,"thigh":12,"biceps":17,"calf":10}}}]},{"id":"2f10b90a-3d24-4465-bb8f-e58725ab5572","nome":"Ariana Faria","objetivo":"Hipertrofia","nivel":"Não informado","ativo":true,"avaliacoes":[{"id":"08c46810-e437-4178-958b-1f95b966cabc","date":"2026-09-30T09:59:00Z","weight":97,"waist":97,"chest":100,"hip":126,"bodyFat":28.62,"details":{"height":168,"sex":"Feminino","age":36,"examiner":"GIOVANNI HENRIQUE SOARES","circumferences":{"abdomen":98,"armRight":31,"armLeft":31,"thighRight":63,"thighLeft":63},"folds":{"chest":13,"midaxillary":20,"triceps":24,"subscapular":25,"abdominal":25,"suprailiac":19,"thigh":25}}}]},{"id":"01becd36-88f0-4609-b46a-54def2d5b101","nome":"Daniele de Paula","objetivo":"Hipertrofia","nivel":"Não informado","ativo":true,"avaliacoes":[{"id":"bc53a306-5e12-4c9c-9608-a6922c0410e5","date":"2026-08-05T15:00:00Z","weight":62,"waist":0,"chest":0,"hip":0,"bodyFat":22.6,"details":{"height":157,"sex":"Feminino","age":37,"examiner":"GIOVANNI HENRIQUE SOARES","circumferences":{"abdomen":73,"armRight":22,"thighRight":49,"calfLeft":31},"folds":{}}}]},{"id":"aec844da-37b0-4e61-8065-3d3d3cdefdde","nome":"Fabiana Moura","objetivo":"Hipertrofia","nivel":"Não informado","ativo":true,"avaliacoes":[{"id":"64185bd2-6491-4847-8392-bff8c8b9edc9","date":"2026-06-01T15:00:00Z","weight":82,"waist":89,"chest":99,"hip":108,"bodyFat":18.5,"details":{"height":162,"sex":"Feminino","age":null,"examiner":"","circumferences":{"abdomen":90,"armRight":29,"armLeft":29,"thighRight":61,"thighLeft":63},"folds":{"chest":7,"midaxillary":13,"triceps":12,"subscapular":20,"abdominal":10,"suprailiac":10,"thigh":15,"biceps":7,"calf":10}}},{"id":"ac87d443-c220-4384-8a63-2c08e27263e9","date":"2026-07-01T15:00:00Z","weight":78,"waist":81,"chest":90,"hip":102,"bodyFat":16,"details":{"height":162,"sex":"Feminino","age":null,"examiner":"","circumferences":{"abdomen":95,"armRight":30,"armLeft":30,"thighRight":56,"thighLeft":58},"folds":{"chest":8,"midaxillary":9,"triceps":10,"subscapular":15,"abdominal":9,"suprailiac":10,"thigh":11,"biceps":5,"calf":9}}},{"id":"0e974649-ac49-4944-81c2-7962bea17dae","date":"2026-08-01T15:00:00Z","weight":74,"waist":80,"chest":86,"hip":102,"bodyFat":15.1,"details":{"height":162,"sex":"Feminino","age":null,"examiner":"","circumferences":{"abdomen":87,"armRight":28,"armLeft":30,"thighRight":56,"thighLeft":57},"folds":{"chest":8,"midaxillary":9,"triceps":10,"subscapular":9,"abdominal":12,"suprailiac":10,"thigh":9,"biceps":7,"calf":12}}}]},{"id":"4aee9600-0861-46ad-bb00-8fb7dc5c2ea0","nome":"Fabiana Teodoro","objetivo":"Hipertrofia","nivel":"Não informado","ativo":true,"avaliacoes":[{"id":"ab88ca54-68b9-4cb6-8e1c-5552f4175dad","date":"2026-07-09T15:00:00Z","weight":63,"waist":0,"chest":0,"hip":0,"bodyFat":13,"details":{"height":163,"sex":"Feminino","age":null,"examiner":"","circumferences":{},"folds":{"chest":6,"midaxillary":9,"triceps":10,"subscapular":6,"abdominal":8,"suprailiac":8,"thigh":8,"biceps":8,"calf":8}}},{"id":"d101b69e-225c-4fab-8213-997eab8b0b78","date":"2026-08-24T15:00:00Z","weight":61,"waist":69,"chest":83,"hip":98,"bodyFat":20.1,"details":{"height":163,"sex":"Feminino","age":null,"examiner":"","circumferences":{"abdomen":75,"armRight":24,"armLeft":24,"thighRight":50,"thighLeft":52},"folds":{"chest":10,"midaxillary":11,"triceps":20,"subscapular":18,"abdominal":12,"suprailiac":15,"thigh":11,"biceps":8,"calf":12}}},{"id":"273f437f-b3fc-4797-80ec-51a9a3802eb1","date":"2026-09-23T00:21:00Z","weight":62,"waist":69,"chest":80,"hip":94,"bodyFat":18.75,"details":{"height":163,"sex":"Feminino","age":37,"examiner":"GIOVANNI HENRIQUE SOARES","circumferences":{"neck":30,"abdomen":78,"armRight":23,"armLeft":23,"thighRight":54,"thighLeft":55,"calfRight":31,"calfLeft":32},"folds":{"chest":6,"midaxillary":13,"triceps":17,"subscapular":21,"abdominal":11,"suprailiac":13,"thigh":5}}}]},{"id":"a0ded4ce-eee1-466c-a525-c2ce244780cf","nome":"Giovanna Garcia","objetivo":"Hipertofia","nivel":"Não informado","ativo":true,"avaliacoes":[{"id":"7827f6d0-bf29-4e3e-8019-db62738986d3","date":"2026-10-02T19:28:00Z","weight":57,"waist":70,"chest":80,"hip":94,"bodyFat":20.98,"details":{"height":156,"sex":"Feminino","age":25,"examiner":"GIOVANNI HENRIQUE SOARES","circumferences":{"abdomen":72,"armRight":23,"armLeft":22,"thighRight":50,"thighLeft":52,"calfRight":33,"calfLeft":32},"folds":{"chest":13,"midaxillary":13,"triceps":20,"subscapular":17,"abdominal":10,"suprailiac":13,"thigh":18}}}]},{"id":"69c2b841-9230-47c9-b573-d4c12eaf2a11","nome":"Janaina Mara","objetivo":"Hipertrofia","nivel":"Não informado","ativo":true,"avaliacoes":[{"id":"71386137-dba9-4cf2-80c3-0a3e81fd74a8","date":"2026-08-04T15:00:00Z","weight":70,"waist":76,"chest":88,"hip":103,"bodyFat":19,"details":{"height":169,"sex":"Feminino","age":null,"examiner":"","circumferences":{"abdomen":82,"armRight":27,"armLeft":31,"thighRight":35,"thighLeft":57},"folds":{"chest":8,"midaxillary":9,"triceps":18,"subscapular":15,"abdominal":14,"suprailiac":10,"thigh":16,"biceps":10,"calf":12}}},{"id":"1160aca2-9c89-43b4-9307-dae4919ff6e1","date":"2026-09-29T17:42:00Z","weight":70,"waist":77,"chest":89,"hip":103,"bodyFat":20.02,"details":{"height":169,"sex":"Feminino","age":42,"examiner":"GIOVANNI HENRIQUE SOARES","circumferences":{"abdomen":92,"armRight":29,"armLeft":31,"thighRight":56,"thighLeft":59,"calfRight":35,"calfLeft":36},"folds":{"chest":4,"midaxillary":10,"triceps":20,"subscapular":16,"abdominal":15,"suprailiac":12,"thigh":15}}}]},{"id":"f8f5bc70-9ea7-4e74-9cdc-17191cbd4a92","nome":"Leticia Teodoro","objetivo":"Hipertrofia","nivel":"Não informado","ativo":true,"avaliacoes":[{"id":"160972b6-60ab-4d20-a61c-a26d112d6e74","date":"2026-09-23T00:08:00Z","weight":65,"waist":78,"chest":91,"hip":91,"bodyFat":19.02,"details":{"height":157,"sex":"Feminino","age":36,"examiner":"GIOVANNI HENRIQUE SOARES","circumferences":{"neck":32,"abdomen":77,"armRight":25,"armLeft":26,"thighRight":55,"thighLeft":58,"calfRight":34,"calfLeft":34},"folds":{"chest":11,"midaxillary":17,"triceps":10,"subscapular":18,"abdominal":15,"suprailiac":12,"thigh":5}}},{"id":"5600bf1c-6ddc-4d3e-b0c7-898085a83d2b","date":"2026-07-09T15:00:00Z","weight":65,"waist":0,"chest":0,"hip":0,"bodyFat":11.3,"details":{"height":163,"sex":"Feminino","age":null,"examiner":"","circumferences":{},"folds":{"chest":4,"midaxillary":7,"triceps":8,"subscapular":10,"abdominal":5,"suprailiac":5,"thigh":6,"biceps":4,"calf":6}}},{"id":"8d925946-2bd0-4952-84cc-3cd7a02e655f","date":"2026-08-24T15:00:00Z","weight":65,"waist":79,"chest":91,"hip":94,"bodyFat":20.9,"details":{"height":157,"sex":"Feminino","age":null,"examiner":"","circumferences":{"abdomen":78,"armRight":26,"armLeft":26,"thighRight":55,"thighLeft":57},"folds":{"chest":9,"midaxillary":12,"triceps":11,"subscapular":20,"abdominal":25,"suprailiac":17,"thigh":8,"biceps":7,"calf":20}}}]},{"id":"ebe3249e-f94f-4280-ada0-691aeb19e7e2","nome":"Luciana Marques","objetivo":"Hipertrofia","nivel":"Não informado","ativo":true,"avaliacoes":[]},{"id":"8c0dd83f-e18b-45ef-837c-9e06171f653d","nome":"Otávio  assis","objetivo":"Hipertrofia","nivel":"Não informado","ativo":true,"avaliacoes":[{"id":"ba5106a1-1c99-44d9-abfe-a9f4f2c4084f","date":"2026-09-21T21:17:00Z","weight":102,"waist":98,"chest":102,"hip":106,"bodyFat":17.62,"details":{"height":182,"sex":"Masculino","age":35,"examiner":"GIOVANNI HENRIQUE SOARES","circumferences":{"abdomen":101,"armRight":33,"armLeft":32,"thighRight":52,"thighLeft":52,"calfRight":38,"calfLeft":38},"folds":{"chest":14,"midaxillary":18,"triceps":11,"subscapular":20,"abdominal":23,"suprailiac":19,"thigh":12}}}]},{"id":"4492cb42-4953-4500-a746-2f0e4614b71d","nome":"Renata Muroni","objetivo":"Hipertrofia","nivel":"Não informado","ativo":true,"avaliacoes":[{"id":"b6a4f678-02b0-4b85-8070-c13861fbe605","date":"2026-08-17T15:00:00Z","weight":60,"waist":82,"chest":91,"hip":92,"bodyFat":21.3,"details":{"height":157,"sex":"Feminino","age":null,"examiner":"","circumferences":{"abdomen":79,"armRight":25,"armLeft":24,"thighRight":49,"thighLeft":48.8},"folds":{"chest":7,"midaxillary":10,"triceps":19,"subscapular":19,"abdominal":17,"suprailiac":16,"thigh":16,"biceps":9,"calf":12.9}}}]},{"id":"3e5fdd77-2d7d-4ea5-a7af-b24dddc53cfd","nome":"Rueny Araujo","objetivo":"Hipertofia","nivel":"Não informado","ativo":true,"avaliacoes":[{"id":"3f31cca5-d081-484b-86bf-6e4477dad9ed","date":"2026-10-02T19:18:00Z","weight":104,"waist":102,"chest":111,"hip":111,"bodyFat":20.62,"details":{"height":181,"sex":"Masculino","age":33,"examiner":"GIOVANNI HENRIQUE SOARES","circumferences":{"abdomen":103,"armRight":29,"armLeft":29,"thighRight":57,"thighLeft":59,"calfRight":38,"calfLeft":38},"folds":{"chest":15,"midaxillary":15,"triceps":13,"subscapular":22,"abdominal":25,"suprailiac":23,"thigh":29}}}]},{"id":"bd6421b7-54a8-4d51-af80-3ecdd938f209","nome":"Silvana Paiva","objetivo":"Hipertrofia","nivel":"Não informado","ativo":true,"avaliacoes":[{"id":"c96758f6-39ec-4b0f-863d-9c4158c34be5","date":"2026-05-20T15:00:00Z","weight":66,"waist":0,"chest":0,"hip":0,"bodyFat":18.2,"details":{"height":164,"sex":"Feminino","age":null,"examiner":"","circumferences":{},"folds":{"chest":4,"midaxillary":8,"triceps":13,"subscapular":13,"abdominal":14,"suprailiac":16,"thigh":17,"biceps":11,"calf":13}}},{"id":"8633ce6c-fcaf-4864-8ed5-496b28996c9f","date":"2026-06-20T15:00:00Z","weight":67,"waist":74,"chest":90,"hip":101,"bodyFat":16.6,"details":{"height":164,"sex":"Feminino","age":null,"examiner":"","circumferences":{"abdomen":74,"armRight":27,"armLeft":27,"thighRight":54,"thighLeft":54},"folds":{"chest":5,"midaxillary":6,"triceps":13,"subscapular":11,"abdominal":13,"suprailiac":14,"thigh":13.8,"biceps":7,"calf":10}}},{"id":"fe71cfbd-3aa3-4dd7-8726-c692d33a7173","date":"2026-07-20T15:00:00Z","weight":65,"waist":77,"chest":91,"hip":95,"bodyFat":15.7,"details":{"height":164,"sex":"Feminino","age":null,"examiner":"","circumferences":{"abdomen":82,"armRight":26,"armLeft":26,"thighRight":54,"thighLeft":54},"folds":{"chest":5,"midaxillary":10,"triceps":13,"subscapular":12,"abdominal":9,"suprailiac":9,"thigh":12,"biceps":9,"calf":11}}},{"id":"bfad015d-b24e-4dbd-bd50-a2b18505f0b7","date":"2026-09-23T17:40:00Z","weight":66,"waist":77,"chest":90,"hip":97,"bodyFat":19.54,"details":{"height":164,"sex":"Feminino","age":48,"examiner":"GIOVANNI HENRIQUE SOARES","circumferences":{"neck":30,"abdomen":78,"armRight":25,"armLeft":25,"thighRight":55,"thighLeft":56,"calfRight":33,"calfLeft":33},"folds":{"chest":7,"midaxillary":11,"triceps":15,"subscapular":13,"abdominal":13,"suprailiac":13,"thigh":15}}}]}]};
 </script>
 <script>
 (() => {
@@ -451,7 +606,7 @@
 
   let state = load();
 
-  function blank(){ return {version:1, auth:null, activeStudentId:null, students:[], plans:{}, sessions:[], periodizations:{}}; }
+  function blank(){ return {version:1, auth:null, activeStudentId:null, students:[], plans:{}, sessions:[], periodizations:{}, assessments:[]}; }
   function load(){
     try { const p = JSON.parse(localStorage.getItem(KEY)); if (p && Array.isArray(p.students)) return Object.assign(blank(), p); } catch(e){}
     return blank();
@@ -511,6 +666,7 @@
     $('#loginScreen').classList.add('hidden');
     $('#app').classList.remove('hidden');
     seedIfEmpty();
+    seedAssessments();
     renderAll();
     setTimeout(() => { if ($('#history').classList.contains('active')) drawChart(); }, 50);
     goFullscreen(); armFullscreen(); paintFsBtn();
@@ -551,6 +707,7 @@
     $$('.page').forEach(p => p.classList.toggle('active', p.id === id));
     if (id === 'history') setTimeout(drawChart, 30);
     if (id === 'session') autoLoadToday();
+    if (id === 'aval') { renderAval(); setTimeout(drawAvChart, 40); }
   }
   $$('.tab').forEach(b => b.addEventListener('click', () => showPage(b.dataset.page)));
 
@@ -1270,7 +1427,7 @@
     $$('.edit-student').forEach(b => b.addEventListener('click', () => openStudent(state.students.find(s => s.id === b.dataset.id))));
   }
   $('#exportBtn').addEventListener('click', () => {
-    const payload = Object.assign({app:'GH Performance', exportedAt:new Date().toISOString()}, state);
+    const payload = Object.assign({app:'GH Performance', exportedAt:new Date().toISOString()}, state, {assessments: state.assessments || []});
     const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob); a.download = `gh-performance-backup-${today()}.json`; a.click();
@@ -1283,7 +1440,8 @@
       if (!Array.isArray(data.students) || !Array.isArray(data.sessions)) throw new Error('Formato inválido');
       if (!confirm('Importar este arquivo substituirá os dados atuais. Continuar?')) return;
       state = {version:1, auth:state.auth, activeStudentId:data.activeStudentId || (data.students[0] && data.students[0].id) || null,
-        students:data.students, sessions:data.sessions, plans:data.plans || {}, periodizations:data.periodizations || {}};
+        students:data.students, sessions:data.sessions, plans:data.plans || {}, periodizations:data.periodizations || {},
+        assessments:Array.isArray(data.assessments) ? data.assessments : []};
       save(); notify('Dados importados com sucesso.');
     } catch(err){ notify('Arquivo JSON inválido.', true); }
     finally { e.target.value = ''; }
@@ -1293,6 +1451,7 @@
     if (!confirm(`Excluir ${s.name} e todos os treinos?`)) return;
     state.students = state.students.filter(x => x.id !== s.id);
     state.sessions = state.sessions.filter(x => x.studentId !== s.id);
+    state.assessments = (state.assessments || []).filter(x => x.studentId !== s.id);
     delete state.periodizations[s.id]; delete state.plans[s.id];
     state.activeStudentId = state.students[0] ? state.students[0].id : null;
     save(); notify('Aluno excluído.');
@@ -1321,8 +1480,695 @@
     clearSession(); renderAll(); notify('Todos os dados foram apagados. Você pode começar do zero.');
   });
 
+  /* ================= AVALIAÇÃO FÍSICA ================= */
+  const AV_MEASURES = [
+    ['neck','Pescoço'],['shoulders','Ombros'],['chest','Tórax'],['waist','Cintura'],
+    ['abdomen','Abdômen'],['hip','Quadril'],
+    ['armRight','Braço direito'],['armLeft','Braço esquerdo'],
+    ['forearmRight','Antebraço direito'],['forearmLeft','Antebraço esquerdo'],
+    ['thighRight','Coxa direita'],['thighLeft','Coxa esquerda'],
+    ['calfRight','Panturrilha direita'],['calfLeft','Panturrilha esquerda']
+  ];
+  const AV_FOLDS = [
+    ['chest','Peitoral'],['midaxillary','Axilar média'],['triceps','Tríceps'],
+    ['subscapular','Subescapular'],['abdominal','Abdominal'],['suprailiac','Suprailíaca'],['thigh','Coxa']
+  ];
+  const AV_ANGLES = [['front','Frontal'],['side','Lateral'],['back','Posterior']];
+  const AV_BACKUP_PREFIX = 'ghPerformance.avaliacoes.backup.';
+  let avStudentId = null, avEditing = null, avCurrent = null, pcSplit = 50, pcUrls = [], avCmpTouched = false;
+
+  const avFmt = (v, d) => (v === null || v === undefined || !Number.isFinite(v))
+    ? '—' : new Intl.NumberFormat('pt-BR', {minimumFractionDigits: d === undefined ? 1 : d, maximumFractionDigits: d === undefined ? 1 : d}).format(v);
+
+  function avList(){ if (!Array.isArray(state.assessments)) state.assessments = []; return state.assessments; }
+  function avNum(v){
+    if (v === '' || v === null || v === undefined) return null;
+    const n = Number(String(v).trim().replace(',', '.'));
+    return Number.isFinite(n) ? n : null;
+  }
+  function avBlank(studentId){
+    return { id: uid(), studentId: studentId || null, date: today(), sex: '', birthDate: '', age: null,
+      height: null, weight: null, measures: {}, folds: {}, bodyFatInformed: null, notes: '', examiner: '',
+      photos: {front: [], side: [], back: []}, createdAt: new Date().toISOString(), updatedAt: null };
+  }
+  function avFor(id){ return avList().filter(a => a.studentId === id)
+    .sort((a, b) => String(b.date || '').localeCompare(String(a.date || ''))); }
+  function avFind(id){ return avList().find(a => a.id === id) || null; }
+  function avLatest(id){ const l = avFor(id); return l.length ? l[0] : null; }
+
+  /* ---- cálculos ---- */
+  function avAgeAt(a){
+    if (a.birthDate && a.date){
+      const b = new Date(a.birthDate + 'T12:00:00'), d = new Date(a.date + 'T12:00:00');
+      if (!isNaN(b) && !isNaN(d) && d >= b){
+        let age = d.getFullYear() - b.getFullYear();
+        const m = d.getMonth() - b.getMonth();
+        if (m < 0 || (m === 0 && d.getDate() < b.getDate())) age--;
+        return age;
+      }
+    }
+    return avNum(a.age);
+  }
+  function avBmi(a){
+    const h = avNum(a.height), w = avNum(a.weight);
+    if (h === null || w === null || h <= 0) return null;
+    return w / Math.pow(h / 100, 2);
+  }
+  function avBmiClass(b){
+    if (b === null || !Number.isFinite(b)) return '';
+    if (b < 18.5) return 'Abaixo do peso';
+    if (b < 25) return 'Peso normal';
+    if (b < 30) return 'Sobrepeso';
+    if (b < 35) return 'Obesidade grau I';
+    if (b < 40) return 'Obesidade grau II';
+    return 'Obesidade grau III';
+  }
+  function avFoldSum(a){
+    const vals = AV_FOLDS.map(([k]) => avNum((a.folds || {})[k]));
+    if (vals.some(v => v === null)) return null;
+    return vals.reduce((s, v) => s + v, 0);
+  }
+  function avJp7(a){
+    const sum = avFoldSum(a), age = avAgeAt(a);
+    const sex = String(a.sex || '').trim().toLowerCase();
+    if (sum === null || age === null || !sex) return null;
+    const s = sum;
+    const bd = sex.startsWith('f')
+      ? 1.097 - 0.00046971 * s + 0.00000056 * s * s - 0.00012828 * age
+      : 1.112 - 0.00043499 * s + 0.00000055 * s * s - 0.00028826 * age;
+    if (!Number.isFinite(bd) || bd <= 0.9) return null;
+    return { sum, age, density: bd, bodyFat: 495 / bd - 450 };
+  }
+  function avComposition(a){
+    const w = avNum(a.weight);
+    const jp = avJp7(a);
+    const inf = avNum(a.bodyFatInformed);
+    const bf = jp ? jp.bodyFat : inf;
+    const src = jp ? 'calculado' : (inf === null ? '' : 'informado');
+    const fatMass = (bf === null || w === null) ? null : w * bf / 100;
+    const leanMass = (fatMass === null || w === null) ? null : w - fatMass;
+    return { bf, src, fatMass, leanMass, jp, inf };
+  }
+  function avMissing(a){
+    const out = [];
+    if (!String(a.sex || '').trim()) out.push('sexo');
+    if (avAgeAt(a) === null) out.push('idade (ou nascimento)');
+    AV_FOLDS.forEach(([k, label]) => { if (avNum((a.folds || {})[k]) === null) out.push('dobra ' + label.toLowerCase()); });
+    return out;
+  }
+  function avValidate(a){
+    const e = [];
+    const dt = a.date ? new Date(a.date + 'T12:00:00') : null;
+    if (!dt || isNaN(dt)) e.push('data inválida');
+    else { const y = dt.getFullYear(); if (y < 1900 || y > 2100) e.push('data fora da faixa'); }
+    if (a.birthDate && isNaN(new Date(a.birthDate + 'T12:00:00'))) e.push('nascimento inválido');
+    if (a.height !== null && (a.height < 60 || a.height > 260)) e.push('altura fora da faixa (60–260 cm)');
+    if (a.weight !== null && (a.weight < 15 || a.weight > 400)) e.push('peso fora da faixa (15–400 kg)');
+    if (a.age !== null && (a.age < 1 || a.age > 120)) e.push('idade fora da faixa (1–120)');
+    AV_MEASURES.forEach(([k, label]) => { const v = avNum(a.measures[k]); if (v !== null && (v <= 0 || v > 300)) e.push(label + ' fora da faixa'); });
+    AV_FOLDS.forEach(([k, label]) => { const v = avNum(a.folds[k]); if (v !== null && (v <= 0 || v > 120)) e.push('dobra ' + label + ' fora da faixa'); });
+    if (a.bodyFatInformed !== null && (a.bodyFatInformed < 0 || a.bodyFatInformed > 70)) e.push('% gordura informado fora da faixa (0–70)');
+    return e;
+  }
+
+  /* ---- IndexedDB (fotos) ---- */
+  const AV_DB = 'ghPerformancePhotos', AV_STORE = 'photos';
+  function avDb(){
+    return new Promise((res, rej) => {
+      if (typeof indexedDB === 'undefined' || !indexedDB) return rej(new Error('sem indexedDB'));
+      const r = indexedDB.open(AV_DB, 1);
+      r.onupgradeneeded = () => { const db = r.result; if (!db.objectStoreNames.contains(AV_STORE)) db.createObjectStore(AV_STORE); };
+      r.onsuccess = () => res(r.result);
+      r.onerror = () => rej(r.error);
+    });
+  }
+  async function avPhotoPut(key, blob){
+    const db = await avDb();
+    return new Promise((res, rej) => { const t = db.transaction(AV_STORE, 'readwrite');
+      t.objectStore(AV_STORE).put(blob, key); t.oncomplete = () => res(); t.onerror = () => rej(t.error); });
+  }
+  async function avPhotoGet(key){
+    const db = await avDb();
+    return new Promise((res, rej) => { const t = db.transaction(AV_STORE, 'readonly');
+      const q = t.objectStore(AV_STORE).get(key); q.onsuccess = () => res(q.result || null); q.onerror = () => rej(q.error); });
+  }
+  async function avPhotoDel(key){
+    const db = await avDb();
+    return new Promise((res, rej) => { const t = db.transaction(AV_STORE, 'readwrite');
+      t.objectStore(AV_STORE).delete(key); t.oncomplete = () => res(); t.onerror = () => rej(t.error); });
+  }
+
+  /* ---- formulário ---- */
+  function avBuildInputs(){
+    const angleOpts = AV_ANGLES.map(([v, l]) => `<option value="${v}">${l}</option>`).join('');
+    $('#avPhotoAngle').innerHTML = angleOpts;
+    $('#avCmpAngle').innerHTML = angleOpts;
+    $('#avMeasures').innerHTML = AV_MEASURES.map(([k, label]) =>
+      `<div class="span3"><label for="avm_${k}">${esc(label)} (cm)</label><input type="number" id="avm_${k}" min="0" max="300" step="0.1" placeholder="—"></div>`).join('');
+    $('#avFolds').innerHTML = AV_FOLDS.map(([k, label]) =>
+      `<div class="span3"><label for="avf_${k}">${esc(label)} (mm)</label><input type="number" id="avf_${k}" min="0" max="120" step="0.1" placeholder="—"></div>`).join('');
+  }
+  function avReadForm(){
+    const a = avCurrent; if (!a) return null;
+    a.date = $('#avDate').value || '';
+    a.sex = $('#avSex').value || '';
+    a.birthDate = $('#avBirth').value || '';
+    a.age = avNum($('#avAge').value);
+    a.height = avNum($('#avHeight').value);
+    a.weight = avNum($('#avWeight').value);
+    a.bodyFatInformed = avNum($('#avBfInf').value);
+    a.examiner = $('#avExaminer').value.trim();
+    a.notes = $('#avNotes').value.trim();
+    a.measures = {}; AV_MEASURES.forEach(([k]) => { a.measures[k] = avNum($('#avm_' + k).value); });
+    a.folds = {}; AV_FOLDS.forEach(([k]) => { a.folds[k] = avNum($('#avf_' + k).value); });
+    return a;
+  }
+  function avFillForm(a){
+    $('#avDate').value = a.date || '';
+    $('#avSex').value = a.sex || '';
+    $('#avBirth').value = a.birthDate || '';
+    $('#avAge').value = a.age === null || a.age === undefined ? '' : a.age;
+    $('#avHeight').value = a.height === null || a.height === undefined ? '' : a.height;
+    $('#avWeight').value = a.weight === null || a.weight === undefined ? '' : a.weight;
+    $('#avBfInf').value = a.bodyFatInformed === null || a.bodyFatInformed === undefined ? '' : a.bodyFatInformed;
+    $('#avExaminer').value = a.examiner || '';
+    $('#avNotes').value = a.notes || '';
+    AV_MEASURES.forEach(([k]) => { const v = (a.measures || {})[k]; $('#avm_' + k).value = v === null || v === undefined ? '' : v; });
+    AV_FOLDS.forEach(([k]) => { const v = (a.folds || {})[k]; $('#avf_' + k).value = v === null || v === undefined ? '' : v; });
+    avLive();
+  }
+  function avResultsSource(){
+    if (avCurrent && !$('#avFormCard').hidden) return avCurrent;
+    return avLatest(avStudentId);
+  }
+  function avLive(){
+    const a = avResultsSource();
+    if (a){
+      const bmi = avBmi(a), cls = avBmiClass(bmi), c = avComposition(a), sum = avFoldSum(a);
+      if (avCurrent && !$('#avFormCard').hidden){
+        $('#avBmi').value = bmi === null ? '' : avFmt(bmi);
+        $('#avBmiClass').value = cls;
+        $('#avBfCalc').value = c.jp ? avFmt(c.jp.bodyFat) : '';
+        $('#avBfCalcSrc').textContent = c.jp
+          ? `Jackson & Pollock 7 dobras · densidade ${c.jp.density.toFixed(5)} · soma ${avFmt(c.jp.sum, 0)} mm`
+          : (avMissing(a).length ? 'faltam: ' + avMissing(a).join(', ') : 'não calculado');
+        $('#avFatMass').value = c.fatMass === null ? '' : avFmt(c.fatMass);
+        $('#avLeanMass').value = c.leanMass === null ? '' : avFmt(c.leanMass);
+        $('#avFoldSum').textContent = sum === null
+          ? 'Soma das sete dobras: faltam ' + AV_FOLDS.filter(([k]) => avNum((a.folds || {})[k]) === null).map(([, l]) => l).join(', ') + '.'
+          : `Soma das sete dobras: ${avFmt(sum, 0)} mm.`;
+      }
+    }
+    renderAvResults();
+  }
+
+  /* ---- render ---- */
+  function renderAvHistory(){
+    const list = avFor(avStudentId);
+    $('#avHistory').innerHTML = list.length ? list.map(a => {
+      const c = avComposition(a);
+      return `<div class="av-row${avEditing === a.id ? ' on' : ''}">
+        <div><div class="d">${dateFmt(a.date)}${a.weight !== null ? ' · ' + avFmt(a.weight) + ' kg' : ''}${c.bf !== null ? ' · ' + avFmt(c.bf) + '% GC' : ''}</div>
+        <div class="m">IMC ${avFmt(avBmi(a))} · massa magra ${avFmt(c.leanMass)} kg · % gordura ${c.src || 'não calculado'}</div></div>
+        <div class="actions">
+          <button class="btn secondary small" data-av-edit="${esc(a.id)}">Editar</button>
+          <button class="btn danger small" data-av-del="${esc(a.id)}">Excluir</button>
+        </div></div>`;
+    }).join('') : '<div class="empty">Nenhuma avaliação para este aluno. Toque em “+ Nova avaliação”.</div>';
+    $$('[data-av-edit]').forEach(b => b.addEventListener('click', () => avEdit(b.dataset.avEdit)));
+    $$('[data-av-del]').forEach(b => b.addEventListener('click', () => avDelete(b.dataset.avDel)));
+  }
+  function renderAvResults(){
+    const a = avResultsSource();
+    const host = $('#avResults'), miss = $('#avMissing');
+    if (!a){ host.innerHTML = '<div class="empty" style="grid-column:span 4">Sem avaliação selecionada.</div>'; miss.textContent = ''; return; }
+    const c = avComposition(a), bmi = avBmi(a), sum = avFoldSum(a);
+    const card = (v, label, extra) => `<div class="metric"><strong>${v}</strong><span>${label}</span>${extra ? `<div class="av-src">${extra}</div>` : ''}</div>`;
+    host.innerHTML =
+      card(a.weight === null ? '—' : avFmt(a.weight) + ' kg', 'Peso') +
+      card(bmi === null ? '—' : avFmt(bmi), 'IMC', avBmiClass(bmi)) +
+      card(c.bf === null ? '—' : avFmt(c.bf) + '%', '% de gordura', c.src ? 'valor ' + c.src : 'não calculado') +
+      card(c.fatMass === null ? '—' : avFmt(c.fatMass) + ' kg', 'Massa gorda') +
+      card(c.leanMass === null ? '—' : avFmt(c.leanMass) + ' kg', 'Massa magra') +
+      card(sum === null ? '—' : avFmt(sum, 0) + ' mm', 'Soma das 7 dobras') +
+      card(c.jp ? avFmt(c.jp.density, 5) : '—', 'Densidade corporal');
+    const missing = avMissing(a);
+    miss.textContent = c.jp
+      ? `Calculado por Jackson & Pollock (7 dobras) + Siri, com ${avAgeAt(a)} anos.`
+      : (missing.length ? 'Não foi possível calcular o % de gordura. Falta: ' + missing.join(', ') + '.' : '');
+  }
+  function renderAvCompare(){
+    const list = avFor(avStudentId);
+    const selA = $('#avCmpA'), selB = $('#avCmpB');
+    const opts = list.map(a => `<option value="${esc(a.id)}">${dateFmt(a.date)}</option>`).join('');
+    const kA = selA.value, kB = selB.value;
+    selA.innerHTML = opts || '<option value="">—</option>';
+    selB.innerHTML = opts || '<option value="">—</option>';
+    if (list.length){
+      selA.value = (avCmpTouched && list.some(a => a.id === kA)) ? kA : list[list.length - 1].id;
+      selB.value = (avCmpTouched && list.some(a => a.id === kB)) ? kB : list[0].id;
+    }
+    avPaintCompare();
+  }
+  function avMetricRows(a){
+    const c = avComposition(a), m = a.measures || {};
+    return [
+      ['Peso', avNum(a.weight), 'kg', 1],
+      ['IMC', avBmi(a), '', 1],
+      ['% de gordura', c.bf, '%', 1],
+      ['Massa gorda', c.fatMass, 'kg', 1],
+      ['Massa magra', c.leanMass, 'kg', 1],
+      ['Soma 7 dobras', avFoldSum(a), 'mm', 0],
+      ['Pescoço', avNum(m.neck), 'cm', 1],
+      ['Ombros', avNum(m.shoulders), 'cm', 1],
+      ['Tórax', avNum(m.chest), 'cm', 1],
+      ['Cintura', avNum(m.waist), 'cm', 1],
+      ['Abdômen', avNum(m.abdomen), 'cm', 1],
+      ['Quadril', avNum(m.hip), 'cm', 1],
+      ['Braço direito', avNum(m.armRight), 'cm', 1],
+      ['Braço esquerdo', avNum(m.armLeft), 'cm', 1],
+      ['Antebraço direito', avNum(m.forearmRight), 'cm', 1],
+      ['Antebraço esquerdo', avNum(m.forearmLeft), 'cm', 1],
+      ['Coxa direita', avNum(m.thighRight), 'cm', 1],
+      ['Coxa esquerda', avNum(m.thighLeft), 'cm', 1],
+      ['Panturrilha direita', avNum(m.calfRight), 'cm', 1],
+      ['Panturrilha esquerda', avNum(m.calfLeft), 'cm', 1]
+    ];
+  }
+  function avPaintCompare(){
+    const A = avFind($('#avCmpA').value), B = avFind($('#avCmpB').value);
+    const host = $('#avCmpTable');
+    if (!A || !B){ host.innerHTML = '<div class="empty">Selecione duas avaliações.</div>'; drawAvChart(); return; }
+    const ra = avMetricRows(A), rb = avMetricRows(B);
+    let html = `<div class="table-wrap"><table class="av-cmp"><thead><tr>
+      <th>Indicador</th><th class="n">${dateFmt(A.date)}</th><th class="n">${dateFmt(B.date)}</th>
+      <th class="n">Diferença</th><th class="n">%</th></tr></thead><tbody>`;
+    ra.forEach((row, i) => {
+      const label = row[0], va = row[1], un = row[2], dec = row[3], vb = rb[i][1];
+      if (va === null && vb === null) return;
+      const diff = (va !== null && vb !== null) ? vb - va : null;
+      const pct = (diff !== null && va !== 0) ? (diff / va) * 100 : null;
+      let arrow = '<span class="av-arrow flat">=</span>';
+      if (diff !== null && Math.abs(diff) > 0.0001){
+        const good = /massa magra/i.test(label) ? diff > 0 : diff < 0;
+        arrow = `<span class="av-arrow ${good ? 'up' : 'down'}">${diff > 0 ? '▲' : '▼'}</span>`;
+      }
+      html += `<tr><td>${esc(label)}</td>
+        <td class="n">${va === null ? '—' : avFmt(va, dec) + (un ? ' ' + un : '')}</td>
+        <td class="n">${vb === null ? '—' : avFmt(vb, dec) + (un ? ' ' + un : '')}</td>
+        <td class="n">${diff === null ? '—' : (diff > 0 ? '+' : '') + avFmt(diff, dec) + (un ? ' ' + un : '')} ${arrow}</td>
+        <td class="n">${pct === null ? '—' : (pct > 0 ? '+' : '') + avFmt(pct) + '%'}</td></tr>`;
+    });
+    html += '</tbody></table></div>';
+    host.innerHTML = html;
+    drawAvChart();
+  }
+  function drawAvChart(){
+    const cv = $('#avCmpChart'); if (!cv) return;
+    const box = cv.parentElement;
+    const W = (box && box.clientWidth) || 600, H = (box && box.clientHeight) || 320;
+    const dpr = window.devicePixelRatio || 1;
+    cv.width = Math.max(1, Math.round(W * dpr)); cv.height = Math.max(1, Math.round(H * dpr));
+    let ctx = null; try { ctx = cv.getContext('2d'); } catch (e){ ctx = null; }
+    if (!ctx || typeof ctx.setTransform !== 'function') return;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    const list = avFor(avStudentId).slice().reverse();
+    if (list.length < 2){
+      ctx.fillStyle = '#9daea3'; ctx.font = '13px system-ui'; ctx.textAlign = 'center';
+      ctx.fillText('São necessárias pelo menos 2 avaliações para ver a evolução.', W / 2, H / 2);
+      return;
+    }
+    const defs = [
+      ['Peso', a => avNum(a.weight)], ['IMC', a => avBmi(a)], ['% gordura', a => avComposition(a).bf],
+      ['Massa gorda', a => avComposition(a).fatMass], ['Massa magra', a => avComposition(a).leanMass],
+      ['Soma dobras', a => avFoldSum(a)]
+    ];
+    const cols = 3, rows = 2, pad = 10;
+    const cw = (W - pad * (cols + 1)) / cols, ch = (H - pad * (rows + 1)) / rows;
+    defs.forEach((d, i) => {
+      const cx = pad + (i % cols) * (cw + pad), cy = pad + Math.floor(i / cols) * (ch + pad);
+      const pts = list.map(a => d[1](a));
+      const vals = pts.filter(v => v !== null && Number.isFinite(v));
+      ctx.fillStyle = '#131b16'; ctx.strokeStyle = '#2a382e'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.roundRect ? ctx.roundRect(cx, cy, cw, ch, 8) : ctx.rect(cx, cy, cw, ch);
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#9daea3'; ctx.font = '11px system-ui'; ctx.textAlign = 'left';
+      ctx.fillText(d[0], cx + 8, cy + 15);
+      if (!vals.length){ ctx.fillStyle = '#5c6b62'; ctx.fillText('sem dados', cx + 8, cy + 34); return; }
+      const mn = Math.min(...vals), mx = Math.max(...vals), span = (mx - mn) || 1;
+      const gx = cx + 10, gy = cy + 26, gw = cw - 20, gh = ch - 40;
+      const X = k => gx + (list.length === 1 ? gw / 2 : (k / (list.length - 1)) * gw);
+      const Y = v => gy + gh - ((v - mn) / span) * gh;
+      ctx.strokeStyle = '#d8a93d'; ctx.lineWidth = 2; ctx.beginPath();
+      let started = false;
+      pts.forEach((v, k) => { if (v === null || !Number.isFinite(v)) return;
+        if (!started){ ctx.moveTo(X(k), Y(v)); started = true; } else ctx.lineTo(X(k), Y(v)); });
+      ctx.stroke();
+      ctx.fillStyle = '#f2cf72';
+      pts.forEach((v, k) => { if (v === null || !Number.isFinite(v)) return;
+        ctx.beginPath(); ctx.arc(X(k), Y(v), 2.6, 0, Math.PI * 2); ctx.fill(); });
+      ctx.fillStyle = '#9daea3'; ctx.font = '10px system-ui'; ctx.textAlign = 'right';
+      ctx.fillText(avFmt(vals[vals.length - 1]), cx + cw - 8, cy + 15);
+    });
+  }
+  function renderAvPhotos(){
+    const sel = $('#avPhotoDate');
+    const list = avFor(avStudentId);
+    const k = sel.value;
+    sel.innerHTML = list.map(a => `<option value="${esc(a.id)}">${dateFmt(a.date)}</option>`).join('') || '<option value="">—</option>';
+    if (list.some(a => a.id === k)) sel.value = k;
+    renderAvPhotoThumbs();
+  }
+  async function renderAvPhotoThumbs(){
+    const host = $('#avPhotoList'); if (!host) return;
+    const a = avFind($('#avPhotoDate').value);
+    const angle = $('#avPhotoAngle').value || 'front';
+    if (!a){ host.innerHTML = ''; return; }
+    const refs = ((a.photos || {})[angle]) || [];
+    if (!refs.length){ host.innerHTML = '<p class="hint" style="margin:0">Nenhuma foto neste ângulo.</p>'; return; }
+    host.innerHTML = '';
+    for (const r of refs){
+      const fig = document.createElement('figure');
+      let blob = null; try { blob = await avPhotoGet(r.id); } catch (e){ blob = null; }
+      if (blob){
+        const img = document.createElement('img'); img.alt = r.name || angle;
+        const url = URL.createObjectURL(blob); pcUrls.push(url); img.src = url;
+        fig.appendChild(img);
+      } else {
+        const ph = document.createElement('div');
+        ph.className = 'empty'; ph.style.cssText = 'width:76px;height:100px;padding:6px;font-size:10px';
+        ph.textContent = 'sem arquivo'; fig.appendChild(ph);
+      }
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = '×'; b.title = 'Remover';
+      b.addEventListener('click', async () => {
+        try { await avPhotoDel(r.id); } catch (e){}
+        a.photos[angle] = ((a.photos || {})[angle] || []).filter(x => x.id !== r.id);
+        save();
+      });
+      fig.appendChild(b); host.appendChild(fig);
+    }
+  }
+  function avPhotoDatesWith(angle){
+    return avFor(avStudentId).filter(a => ((a.photos || {})[angle] || []).length);
+  }
+  async function renderAvComparator(){
+    const G = $('#avCmpAngle');
+    if (!G.options.length) G.innerHTML = AV_ANGLES.map(([v, l]) => `<option value="${v}">${l}</option>`).join('');
+    const angle = G.value || 'front';
+    const list = avFor(avStudentId);
+    const withPhotos = avPhotoDatesWith(angle);
+    const A = $('#avCmpPhotoA'), B = $('#avCmpPhotoB');
+    const kA = A.value, kB = B.value;
+    const opts = withPhotos.map(a => `<option value="${esc(a.id)}">${dateFmt(a.date)}</option>`).join('');
+    A.innerHTML = opts || '<option value="">—</option>';
+    B.innerHTML = opts || '<option value="">—</option>';
+    if (withPhotos.length){
+      A.value = withPhotos.some(a => a.id === kA) ? kA : withPhotos[withPhotos.length - 1].id;
+      B.value = withPhotos.some(a => a.id === kB) ? kB : withPhotos[0].id;
+    }
+    const box = $('#avCompareBox');
+    if (withPhotos.length < 2){
+      box.innerHTML = '<div class="empty" style="margin-top:12px">Adicione fotos do mesmo ângulo em duas datas para comparar.</div>';
+      return;
+    }
+    const ra = ((avFind(A.value) || {}).photos || {})[angle] || [];
+    const rb = ((avFind(B.value) || {}).photos || {})[angle] || [];
+    if (!ra.length || !rb.length){
+      box.innerHTML = '<div class="empty" style="margin-top:12px">Adicione fotos do mesmo ângulo em duas datas para comparar.</div>';
+      return;
+    }
+    let b1 = null, b2 = null;
+    try { b1 = await avPhotoGet(ra[0].id); b2 = await avPhotoGet(rb[0].id); } catch (e){}
+    if (!b1 || !b2){ box.innerHTML = '<div class="empty" style="margin-top:12px">Não foi possível carregar as imagens.</div>'; return; }
+    const u1 = URL.createObjectURL(b1), u2 = URL.createObjectURL(b2);
+    pcUrls.push(u1, u2);
+    box.innerHTML = `<div class="photo-compare" id="pcBox" style="--split:${pcSplit}%">
+      <img src="${u1}" alt="antes">
+      <img class="after" src="${u2}" alt="depois">
+      <span class="pc-tag l">${esc(dateFmt((avFind(A.value) || {}).date))}</span>
+      <span class="pc-tag r">${esc(dateFmt((avFind(B.value) || {}).date))}</span>
+      <div class="pc-handle" id="pcHandle" title="Arraste"></div></div>`;
+    const handle = $('#pcHandle'), target = $('#pcBox');
+    let dragging = false;
+    const setSplit = clientX => {
+      const r = target.getBoundingClientRect();
+      if (!r.width) return;
+      pcSplit = Math.max(0, Math.min(100, ((clientX - r.left) / r.width) * 100));
+      target.style.setProperty('--split', pcSplit + '%');
+    };
+    handle.addEventListener('pointerdown', e => {
+      dragging = true; try { handle.setPointerCapture(e.pointerId); } catch (err){}
+      setSplit(e.clientX); e.preventDefault();
+    });
+    handle.addEventListener('pointermove', e => { if (dragging){ setSplit(e.clientX); e.preventDefault(); } });
+    const stop = e => { dragging = false; try { handle.releasePointerCapture(e.pointerId); } catch (err){} };
+    handle.addEventListener('pointerup', stop);
+    handle.addEventListener('pointercancel', stop);
+    target.addEventListener('pointerdown', e => { if (e.target !== handle) setSplit(e.clientX); });
+  }
+  function renderAval(){
+    if (!$('#avStudent')) return;
+    const sel = $('#avStudent');
+    const keep = avStudentId;
+    sel.innerHTML = state.students.length
+      ? state.students.map(s => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('')
+      : '<option value="">Nenhum aluno cadastrado</option>';
+    if (!keep || !state.students.some(s => s.id === keep)) avStudentId = (active() && active().id) || (state.students[0] && state.students[0].id) || null;
+    if (avStudentId) sel.value = avStudentId;
+    const st = state.students.find(s => s.id === avStudentId);
+    const list = avFor(avStudentId);
+    $('#avStudentInfo').textContent = st
+      ? `${list.length} avaliação(ões) registrada(s)${list.length ? ' · última em ' + dateFmt(list[0].date) : ''}.`
+      : 'Cadastre um aluno na aba Fichas para começar.';
+    renderAvHistory(); renderAvResults(); renderAvCompare(); renderAvPhotos(); renderAvComparator();
+  }
+
+  /* ---- ações ---- */
+  function avNew(){
+    if (!avStudentId) return notify('Selecione um aluno.', true);
+    const last = avLatest(avStudentId);
+    avCurrent = avBlank(avStudentId);
+    if (last){ avCurrent.sex = last.sex || ''; avCurrent.birthDate = last.birthDate || ''; avCurrent.height = last.height; }
+    avEditing = null;
+    $('#avFormCard').hidden = false;
+    $('#avFormTitle').textContent = 'Nova avaliação';
+    $('#avDeleteBtn').classList.add('hidden');
+    avFillForm(avCurrent);
+    $('#avFormCard').scrollIntoView({behavior: 'smooth', block: 'start'});
+  }
+  function avEdit(id){
+    const a = avFind(id); if (!a) return;
+    avCurrent = JSON.parse(JSON.stringify(a));
+    avEditing = id;
+    $('#avFormCard').hidden = false;
+    $('#avFormTitle').textContent = 'Editar avaliação de ' + dateFmt(a.date);
+    $('#avDeleteBtn').classList.remove('hidden');
+    avFillForm(avCurrent);
+    $('#avFormCard').scrollIntoView({behavior: 'smooth', block: 'start'});
+    renderAvHistory();
+  }
+  function avCloseForm(){
+    avEditing = null; avCurrent = null;
+    $('#avFormCard').hidden = true;
+    renderAvHistory(); renderAvResults();
+  }
+  function avDelete(id){
+    const a = avFind(id); if (!a) return;
+    if (!confirm('Tem certeza?')) return;
+    state.assessments = avList().filter(x => x.id !== id);
+    if (avEditing === id) avCloseForm();
+    save(); notify('Avaliação excluída.');
+  }
+  function avSave(){
+    if (!avCurrent) return;
+    const a = avReadForm();
+    const errs = avValidate(a);
+    if (errs.length){ $('#avFormWarn').textContent = 'Corrija: ' + errs.join('; ') + '.'; return notify('Verifique os campos.', true); }
+    $('#avFormWarn').textContent = '';
+    const dup = avList().find(x => x.studentId === a.studentId && x.date === a.date && x.id !== a.id);
+    if (dup && !confirm('Já existe uma avaliação nesta data para este aluno. Salvar mesmo assim?')) return;
+    a.updatedAt = new Date().toISOString();
+    if (avEditing){
+      const i = avList().findIndex(x => x.id === avEditing);
+      if (i >= 0) state.assessments[i] = a; else avList().push(a);
+    } else {
+      if (!a.id || avFind(a.id)) a.id = uid();
+      avList().push(a);
+    }
+    const wasNew = !avEditing;
+    avCloseForm(); save();
+    notify(wasNew ? 'Avaliação registrada.' : 'Avaliação atualizada.');
+  }
+
+  /* ---- importação ---- */
+  function avNormName(v){
+    return String(v || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+  function avTokens(v){ return new Set(avNormName(v).split(' ').filter(t => t.length > 2)); }
+  function avSubset(x, y){ if (!x.size) return false; for (const t of x) if (!y.has(t)) return false; return true; }
+  function avFromImported(av, studentId, birthDate){
+    const d = av.details || {}, circ = d.circumferences || {}, f = d.folds || {};
+    const one = v => Array.isArray(v) ? (v.length ? avNum(v[0]) : null) : avNum(v);
+    const o = avBlank(studentId);
+    o.date = String(av.date || '').slice(0, 10);
+    o.sex = d.sex || '';
+    o.birthDate = birthDate || '';
+    o.age = avNum(d.age);
+    o.height = avNum(d.height);
+    o.weight = avNum(av.weight);
+    o.bodyFatInformed = avNum(av.bodyFat);
+    o.notes = String(d.notes || '').slice(0, 200);
+    o.examiner = String(d.examiner || '').slice(0, 80);
+    o.measures = {
+      neck: avNum(circ.neck), shoulders: avNum(circ.shoulders), chest: avNum(av.chest), waist: avNum(av.waist),
+      abdomen: avNum(circ.abdomen), hip: avNum(av.hip),
+      armRight: avNum(circ.armRight), armLeft: avNum(circ.armLeft),
+      forearmRight: avNum(circ.forearmRight), forearmLeft: avNum(circ.forearmLeft),
+      thighRight: avNum(circ.thighRight), thighLeft: avNum(circ.thighLeft),
+      calfRight: avNum(circ.calfRight), calfLeft: avNum(circ.calfLeft)
+    };
+    o.folds = {
+      chest: one(f.chest), midaxillary: one(f.midaxillary), triceps: one(f.triceps),
+      subscapular: one(f.subscapular), abdominal: one(f.abdominal), suprailiac: one(f.suprailiac), thigh: one(f.thigh)
+    };
+    o.photos = {front: [], side: [], back: []};
+    o.importedFrom = 'GH-AVALIACOES-TEXTO-1';
+    o.createdAt = new Date().toISOString();
+    return o;
+  }
+  function avApplyImport(payload, silent){
+    if (!payload || !Array.isArray(payload.alunos)) throw new Error('formato');
+    let backupKey = '';
+    try { backupKey = AV_BACKUP_PREFIX + new Date().toISOString().replace(/[:.]/g, '-');
+      localStorage.setItem(backupKey, JSON.stringify(state)); } catch (e){}
+    avList();
+    const R = { novos: 0, atualizados: 0, ignorados: 0, conflitos: [], avNovas: 0, avAtualizadas: 0, avIgnoradas: 0 };
+    payload.alunos.forEach(imp => {
+      const prof = (() => { try { return JSON.parse((imp.anamnese || {}).importedProfile || '{}'); } catch (e){ return {}; } })();
+      const birth = imp.birthDate || prof.birthDate || '';
+      let target = state.students.find(s => s.id === imp.id);
+      if (!target) target = state.students.find(s => avNormName(s.name) === avNormName(imp.nome));
+      if (target){ R.atualizados++; }
+      else {
+        const it = avTokens(imp.nome);
+        const cands = state.students.filter(s => { const st = avTokens(s.name); return avSubset(it, st) || avSubset(st, it); });
+        if (cands.length === 1){
+          target = cands[0];
+          R.conflitos.push({ nome: imp.nome, vinculado: cands[0].name });
+        } else if (cands.length > 1){
+          R.conflitos.push({ nome: imp.nome, vinculado: null, opcoes: cands.map(c => c.name) });
+        } else {
+          target = { id: imp.id, name: imp.nome, goal: imp.objetivo || '', level: imp.nivel && imp.nivel !== 'Não informado' ? imp.nivel : 'Não informado',
+            tag: imp.ativo === false ? 'INATIVO' : 'ATIVO' };
+          state.students.push(target);
+          R.novos++;
+        }
+      }
+      if (!target) { R.ignorados++; return; }
+      (imp.avaliacoes || []).forEach(av => {
+        const nova = avFromImported(av, target.id, birth);
+        const byId = avList().find(x => x.id === nova.id);
+        if (byId){ R.avIgnoradas++; R.ignorados++; return; }
+        const byDate = avList().find(x => x.studentId === nova.studentId && x.date === nova.date);
+        if (byDate){ R.avIgnoradas++; R.ignorados++; return; }
+        avList().push(nova);
+        R.avNovas++;
+      });
+    });
+    save();
+    const linhas = [
+      `Alunos novos: ${R.novos}`,
+      `Alunos já existentes (atualizados): ${R.atualizados}`,
+      `Avaliações adicionadas: ${R.avNovas}`,
+      `Avaliações ignoradas (já existiam): ${R.avIgnoradas}`,
+      `Conflitos: ${R.conflitos.length}`
+    ].join('\n');
+    if (!silent){
+      console.log('[importação de avaliações]', R);
+      notify(`Importação concluída — ${R.avNovas} avaliação(ões), ${R.novos} aluno(s) novo(s), ${R.conflitos.length} conflito(s).`);
+      if (backupKey) console.log('[importação] backup dos dados anteriores em localStorage:', backupKey);
+    }
+    return { R, linhas, backupKey };
+  }
+  /* Semeia as avaliações do arquivo de origem — uma única vez. */
+  function seedAssessments(){
+    if (!GH_AVAL_SEED || !GH_AVAL_SEED.alunos || state.avSeedApplied) return;
+    try { avApplyImport(GH_AVAL_SEED, true); } catch (e){}
+    state.avSeedApplied = true;
+  }
+
+  /* ---- eventos ---- */
+  /* API pública (usada pela importação e por automações) */
+  window.GHPerformance = Object.assign(window.GHPerformance || {}, {
+    importAssessments: (payload, silent) => avApplyImport(payload, silent !== false),
+    assessments: () => avList(),
+    jp7: a => avJp7(a),
+    composition: a => avComposition(a),
+    backupKeys: () => Object.keys(localStorage).filter(k => k.startsWith(AV_BACKUP_PREFIX))
+  });
+
+  avBuildInputs();
+  $('#avStudent').addEventListener('change', e => { avStudentId = e.target.value; avCmpTouched = false; avCloseForm(); renderAval(); });
+  $('#avNewBtn').addEventListener('click', avNew);
+  $('#avCancelBtn').addEventListener('click', avCloseForm);
+  $('#avSaveBtn').addEventListener('click', avSave);
+  $('#avDeleteBtn').addEventListener('click', () => avEditing && avDelete(avEditing));
+  ['#avDate','#avSex','#avBirth','#avAge','#avHeight','#avWeight','#avBfInf','#avExaminer','#avNotes'].forEach(s =>
+    $(s).addEventListener('input', () => avReadForm() && avLive()));
+  ['#avMeasures','#avFolds'].forEach(s => $(s).addEventListener('input', () => avReadForm() && avLive()));
+  $('#avCmpA').addEventListener('change', () => { avCmpTouched = true; avPaintCompare(); });
+  $('#avCmpB').addEventListener('change', () => { avCmpTouched = true; avPaintCompare(); });
+  $('#avPhotoDate').addEventListener('change', renderAvPhotoThumbs);
+  $('#avPhotoAngle').addEventListener('change', renderAvPhotoThumbs);
+  $('#avCmpAngle').addEventListener('change', renderAvComparator);
+  $('#avCmpPhotoA').addEventListener('change', renderAvComparator);
+  $('#avCmpPhotoB').addEventListener('change', renderAvComparator);
+  $('#avCompareReset').addEventListener('click', () => {
+    pcSplit = 50;
+    const t = $('#pcBox'); if (t) t.style.setProperty('--split', '50%');
+  });
+  $('#avPhotoFile').addEventListener('change', async e => {
+    const a = avFind($('#avPhotoDate').value);
+    if (!a) return notify('Selecione uma avaliação.', true);
+    const angle = $('#avPhotoAngle').value || 'front';
+    const files = [...e.target.files];
+    let n = 0;
+    for (const f of files){
+      if (!/^image\//.test(f.type)) continue;
+      const key = uid();
+      try { await avPhotoPut(key, f); } catch (err){ notify('Não foi possível guardar a foto neste navegador.', true); break; }
+      a.photos = a.photos || {front: [], side: [], back: []};
+      (a.photos[angle] = a.photos[angle] || []).push({ id: key, name: f.name, type: f.type, size: f.size, addedAt: new Date().toISOString() });
+      n++;
+    }
+    e.target.value = '';
+    save();
+    if (n) notify(`${n} foto(s) adicionada(s).`);
+  });
+  $('#avImportBtn').addEventListener('click', () => $('#avImportFile').click());
+  $('#avImportFile').addEventListener('change', async e => {
+    const f = e.target.files[0]; if (!f) return;
+    try {
+      const data = JSON.parse(await f.text());
+      const payload = Array.isArray(data.alunos) ? data : (data.avaliacoes && Array.isArray(data.avaliacoes) ? data : null);
+      if (!payload) throw new Error('formato');
+      const { R } = avApplyImport(payload);
+      renderAval();
+      alert('Importação de avaliações\n\n' +
+        `Alunos novos: ${R.novos}\n` +
+        `Alunos já existentes: ${R.atualizados}\n` +
+        `Avaliações adicionadas: ${R.avNovas}\n` +
+        `Avaliações ignoradas (duplicadas): ${R.avIgnoradas}\n` +
+        `Conflitos (associados por semelhança de nome): ${R.conflitos.length}` +
+        (R.conflitos.length ? '\n\n' + R.conflitos.map(c => '• ' + c.nome + ' → ' + (c.vinculado || 'AMBÍGUO (' + (c.opcoes || []).join(' / ') + ')')).join('\n') : ''));
+    } catch (err){ notify('Arquivo de avaliações inválido.', true); }
+    finally { e.target.value = ''; }
+  });
+
   /* ---------- RENDER ---------- */
-  function renderAll(){ renderPicker(); renderDashboard(); renderPlans(); renderPeriod(); renderHistory(); renderData(); renderSessionDays(); updatePeriodHint(); }
+  function renderAll(){ renderPicker(); renderDashboard(); renderPlans(); renderPeriod(); renderHistory(); renderData(); renderSessionDays(); updatePeriodHint(); renderAval(); }
   $('#sessionDate').value = today();
   clearSession();
   renderAuth();
