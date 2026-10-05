@@ -3,7 +3,7 @@ const CACHE = 'controle-treino-v2';
 const ASSETS = [
   './',
   './index.html',
-  './manifest.webmanifest',
+  './manifest.json',
   './icons/icon.svg',
   './icons/icon-maskable.svg'
 ];
