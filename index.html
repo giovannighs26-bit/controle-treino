@@ -151,6 +151,12 @@
     @keyframes pulse{50%{opacity:.55}}
     .timer-time{font-size:30px;font-weight:900;font-variant-numeric:tabular-nums;color:var(--accent2);letter-spacing:1px;line-height:1}
     .timer-bar.alarm .timer-time{color:#ffd9d7}
+    .timer-grip{cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;padding:2px 8px;border-radius:12px}
+    .timer-grip:active{cursor:grabbing}
+    .timer-bar.dragging{opacity:.94}
+    .timer-actions .btn{min-width:52px}
+    .app{padding-top:calc(16px + env(safe-area-inset-top));padding-bottom:calc(28px + env(safe-area-inset-bottom))}
+    html,body{overscroll-behavior:none;-webkit-tap-highlight-color:transparent}
     .timer-label{font-size:10px;text-transform:uppercase;letter-spacing:1.6px;color:var(--muted);margin-bottom:3px}
     .timer-actions{display:flex;gap:6px}
     .timer-actions .btn{padding:8px 11px;font-size:12px}
@@ -251,6 +257,7 @@
       <select id="activeStudent"></select>
       <button class="btn" id="newStudentBtn">+ Aluno</button>
       <button class="btn ghost hidden" id="installBtn" title="Adicionar à tela de início">⤓ Instalar</button>
+      <button class="btn ghost" id="fsBtn" title="Tela cheia">⤢ Tela cheia</button>
       <button class="btn ghost" id="logoutBtn" title="Sair do app">Sair</button>
     </div>
   </header>
@@ -366,6 +373,13 @@
         <label class="btn secondary" style="margin:0">Importar JSON<input type="file" id="importFile" accept="application/json,.json" class="hidden"></label>
       </div>
       <p class="hint" id="storageInfo"></p></article>
+    <article class="card half"><h2>Limpar histórico de treinos</h2>
+      <p class="muted">Apaga os treinos registrados, mantendo alunos, fichas e periodizações.</p>
+      <div class="actions">
+        <button class="btn secondary" id="clearStudentHistory">Limpar histórico do aluno ativo</button>
+        <button class="btn secondary" id="clearAllHistory">Limpar histórico de todos</button>
+      </div>
+      <p class="hint" id="historyCount"></p></article>
     <article class="card half"><h2>Gerenciar dados</h2>
       <p class="muted">A exclusão remove definitivamente os dados salvos neste navegador.</p>
       <div class="actions">
@@ -404,12 +418,13 @@
 </div></div>
 
 <div class="timer-bar" id="timerBar" hidden>
-  <div>
+  <div class="timer-grip" id="timerGrip" title="Arraste para mover">
     <div class="timer-label" id="timerLabel">Descanso</div>
-    <div class="timer-time" id="timerTime">00:60</div>
+    <div class="timer-time" id="timerTime">01:00</div>
   </div>
   <div class="timer-actions">
-    <button class="btn ghost" type="button" id="timerAdd">+30s</button>
+    <button class="btn ghost" type="button" id="timerMinus" title="Menos 30 segundos">−30s</button>
+    <button class="btn ghost" type="button" id="timerAdd" title="Mais 30 segundos">+30s</button>
     <button class="btn secondary" type="button" id="timerToggle">Pausar</button>
     <button class="btn danger" type="button" id="timerStop">Parar</button>
   </div>
@@ -498,6 +513,7 @@
     seedIfEmpty();
     renderAll();
     setTimeout(() => { if ($('#history').classList.contains('active')) drawChart(); }, 50);
+    goFullscreen(); armFullscreen(); paintFsBtn();
   }
   $('#authForm').addEventListener('submit', async e => {
     e.preventDefault();
@@ -783,6 +799,16 @@
     timer.running = !timer.running; paintTimer();
   });
   $('#timerAdd').addEventListener('click', () => { timer.left += 30; timer.total += 30; timer.alarm = false; paintTimer(); });
+  $('#timerMinus').addEventListener('click', () => {
+    timer.left = Math.max(0, timer.left - 30);
+    timer.total = Math.max(0, timer.total - 30);
+    timer.alarm = false;
+    if (timer.left <= 0){
+      timer.left = 0; timer.running = false; timer.alarm = true;
+      clearInterval(timer.handle); beep();
+    }
+    paintTimer();
+  });
   $('#timerStop').addEventListener('click', () => {
     clearInterval(timer.handle); timer.running = false; timer.alarm = false;
     $('#timerBar').hidden = true;
@@ -790,6 +816,71 @@
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && !$('#timerBar').hidden) $('#timerStop').click();
   });
+
+  /* --- Cronômetro flutuante: arrastar --- */
+  (function draggableTimer(){
+    const bar = $('#timerBar'), grip = $('#timerGrip');
+    let sx = 0, sy = 0, ox = 0, oy = 0, dragging = false;
+    grip.addEventListener('pointerdown', e => {
+      const r = bar.getBoundingClientRect();
+      bar.style.transform = 'none';
+      bar.style.left = r.left + 'px';
+      bar.style.top = r.top + 'px';
+      bar.style.bottom = 'auto';
+      sx = e.clientX; sy = e.clientY; ox = r.left; oy = r.top;
+      dragging = true; bar.classList.add('dragging');
+      try { grip.setPointerCapture(e.pointerId); } catch(_){}
+    });
+    grip.addEventListener('pointermove', e => {
+      if (!dragging) return;
+      const w = bar.offsetWidth, h = bar.offsetHeight;
+      const nx = Math.max(6, Math.min(window.innerWidth - w - 6, ox + e.clientX - sx));
+      const ny = Math.max(6, Math.min(window.innerHeight - h - 6, oy + e.clientY - sy));
+      bar.style.left = nx + 'px'; bar.style.top = ny + 'px';
+      e.preventDefault();
+    });
+    const endDrag = e => {
+      if (!dragging) return;
+      dragging = false; bar.classList.remove('dragging');
+      try { grip.releasePointerCapture(e.pointerId); } catch(_){}
+    };
+    grip.addEventListener('pointerup', endDrag);
+    grip.addEventListener('pointercancel', endDrag);
+  })();
+
+  /* --- Tela cheia --- */
+  function isFullscreen(){ return !!(document.fullscreenElement || document.webkitFullscreenElement); }
+  async function goFullscreen(){
+    const el = document.documentElement;
+    try {
+      if (el.requestFullscreen) await el.requestFullscreen({ navigationUI: 'hide' });
+      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+      else if (el.webkitRequestFullScreen) el.webkitRequestFullScreen();
+    } catch(e){}
+    try { if (screen.orientation && screen.orientation.lock) await screen.orientation.lock('any'); } catch(e){}
+    paintFsBtn();
+  }
+  async function exitFullscreen(){
+    try {
+      if (document.exitFullscreen) await document.exitFullscreen();
+      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+      else if (document.webkitCancelFullScreen) document.webkitCancelFullScreen();
+    } catch(e){}
+    paintFsBtn();
+  }
+  function paintFsBtn(){
+    const b = $('#fsBtn'); if (!b) return;
+    b.textContent = isFullscreen() ? '⤡ Sair da tela cheia' : '⤢ Tela cheia';
+  }
+  $('#fsBtn').addEventListener('click', () => { isFullscreen() ? exitFullscreen() : goFullscreen(); });
+  ['fullscreenchange','webkitfullscreenchange'].forEach(ev => document.addEventListener(ev, paintFsBtn));
+  let fsArmed = false;
+  function armFullscreen(){
+    if (fsArmed || isFullscreen()) return;
+    fsArmed = true;
+    const once = () => { document.removeEventListener('pointerdown', once); if (!isFullscreen()) goFullscreen(); };
+    document.addEventListener('pointerdown', once);
+  }
 
   /* --- Cartão de exercício com séries --- */
   function setRow(set, index){
@@ -1166,6 +1257,11 @@
   function renderData(){
     const bytes = new Blob([JSON.stringify(state)]).size;
     $('#storageInfo').textContent = `${state.students.length} aluno(s), ${state.sessions.length} sessão(ões), aproximadamente ${fmt(bytes/1024)} KB.`;
+    const act = active();
+    const mine = act ? state.sessions.filter(x => x.studentId === act.id).length : 0;
+    $('#historyCount').textContent = act
+      ? `${mine} treino(s) de ${act.name} · ${state.sessions.length} no total.`
+      : `${state.sessions.length} treino(s) registrados no total.`;
     $('#allStudents').innerHTML = state.students.length
       ? state.students.map(s => `<div class="item"><div><div class="item-title">${esc(s.name)}</div>
           <div class="item-meta">${esc(s.goal)} · ${esc(s.level)} · ${sessionsFor(s.id).length} sessões${plansOf(s.id) && plansOf(s.id).days.length ? ` · ${plansOf(s.id).days.length} treinos na ficha` : ''}</div></div>
@@ -1201,13 +1297,28 @@
     state.activeStudentId = state.students[0] ? state.students[0].id : null;
     save(); notify('Aluno excluído.');
   });
+  $('#clearStudentHistory').addEventListener('click', () => {
+    const s = active(); if (!s) return notify('Nenhum aluno selecionado.', true);
+    const n = state.sessions.filter(x => x.studentId === s.id).length;
+    if (!n) return notify(`${s.name} ainda não tem treinos registrados.`, true);
+    if (!confirm(`Apagar os ${n} treino(s) de ${s.name}? A ficha e a periodização continuam.`)) return;
+    state.sessions = state.sessions.filter(x => x.studentId !== s.id);
+    save(); notify(`Histórico de ${s.name} limpo (${n} treino(s)).`);
+  });
+  $('#clearAllHistory').addEventListener('click', () => {
+    const n = state.sessions.length;
+    if (!n) return notify('Não há histórico para limpar.', true);
+    if (!confirm(`Apagar TODOS os ${n} treinos registrados de todos os alunos? Alunos e fichas continuam.`)) return;
+    state.sessions = [];
+    save(); notify(`Histórico de todos os alunos limpo (${n} treino(s)).`);
+  });
   $('#resetBtn').addEventListener('click', () => {
-    if (!confirm('Apagar TODOS os dados?')) return;
+    if (!confirm('Apagar TODOS os dados (alunos, fichas, histórico e periodizações)?')) return;
     if (!confirm('Esta ação não pode ser desfeita. Confirmar exclusão total?')) return;
     const auth = state.auth;
-    state = blank(); state.auth = auth;
+    state = blank(); state.auth = auth; state.seedApplied = true;
     localStorage.setItem(KEY, JSON.stringify(state));
-    clearSession(); renderAll(); notify('Todos os dados foram apagados.');
+    clearSession(); renderAll(); notify('Todos os dados foram apagados. Você pode começar do zero.');
   });
 
   /* ---------- RENDER ---------- */
