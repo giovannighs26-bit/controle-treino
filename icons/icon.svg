@@ -1,15 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <radialGradient id="bg" cx="85%" cy="0%" r="80%">
-      <stop offset="0" stop-color="#253120"/><stop offset="1" stop-color="#0c110e"/>
+    <radialGradient id="bg" cx="82%" cy="5%" r="80%">
+      <stop offset="0" stop-color="#283422"/><stop offset="1" stop-color="#0a0f0c"/>
     </radialGradient>
     <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#f2cf72"/><stop offset="1" stop-color="#9d6d18"/>
+      <stop offset="0" stop-color="#f7d678"/><stop offset=".55" stop-color="#c9971f"/><stop offset="1" stop-color="#8f6412"/>
     </linearGradient>
   </defs>
   <rect width="512" height="512" fill="url(#bg)"/>
-  <rect x="82" y="82" width="348" height="348" rx="83" fill="url(#gold)"/>
+  <rect x="77" y="77" width="358" height="358" rx="85" fill="url(#gold)"/>
   <text x="256" y="256" text-anchor="middle" dominant-baseline="central"
         font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-weight="900"
-        font-size="160" fill="#161107">CT</text>
+        font-size="179" fill="#1a1206">GH</text>
 </svg>
