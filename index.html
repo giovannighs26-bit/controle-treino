@@ -162,6 +162,36 @@
     .timer-actions .btn{padding:8px 11px;font-size:12px}
     .timer-presets{display:flex;gap:6px;flex-wrap:wrap}
     .timer-presets .btn{padding:7px 9px;font-size:12px;flex:1}
+
+    /* ===== TREINO EM GRUPO ===== */
+    .grp-count{display:flex;gap:6px}
+    .grp-count .btn{flex:1;padding:9px 0}
+    .grp-grid{display:grid;gap:12px;align-items:start}
+    .grp-grid[data-n="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .grp-grid[data-n="3"]{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .grp-grid[data-n="4"]{grid-template-columns:repeat(4,minmax(0,1fr))}
+    .grp-col{border:1px solid var(--line);border-radius:16px;background:#0e1712;padding:12px;min-width:0}
+    .grp-col.empty-col{border-style:dashed;background:#0c1410}
+    .grp-head{display:grid;grid-template-columns:1fr auto;gap:6px;margin-bottom:8px}
+    .grp-head .grp-student{grid-column:span 2;font-weight:700}
+    .grp-head .grp-day{font-size:12px;grid-column:span 2}
+    .grp-head .grp-load{grid-column:span 2;width:100%}
+    .grp-hint{font-size:11px;margin:0 0 9px;min-height:15px}
+    .grp-cards{display:grid;gap:9px}
+    .grp-cards .ex-card{padding:10px;margin-bottom:0}
+    .grp-cards .ex-target{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .grp-cards .ex-target .ex-timer{grid-column:span 2}
+    .grp-cards .set-row{grid-template-columns:26px 1fr 1fr 1fr auto}
+    .grp-cards .set-row .check{grid-column:span 2;padding-bottom:0}
+    .grp-cards .set-row .remove{grid-column:span 1;width:100%}
+    .grp-cards .ex-head .ex-name{font-size:14px}
+    .grp-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px}
+    .grp-vol{font-size:11px;margin:6px 0 0;text-align:right}
+    .grp-toolbar{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;margin-bottom:12px}
+    .grp-toolbar .timer-presets{flex:1;min-width:170px}
+    @media(max-width:1180px){.grp-grid[data-n="4"]{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:980px){.grp-grid[data-n="3"]{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:760px){.grp-grid[data-n="2"],.grp-grid[data-n="3"],.grp-grid[data-n="4"]{grid-template-columns:1fr}}
     @media(max-width:700px){
       .ex-target{grid-template-columns:repeat(2,minmax(0,1fr))}
       .ex-target .ex-timer{grid-column:span 2}
@@ -308,6 +338,7 @@
     <button class="tab active" data-page="dashboard">Visão geral</button>
     <button class="tab" data-page="fichas">Fichas de treino</button>
     <button class="tab" data-page="session">Registrar treino</button>
+    <button class="tab" data-page="grupo">Treino em grupo</button>
     <button class="tab" data-page="periodization">Periodização</button>
     <button class="tab" data-page="history">Histórico</button>
     <button class="tab" data-page="aval">Avaliação física</button>
@@ -374,6 +405,51 @@
           <button type="button" class="btn ghost" id="clearSession">Limpar</button>
         </div>
       </form>
+    </article>
+  </div></section>
+
+  <section class="page" id="grupo"><div class="grid">
+    <article class="card">
+      <div class="actions" style="justify-content:space-between;margin-bottom:14px">
+        <h2 style="margin:0">Treino em grupo</h2>
+        <span class="badge">até 4 alunos no mesmo horário</span>
+      </div>
+      <div class="form">
+        <div class="field span3"><label>Data do treino</label><input type="date" id="grpDate"></div>
+        <div class="field span3"><label>Horário (opcional)</label><input type="time" id="grpTime"></div>
+        <div class="field span3"><label>Alunos por horário</label>
+          <div class="grp-count" id="grpCount">
+            <button type="button" class="btn ghost" data-n="2">2</button>
+            <button type="button" class="btn ghost" data-n="3">3</button>
+            <button type="button" class="btn" data-n="4">4</button>
+          </div>
+        </div>
+        <div class="field span3"><label>&nbsp;</label>
+          <button type="button" class="btn secondary" id="grpLoadAll" style="width:100%">↻ Carregar treinos do dia</button>
+        </div>
+      </div>
+      <p class="hint" id="grpHint"></p>
+    </article>
+
+    <article class="card">
+      <div class="grp-toolbar">
+        <div class="actions">
+          <span class="muted" style="font-size:12px">Descanso padrão</span>
+          <div class="timer-presets" id="grpRestPresets">
+            <button type="button" class="btn ghost" data-rest="30">30s</button>
+            <button type="button" class="btn ghost" data-rest="45">45s</button>
+            <button type="button" class="btn ghost" data-rest="60">60s</button>
+            <button type="button" class="btn ghost" data-rest="90">90s</button>
+            <button type="button" class="btn ghost" data-rest="120">120s</button>
+          </div>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn" id="grpSaveAll">Salvar todos</button>
+          <button type="button" class="btn ghost" id="grpClear">Limpar</button>
+        </div>
+      </div>
+      <div class="grp-grid" id="grpGrid" data-n="4"></div>
+      <p class="hint">Cada coluna é um aluno. Ao salvar, cada treino entra no histórico normal do aluno, na mesma data.</p>
     </article>
   </div></section>
 
@@ -606,7 +682,7 @@
 
   let state = load();
 
-  function blank(){ return {version:1, auth:null, activeStudentId:null, students:[], plans:{}, sessions:[], periodizations:{}, assessments:[]}; }
+  function blank(){ return {version:1, auth:null, activeStudentId:null, students:[], plans:{}, sessions:[], periodizations:{}, assessments:[], group:null}; }
   function load(){
     try { const p = JSON.parse(localStorage.getItem(KEY)); if (p && Array.isArray(p.students)) return Object.assign(blank(), p); } catch(e){}
     return blank();
@@ -707,6 +783,7 @@
     $$('.page').forEach(p => p.classList.toggle('active', p.id === id));
     if (id === 'history') setTimeout(drawChart, 30);
     if (id === 'session') autoLoadToday();
+    if (id === 'grupo') renderGrupo();
     if (id === 'aval') { renderAval(); setTimeout(drawAvChart, 40); }
   }
   $$('.tab').forEach(b => b.addEventListener('click', () => showPage(b.dataset.page)));
@@ -1075,6 +1152,8 @@
   }
   function exCard(data){
     data = data || {};
+    const setArr = Array.isArray(data.sets) ? data.sets : [];
+    const plannedSets = num(data.setsPlanned) || num(data.sets) || setArr.length || 3;
     const card = document.createElement('div');
     card.className = 'ex-card';
     card.innerHTML = `
@@ -1083,7 +1162,7 @@
         <button class="remove ex-del" type="button" title="Remover exercício">×</button>
       </div>
       <div class="ex-target">
-        <div class="field"><label>Séries alvo</label><input class="ex-sets" type="number" min="1" value="${num(data.sets)||3}"></div>
+        <div class="field"><label>Séries alvo</label><input class="ex-sets" type="number" min="1" value="${plannedSets}"></div>
         <div class="field"><label>Reps alvo</label><input class="ex-reps" type="number" min="1" value="${num(data.reps)||10}"></div>
         <div class="field"><label>Carga alvo</label><input class="ex-load" type="number" min="0" step="0.5" value="${data.load ?? ''}" placeholder="kg"></div>
         <div class="field"><label>RIR alvo</label><input class="ex-rir" type="number" min="0" max="10" value="${data.rir ?? 2}"></div>
@@ -1097,10 +1176,9 @@
       </div>
       <input class="ex-note" placeholder="Observações (técnica, dor, ajuste...)">`;
     const rows = card.querySelector('.set-rows');
-    const sets = Array.isArray(data.sets) ? data.sets : [];
-    const count = sets.length || (num(data.sets) || 3);
+    const count = setArr.length || plannedSets;
     for (let i = 0; i < count; i++){
-      const s = sets[i] || {};
+      const s = setArr[i] || {};
       rows.append(setRow({
         reps: s.reps ?? data.reps ?? 10,
         load: s.load ?? data.load ?? '',
@@ -1118,8 +1196,10 @@
       updateVolume(card);
     });
     card.querySelector('.ex-del').addEventListener('click', () => {
-      if ($$('#exerciseCards .ex-card').length > 1) card.remove();
-      else notify('A sessão precisa ter ao menos um exercício.', true);
+      const parent = card.parentElement;
+      const count = parent ? parent.querySelectorAll('.ex-card').length : 1;
+      if (count > 1) card.remove();
+      else notify('O treino precisa ter ao menos um exercício.', true);
     });
     card.querySelector('.ex-timer').addEventListener('click', () => {
       const sec = num(card.querySelector('.ex-rest').value) || 60;
@@ -1131,6 +1211,25 @@
     return card;
   }
   function addExerciseCard(data){ $('#exerciseCards').append(exCard(data)); }
+  function readExerciseCard(card){
+    const name = card.querySelector('.ex-name').value.trim();
+    if (!name) return null;
+    return {
+      id: uid(), name,
+      setsPlanned: num(card.querySelector('.ex-sets').value),
+      reps: num(card.querySelector('.ex-reps').value),
+      load: num(card.querySelector('.ex-load').value),
+      rir: num(card.querySelector('.ex-rir').value),
+      rest: num(card.querySelector('.ex-rest').value),
+      sets: [...card.querySelectorAll('.set-row')].map(r => ({
+        reps: num(r.querySelector('.s-reps').value),
+        load: num(r.querySelector('.s-load').value),
+        rir: num(r.querySelector('.s-rir').value),
+        done: r.querySelector('.s-done').checked
+      })),
+      note: card.querySelector('.ex-note').value.trim()
+    };
+  }
 
   const WEEKDAYS = ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
   function noAccent(v){ return String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
@@ -1213,26 +1312,7 @@
   $('#sessionForm').addEventListener('submit', e => {
     e.preventDefault();
     if (!active()) return notify('Cadastre ou selecione um aluno.', true);
-    const exercises = $$('#exerciseCards .ex-card').map(card => {
-      const name = card.querySelector('.ex-name').value.trim();
-      if (!name) return null;
-      const sets = [...card.querySelectorAll('.set-row')].map(r => ({
-        reps: num(r.querySelector('.s-reps').value),
-        load: num(r.querySelector('.s-load').value),
-        rir: num(r.querySelector('.s-rir').value),
-        done: r.querySelector('.s-done').checked
-      }));
-      return {
-        id: uid(), name,
-        setsPlanned: num(card.querySelector('.ex-sets').value),
-        reps: num(card.querySelector('.ex-reps').value),
-        load: num(card.querySelector('.ex-load').value),
-        rir: num(card.querySelector('.ex-rir').value),
-        rest: num(card.querySelector('.ex-rest').value),
-        sets,
-        note: card.querySelector('.ex-note').value.trim()
-      };
-    }).filter(Boolean);
+    const exercises = $$('#exerciseCards .ex-card').map(readExerciseCard).filter(Boolean);
     if (!exercises.length) return notify('Adicione um exercício.', true);
     const done = exercises.reduce((n,e) => n + e.sets.filter(s => s.done).length, 0);
     state.sessions.push({id: uid(), studentId: state.activeStudentId, date: $('#sessionDate').value,
@@ -1240,6 +1320,282 @@
       duration: num($('#sessionDuration').value), exercises, createdAt: new Date().toISOString()});
     save(); clearSession(); notify(`Sessão salva — ${done} série(s) registrada(s).`); showPage('dashboard');
   });
+
+  /* ---------- TREINO EM GRUPO ---------- */
+  function grpEnsure(){
+    if (!state.group || typeof state.group !== 'object') state.group = {};
+    const g = state.group;
+    if (![2,3,4].includes(num(g.n))) g.n = 4;
+    if (!g.date) g.date = today();
+    if (typeof g.time !== 'string') g.time = '';
+    if (!Array.isArray(g.slots)) g.slots = [];
+    while (g.slots.length < 4) g.slots.push({studentId:'', dayIndex:0, dayTitle:'', exercises:[]});
+    for (let i = 0; i < g.slots.length; i++){
+      let s = g.slots[i];
+      if (!s || typeof s !== 'object'){ s = {studentId:'', dayIndex:0, dayTitle:'', exercises:[]}; g.slots[i] = s; }
+      if (typeof s.studentId !== 'string') s.studentId = '';
+      if (typeof s.dayTitle !== 'string') s.dayTitle = '';
+      if (!Number.isFinite(Number(s.dayIndex))) s.dayIndex = 0;
+      if (!Array.isArray(s.exercises)) s.exercises = [];
+    }
+    return g;
+  }
+  function grpPersist(){ localStorage.setItem(KEY, JSON.stringify(state)); }
+  function grpCol(i){ const grid = $('#grpGrid'); return grid ? grid.querySelector(`.grp-col[data-slot="${i}"]`) : null; }
+  function grpFillDays(col, i){
+    const g = grpEnsure(), slot = g.slots[i];
+    const sel = col.querySelector('.grp-day');
+    const plan = slot.studentId ? plansOf(slot.studentId) : null;
+    if (!plan || !plan.days.length){ sel.innerHTML = '<option value="">sem ficha</option>'; sel.disabled = true; return; }
+    sel.disabled = false;
+    sel.innerHTML = plan.days.map((d,k) => `<option value="${k}">${esc(d.title)}</option>`).join('');
+    sel.value = String(Math.min(Math.max(0, num(slot.dayIndex)), plan.days.length - 1));
+  }
+  function grpHintText(i){
+    const g = grpEnsure(), slot = g.slots[i];
+    if (!slot.studentId) return 'Escolha um aluno';
+    const p = state.periodizations[slot.studentId];
+    if (!p) return 'Sem periodização — carga livre';
+    const w = num(p.currentWeek) || 1;
+    return `Semana ${w} (${labelFor(p, w)}) · ref. ${fmt(num(p.baseLoad) * factorFor(p, w))} kg`;
+  }
+  function grpUpdateFoot(col){
+    const cards = [...col.querySelectorAll('.grp-cards .ex-card')];
+    let vol = 0, done = 0, tot = 0;
+    cards.forEach(c => {
+      const rows = [...c.querySelectorAll('.set-row')];
+      tot += rows.length;
+      rows.forEach(r => {
+        vol += num(r.querySelector('.s-reps').value) * num(r.querySelector('.s-load').value);
+        if (r.querySelector('.s-done').checked) done++;
+      });
+    });
+    const el = col.querySelector('.grp-vol');
+    if (el) el.textContent = cards.length ? `${done}/${tot} séries feitas · ${fmt(vol)} kg` : '';
+  }
+  function grpColEl(i){
+    const g = grpEnsure(), slot = g.slots[i];
+    const col = document.createElement('div');
+    col.className = 'grp-col' + (slot.studentId ? '' : ' empty-col');
+    col.dataset.slot = i;
+    col.innerHTML = `
+      <div class="grp-head">
+        <select class="grp-student"></select>
+        <select class="grp-day"></select>
+        <button class="btn secondary small grp-load" type="button">↻ Carregar treino do dia</button>
+      </div>
+      <p class="grp-hint muted"></p>
+      <div class="grp-cards"></div>
+      <div class="grp-foot">
+        <button class="btn ghost small grp-add" type="button">+ exercício</button>
+        <button class="btn small grp-save" type="button">Salvar aluno</button>
+      </div>
+      <p class="grp-vol hint"></p>`;
+    const sel = col.querySelector('.grp-student');
+    sel.innerHTML = '<option value="">— escolher aluno —</option>' +
+      state.students.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
+    sel.value = slot.studentId || '';
+    grpFillDays(col, i);
+    col.querySelector('.grp-hint').textContent = grpHintText(i);
+    const box = col.querySelector('.grp-cards');
+    slot.exercises.forEach(e => box.append(exCard({
+      name: e.name, setsPlanned: e.setsPlanned, reps: e.reps,
+      load: e.load, rir: e.rir, rest: e.rest, sets: e.sets
+    })));
+    grpUpdateFoot(col);
+    return col;
+  }
+  function renderGrupo(){
+    const page = $('#grupo');
+    if (page && !page.classList.contains('active')) return;
+    const g = grpEnsure();
+    const grid = $('#grpGrid'); if (!grid) return;
+    const d = $('#grpDate'); if (d) d.value = g.date;
+    const t = $('#grpTime'); if (t) t.value = g.time || '';
+    $$('#grpCount [data-n]').forEach(b => {
+      const on = num(b.dataset.n) === g.n;
+      b.classList.toggle('btn', on);
+      b.classList.toggle('ghost', !on);
+    });
+    grid.dataset.n = String(g.n);
+    grid.innerHTML = '';
+    for (let i = 0; i < g.n; i++) grid.append(grpColEl(i));
+    const hint = $('#grpHint');
+    if (hint){
+      const act = g.slots.slice(0, g.n).filter(s => s.studentId).length;
+      hint.textContent = act
+        ? `${act} de ${g.n} aluno(s) selecionado(s) · ${dateFmt(g.date)}`
+        : 'Escolha os alunos em cada coluna e toque em “Carregar treino do dia” — ou use “Carregar treinos do dia” para preencher todos de uma vez.';
+    }
+  }
+  function grpReadCol(i){
+    const col = grpCol(i); if (!col) return;
+    const g = grpEnsure(), slot = g.slots[i];
+    slot.exercises = [...col.querySelectorAll('.grp-cards .ex-card')].map(readExerciseCard).filter(Boolean);
+  }
+  function grpLoadSlot(i, silent){
+    const g = grpEnsure(), slot = g.slots[i];
+    if (!slot.studentId) return false;
+    const plan = plansOf(slot.studentId);
+    if (!plan || !plan.days.length){ if (!silent) notify('Este aluno não tem ficha cadastrada.', true); return false; }
+    const idx = Math.min(Math.max(0, num(slot.dayIndex)), plan.days.length - 1);
+    slot.dayIndex = idx;
+    const day = plan.days[idx];
+    slot.dayTitle = day.title;
+    slot.exercises = (day.items.length ? day.items : ['']).map(it => {
+      const p = it ? parseItem(it) : {};
+      return {name: p.name || '', setsPlanned: p.sets, reps: p.reps, load: p.load, rir: p.rir, rest: p.rest, note: '', sets: []};
+    });
+    return true;
+  }
+  function grpDomProgress(){ return $$('#grpGrid .s-done').some(c => c.checked); }
+  function grpLoadAll(){
+    const g = grpEnsure();
+    if (grpDomProgress() && !confirm('Recarregar os treinos do dia? As séries já marcadas nestas colunas serão substituídas.')) return;
+    let n = 0; const miss = [];
+    for (let i = 0; i < g.n; i++){
+      if (!g.slots[i].studentId) continue;
+      if (grpLoadSlot(i, true)) n++; else miss.push(i + 1);
+    }
+    save();
+    if (!n) return notify('Selecione ao menos um aluno com ficha cadastrada.', true);
+    notify(`${n} treino(s) carregado(s)${miss.length ? ` · coluna(s) ${miss.join(', ')} sem ficha` : ''}.`);
+  }
+  function grpPushSession(slot, date, time, gid, size){
+    const ex = slot.exercises.map(e => Object.assign({}, e, {id: e.id || uid()}));
+    state.sessions.push({
+      id: uid(), studentId: slot.studentId, date,
+      name: slot.dayTitle || 'Treino em grupo',
+      week: 1, duration: null, exercises: ex,
+      groupId: gid, groupSize: size, groupTime: time,
+      createdAt: new Date().toISOString()
+    });
+    return ex;
+  }
+  function grpSaveSlot(i){
+    const g = grpEnsure(), slot = g.slots[i];
+    grpReadCol(i);
+    if (!slot.studentId) return notify('Escolha o aluno desta coluna.', true);
+    if (!slot.exercises.length) return notify('Carregue o treino do dia antes de salvar.', true);
+    const date = ($('#grpDate') && $('#grpDate').value) || g.date || today();
+    const time = ($('#grpTime') && $('#grpTime').value) || '';
+    const ex = grpPushSession(slot, date, time, uid(), g.n);
+    const done = ex.reduce((n,e) => n + e.sets.filter(s => s.done).length, 0);
+    slot.exercises = [];
+    save();
+    notify(`Treino salvo — ${done} série(s) registrada(s).`);
+  }
+  function grpSaveAll(){
+    const g = grpEnsure();
+    for (let i = 0; i < g.n; i++) grpReadCol(i);
+    const date = ($('#grpDate') && $('#grpDate').value) || g.date || today();
+    const time = ($('#grpTime') && $('#grpTime').value) || '';
+    const gid = uid();
+    let saved = 0, series = 0;
+    for (let i = 0; i < g.n; i++){
+      const slot = g.slots[i];
+      if (!slot.studentId || !slot.exercises.length) continue;
+      const ex = grpPushSession(slot, date, time, gid, g.n);
+      series += ex.reduce((n,e) => n + e.sets.filter(s => s.done).length, 0);
+      slot.exercises = [];
+      saved++;
+    }
+    if (!saved) return notify('Selecione ao menos um aluno com treino carregado.', true);
+    save();
+    notify(`${saved} aluno(s) salvo(s) · ${series} série(s) registrada(s).`);
+  }
+  function grpClear(){
+    const g = grpEnsure();
+    if (!confirm('Limpar o treino em grupo em andamento? Os alunos escolhidos são mantidos.')) return;
+    g.slots.forEach(s => { s.exercises = []; });
+    save();
+    notify('Rascunho do grupo limpo.');
+  }
+  let grpTimer = null;
+  function grpScheduleSave(){
+    clearTimeout(grpTimer);
+    grpTimer = setTimeout(() => {
+      const g = grpEnsure();
+      for (let i = 0; i < g.n; i++) grpReadCol(i);
+      grpPersist();
+    }, 600);
+  }
+  $$('#grpCount [data-n]').forEach(b => b.addEventListener('click', () => {
+    const g = grpEnsure();
+    for (let i = 0; i < g.n; i++) grpReadCol(i);
+    g.n = num(b.dataset.n) || 4;
+    save();
+    notify(`Exibindo ${g.n} aluno(s) por horário.`);
+  }));
+  const grpDateEl = $('#grpDate');
+  if (grpDateEl) grpDateEl.addEventListener('change', e => { const g = grpEnsure(); g.date = e.target.value || today(); grpPersist(); renderGrupo(); });
+  const grpTimeEl = $('#grpTime');
+  if (grpTimeEl) grpTimeEl.addEventListener('change', e => { const g = grpEnsure(); g.time = e.target.value || ''; grpPersist(); });
+  const grpLoadAllBtn = $('#grpLoadAll');
+  if (grpLoadAllBtn) grpLoadAllBtn.addEventListener('click', grpLoadAll);
+  const grpSaveAllBtn = $('#grpSaveAll');
+  if (grpSaveAllBtn) grpSaveAllBtn.addEventListener('click', grpSaveAll);
+  const grpClearBtn = $('#grpClear');
+  if (grpClearBtn) grpClearBtn.addEventListener('click', grpClear);
+  $$('#grpRestPresets [data-rest]').forEach(b => b.addEventListener('click', () => {
+    const sec = num(b.dataset.rest);
+    $$('#grpGrid .ex-rest').forEach(i => { i.value = sec; });
+    grpScheduleSave();
+    notify(`Descanso padrão do grupo: ${sec}s.`);
+  }));
+  const grpGridEl = $('#grpGrid');
+  if (grpGridEl){
+    grpGridEl.addEventListener('change', e => {
+      const col = e.target.closest('.grp-col'); if (!col) return;
+      const i = num(col.dataset.slot);
+      const g = grpEnsure(), slot = g.slots[i];
+      if (e.target.classList.contains('grp-student')){
+        grpReadCol(i);
+        slot.studentId = e.target.value || '';
+        slot.exercises = [];
+        slot.dayIndex = 0;
+        const plan = slot.studentId ? plansOf(slot.studentId) : null;
+        if (plan && plan.days.length) slot.dayIndex = guessTodayIndex(plan.days);
+        if (slot.studentId) grpLoadSlot(i, true);
+        save();
+        return;
+      }
+      if (e.target.classList.contains('grp-day')){
+        grpReadCol(i);
+        slot.dayIndex = num(e.target.value);
+        if (slot.studentId) grpLoadSlot(i, true);
+        save();
+        return;
+      }
+      grpReadCol(i);
+      grpUpdateFoot(col);
+      grpPersist();
+    });
+    grpGridEl.addEventListener('click', e => {
+      const col = e.target.closest('.grp-col'); if (!col) return;
+      const i = num(col.dataset.slot);
+      if (e.target.classList.contains('grp-load')){
+        grpReadCol(i);
+        if (grpLoadSlot(i, false)){ save(); notify('Treino do dia carregado.'); }
+        return;
+      }
+      if (e.target.classList.contains('grp-add')){
+        grpReadCol(i);
+        col.querySelector('.grp-cards').append(exCard({}));
+        grpReadCol(i);
+        grpUpdateFoot(col);
+        grpPersist();
+        return;
+      }
+      if (e.target.classList.contains('grp-save')){ grpSaveSlot(i); return; }
+      setTimeout(() => grpUpdateFoot(col), 0);
+    });
+    grpGridEl.addEventListener('input', e => {
+      const col = e.target.closest('.grp-col'); if (!col) return;
+      grpUpdateFoot(col);
+      grpScheduleSave();
+    });
+  }
 
   /* ---------- DASHBOARD ---------- */
   function renderDashboard(){
@@ -2168,7 +2524,7 @@
   });
 
   /* ---------- RENDER ---------- */
-  function renderAll(){ renderPicker(); renderDashboard(); renderPlans(); renderPeriod(); renderHistory(); renderData(); renderSessionDays(); updatePeriodHint(); renderAval(); }
+  function renderAll(){ renderPicker(); renderDashboard(); renderPlans(); renderPeriod(); renderHistory(); renderData(); renderSessionDays(); updatePeriodHint(); renderAval(); renderGrupo(); }
   $('#sessionDate').value = today();
   clearSession();
   renderAuth();
