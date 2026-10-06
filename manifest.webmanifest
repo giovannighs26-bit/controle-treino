@@ -1,7 +1,7 @@
 {
   "name": "GH Performance",
   "short_name": "GH Performance",
-  "description": "GH Performance — engenharia do estímulo real. Fichas de treino, periodização, progressão de cargas e histórico, offline.",
+  "description": "GH Performance — engenharia do estímulo real. Fichas de treino, séries de aquecimento/reconhecimento/trabalho, técnicas (rest pause, cluster), sensor de progressão de carga e histórico, offline.",
   "lang": "pt-BR",
   "dir": "ltr",
   "start_url": "./index.html",
