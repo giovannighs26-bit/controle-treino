@@ -267,6 +267,93 @@
       .day-body{display:block!important}.muted,.item-meta,label{color:#555}
     }
 
+
+    /* ===== VISÃO GERAL ===== */
+    .hero{grid-column:span 12;position:relative;overflow:hidden;
+      background:linear-gradient(150deg,#1c2919,#121a14 58%,#0f1611)}
+    .hero::after{content:'';position:absolute;top:-45%;right:-8%;width:460px;height:460px;border-radius:50%;
+      background:radial-gradient(circle,#d8a93d1f,transparent 68%);pointer-events:none}
+    .hero-top{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;position:relative;z-index:1}
+    .hero-hi{font-size:26px;font-weight:800;letter-spacing:.2px;line-height:1.2}
+    .hero-sub{color:var(--muted);font-size:13px;margin-top:6px;max-width:60ch}
+    .hero-streak{text-align:center;padding:11px 16px;border-radius:16px;border:1px solid var(--line);
+      background:#0d1511;min-width:118px;flex:none}
+    .hero-streak strong{display:block;font-size:27px;color:var(--accent2);line-height:1}
+    .hero-streak span{display:block;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-top:4px}
+    .hero-actions{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 14px;position:relative;z-index:1}
+    .summary{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;position:relative;z-index:1}
+    .metric{padding:13px;border-radius:14px;background:#0d1511;border:1px solid var(--line);text-align:left;
+      color:inherit;transition:border-color .16s,transform .16s}
+    .metric:hover{border-color:var(--accent);transform:translateY(-2px)}
+    .metric strong{display:block;font-size:20px;color:var(--accent2);line-height:1.2}
+    .metric span{display:block;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:3px}
+    .card-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+    .card-head h2{margin:0}
+    .seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:#0d1511;gap:2px;
+      max-width:100%;overflow-x:auto;scrollbar-width:none}
+    .seg::-webkit-scrollbar{display:none}
+    .seg-btn{border:0;background:transparent;color:var(--muted);padding:6px 12px;border-radius:999px;
+      font-size:12px;font-weight:600;white-space:nowrap;transition:background .15s,color .15s}
+    .seg-btn.active{background:var(--accent);color:#1c1608}
+    .seg-sm .seg-btn{padding:4px 10px;font-size:11px}
+    .chart{width:100%;height:240px;display:block}
+    .chart.donut{height:186px;width:186px;margin:0 auto}
+    .donut-wrap{display:grid;grid-template-columns:186px 1fr;gap:18px;align-items:center}
+    .donut-legend{display:grid;gap:10px}
+    .legend-row{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;font-size:12px}
+    .legend-dot{width:11px;height:11px;border-radius:3px;flex:none}
+    .legend-row em{color:var(--muted);font-style:normal}
+    .legend-row b{color:var(--accent2);font-variant-numeric:tabular-nums}
+    .bars{display:grid;gap:11px}
+    .bar-row{display:grid;gap:5px}
+    .bar-top{display:flex;justify-content:space-between;gap:12px;font-size:12px}
+    .bar-top .n{color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .bar-top .v{color:var(--accent2);font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+    .bar-track{height:7px;border-radius:999px;background:#0d1511;overflow:hidden}
+    .bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#8f6412,#f2cf72);
+      transform-origin:left center;animation:grow .5s ease-out}
+    @keyframes grow{from{transform:scaleX(.05)}to{transform:scaleX(1)}}
+    .news-strip{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(232px,1fr);gap:12px;
+      overflow-x:auto;padding-bottom:10px;scroll-snap-type:x mandatory;scrollbar-width:thin}
+    .news-card{scroll-snap-align:start;border:1px solid var(--line);border-radius:14px;overflow:hidden;
+      background:#0d1511;display:flex;flex-direction:column;text-decoration:none;color:inherit;
+      transition:border-color .16s,transform .16s}
+    .news-card:hover{border-color:var(--accent);transform:translateY(-3px)}
+    .news-thumb{aspect-ratio:16/9;width:100%;object-fit:cover;background:#18221c;display:block}
+    .news-body{padding:11px;display:flex;flex-direction:column;gap:7px;flex:1}
+    .news-title{font-size:13px;font-weight:700;line-height:1.35;display:-webkit-box;-webkit-line-clamp:3;
+      -webkit-box-orient:vertical;overflow:hidden}
+    .news-meta{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:auto}
+    .news-skel{height:184px;border-radius:14px;border:1px solid var(--line);
+      background:linear-gradient(100deg,#131b16,#1e2a22,#131b16);background-size:200% 100%;animation:shimmer 1.3s infinite}
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    .tips-box{display:grid;gap:13px}
+    .tip-cat{display:inline-flex;align-items:center;font-size:10px;font-weight:800;letter-spacing:.9px;
+      text-transform:uppercase;color:#1c1608;background:var(--accent);padding:4px 10px;border-radius:999px;width:max-content}
+    .tip-text{font-size:15px;line-height:1.55;margin:0}
+    .tip-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;color:var(--muted);font-size:11px;flex-wrap:wrap}
+    @media(max-width:900px){
+      .summary{grid-template-columns:repeat(3,minmax(0,1fr))}
+      .donut-wrap{grid-template-columns:1fr;justify-items:center}
+    }
+    @media(max-width:700px){
+      .summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .hero-hi{font-size:21px}
+      .hero-streak{min-width:98px;padding:9px 12px}
+      .hero-streak strong{font-size:22px}
+      .news-strip{grid-auto-columns:minmax(198px,78%)}
+      .chart{height:212px}
+    }
+    @media(max-width:560px){
+      .hero-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+      .hero-actions .btn{width:100%;padding:11px 10px;font-size:13px}
+      .hero-actions .btn:first-child,.hero-actions .btn:last-child{grid-column:1/-1}
+    }
+    @media(max-width:480px){
+      .summary{grid-template-columns:1fr 1fr}
+      .card-head{align-items:flex-start}
+    }
+
     /* ===== AVALIAÇÃO FÍSICA ===== */
     .av-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border:1px solid var(--line);
       border-radius:14px;background:#101813;flex-wrap:wrap}
@@ -382,19 +469,85 @@
   </nav>
 
   <section class="page active" id="dashboard"><div class="grid">
-    <article class="card">
-      <h2 id="welcome">Selecione ou cadastre um aluno</h2>
-      <div class="summary">
-        <div class="metric"><strong id="mSessions">0</strong><span>Sessões registradas</span></div>
-        <div class="metric"><strong id="mExercises">0</strong><span>Exercícios realizados</span></div>
-        <div class="metric"><strong id="mVolume">0 kg</strong><span>Volume acumulado</span></div>
-        <div class="metric"><strong id="mLast">—</strong><span>Último treino</span></div>
+    <article class="card hero">
+      <div class="hero-top">
+        <div>
+          <div class="hero-hi" id="welcome">Selecione ou cadastre um aluno</div>
+          <div class="hero-sub" id="heroSub">Cadastre um aluno para começar a acompanhar a evolução.</div>
+        </div>
+        <div class="hero-streak" id="heroStreak" title="Semanas seguidas com pelo menos um treino">
+          <strong>0</strong><span>semanas seguidas</span>
+        </div>
+      </div>
+      <div class="hero-actions">
+        <button class="btn" id="qaSession">▶ Registrar treino</button>
+        <button class="btn secondary" id="qaLoadDay">↻ Carregar treino do dia</button>
+        <button class="btn secondary" id="qaFicha">🗒 Ver ficha</button>
+        <button class="btn ghost" id="qaGroup">👥 Treino em grupo</button>
+      </div>
+      <div class="summary" id="kpiStrip">
+        <button class="metric" data-goto="history"><strong id="mSessions">0</strong><span>Sessões</span></button>
+        <button class="metric" data-goto="history"><strong id="mExercises">0</strong><span>Exercícios</span></button>
+        <button class="metric" data-goto="history"><strong id="mSets">0</strong><span>Séries de trabalho</span></button>
+        <button class="metric" data-goto="history"><strong id="mVolume">0 kg</strong><span>Volume total</span></button>
+        <button class="metric" data-goto="history"><strong id="mRir">—</strong><span>RIR médio</span></button>
+        <button class="metric" data-goto="session"><strong id="mLast">—</strong><span>Último treino</span></button>
       </div>
     </article>
-    <article class="card half"><h2>Aluno</h2><div id="studentCard" class="empty">Nenhum aluno selecionado.</div></article>
+
+    <article class="card half">
+      <div class="card-head">
+        <h2>Evolução</h2>
+        <div class="seg" id="chartMetric">
+          <button class="seg-btn active" data-metric="volume">Volume</button>
+          <button class="seg-btn" data-metric="sets">Séries</button>
+          <button class="seg-btn" data-metric="sessions">Treinos</button>
+        </div>
+      </div>
+      <canvas id="dashChart" class="chart" aria-label="Gráfico de evolução semanal"></canvas>
+      <div class="card-head" style="margin:12px 0 0">
+        <div class="seg seg-sm" id="chartRange">
+          <button class="seg-btn" data-weeks="4">4 semanas</button>
+          <button class="seg-btn active" data-weeks="8">8 semanas</button>
+          <button class="seg-btn" data-weeks="12">12 semanas</button>
+        </div>
+        <span class="hint" style="margin:0" id="chartHint"></span>
+      </div>
+    </article>
+
+    <article class="card half">
+      <h2>Composição das séries</h2>
+      <div class="donut-wrap">
+        <canvas id="kindChart" class="chart donut" aria-label="Distribuição das séries por tipo"></canvas>
+        <div class="donut-legend" id="kindLegend"></div>
+      </div>
+      <h3 style="margin:18px 0 10px">Top exercícios por volume</h3>
+      <div class="bars" id="topExercises"></div>
+    </article>
+
     <article class="card half"><h2>Sensor de progressão</h2><div id="progressCard" class="empty">Registre um treino para ver a sugestão de progressão.</div></article>
-    <article class="card half"><h2>Ficha ativa</h2><div id="activeFichaCard" class="empty">Nenhuma ficha cadastrada.</div></article>
-    <article class="card half"><h2>Treinos recentes</h2><div id="recentSessions" class="list"></div></article>
+    <article class="card half"><h2>Dicas do dia</h2><div id="tipsCard"></div></article>
+
+    <article class="card">
+      <div class="card-head">
+        <h2>Notícias &amp; esporte</h2>
+        <div class="actions">
+          <div class="seg" id="newsTabs">
+            <button class="seg-btn active" data-news="esporte">Esporte</button>
+            <button class="seg-btn" data-news="futebol">Futebol</button>
+            <button class="seg-btn" data-news="saude">Saúde</button>
+            <button class="seg-btn" data-news="bemestar">Bem-estar</button>
+          </div>
+          <button class="btn ghost small" id="newsRefresh" title="Atualizar notícias">↻</button>
+        </div>
+      </div>
+      <div class="news-strip" id="newsStrip"></div>
+      <p class="hint" id="newsHint" style="margin-top:4px"></p>
+    </article>
+
+    <article class="card third"><h2>Aluno</h2><div id="studentCard" class="empty">Nenhum aluno selecionado.</div></article>
+    <article class="card third"><h2>Ficha ativa</h2><div id="activeFichaCard" class="empty">Nenhuma ficha cadastrada.</div></article>
+    <article class="card third"><h2>Treinos recentes</h2><div id="recentSessions" class="list"></div></article>
   </div></section>
 
   <section class="page" id="fichas"><div class="grid">
@@ -801,6 +954,7 @@
     $$('.tab').forEach(b => b.classList.toggle('active', b.dataset.page === id));
     $$('.page').forEach(p => p.classList.toggle('active', p.id === id));
     if (id === 'history') setTimeout(drawChart, 30);
+    if (id === 'dashboard') setTimeout(drawDashboardCharts, 30);
     if (id === 'session') autoLoadToday();
     if (id === 'grupo') renderGrupo();
     if (id === 'aval') { renderAval(); setTimeout(drawAvChart, 40); }
@@ -1839,21 +1993,37 @@
   /* ---------- DASHBOARD ---------- */
   function renderDashboard(){
     const s = active(), sessions = sessionsFor();
-    $('#welcome').textContent = s ? `Olá, ${s.name.split(' ')[0]}` : 'Selecione ou cadastre um aluno';
-    const count = sessions.reduce((n,x) => n + x.exercises.length, 0);
+    const count = sessions.reduce((n,x) => n + (x.exercises||[]).length, 0);
     const volume = sessions.reduce((n,x) => n + sessionVolume(x), 0);
+    let sets = 0;
+    sessions.forEach(x => (x.exercises||[]).forEach(e => { sets += workSets(e).length; }));
+    const rir = avgRirOverall();
+
+    $('#welcome').textContent = s ? `Olá, ${s.name.split(' ')[0]}` : 'Selecione ou cadastre um aluno';
+    const plan = s ? plansOf(s.id) : null;
+    const days = plan && plan.days ? plan.days.length : 0;
+    $('#heroSub').textContent = s
+      ? `${s.goal || 'Sem objetivo definido'} · ${s.level || 'Nível não informado'}${days ? ` · ${days} treino(s) na ficha` : ' · sem ficha cadastrada'}`
+      : 'Cadastre um aluno para começar a acompanhar a evolução.';
+
+    const streak = streakWeeks();
+    $('#heroStreak').innerHTML = `<strong>${streak}</strong><span>${streak === 1 ? 'semana seguida' : 'semanas seguidas'}</span>`;
+
     $('#mSessions').textContent = sessions.length;
     $('#mExercises').textContent = count;
+    $('#mSets').textContent = sets;
     $('#mVolume').textContent = `${fmt(volume)} kg`;
+    $('#mRir').textContent = sets ? fmt(rir) : '—';
     $('#mLast').textContent = sessions[0] ? dateFmt(sessions[0].date) : '—';
+
     $('#studentCard').className = s ? '' : 'empty';
     $('#studentCard').innerHTML = s
       ? `<div class="item"><div><div class="item-title">${esc(s.name)}</div>
-          <div class="item-meta">${esc(s.goal)} · ${esc(s.level)}</div></div>
+          <div class="item-meta">${esc(s.goal || '—')} · ${esc(s.level || '—')}</div></div>
           <button class="btn secondary small" id="editCurrent">Editar</button></div>`
       : 'Nenhum aluno selecionado.';
     const ec = $('#editCurrent'); if (ec) ec.addEventListener('click', () => openStudent(s));
-    const plan = s ? plansOf(s.id) : null;
+
     $('#activeFichaCard').className = (plan && plan.days.length) ? '' : 'empty';
     $('#activeFichaCard').innerHTML = (plan && plan.days.length)
       ? `<div class="item"><div><div class="item-title">${esc(plan.title || 'Ficha')}</div>
@@ -1861,14 +2031,21 @@
           <button class="btn secondary small" id="goFichas">Abrir</button></div>`
       : 'Nenhuma ficha cadastrada.';
     const gf = $('#goFichas'); if (gf) gf.addEventListener('click', () => showPage('fichas'));
-    renderSensorCard();
+
     $('#recentSessions').innerHTML = sessions.length
-      ? sessions.slice(0,5).map(x => `<div class="item"><div><div class="item-title">${esc(x.name)}</div>
+      ? sessions.slice(0,4).map(x => `<div class="item"><div><div class="item-title">${esc(x.name)}</div>
           <div class="item-meta">${dateFmt(x.date)} · ${x.exercises.length} exercícios · ${fmt(sessionVolume(x))} kg</div></div>
           <span class="badge">Semana ${x.week || 1}</span></div>`).join('')
       : '<div class="empty">Nenhum treino registrado.</div>';
-  }
 
+    renderSensorCard();
+    renderTips();
+    renderTopExercises();
+    renderKindLegend();
+    renderNews();
+    newsLoad(false);
+    if ($('#dashboard').classList.contains('active')) requestAnimationFrame(drawDashboardCharts);
+  }
   /* ---------- SENSOR DE PROGRESSÃO ---------- */
   function renderSensorCard(){
     const box = $('#progressCard'); if (!box) return;
@@ -1890,6 +2067,412 @@
           <span class="badge">${x.st.title}</span></div>`).join('')}</div>
       ${ready || att ? `<p class="hint">${ready} pronto(s) para aumentar a carga e reduzir as repetições${att ? ` · ${att} pedindo atenção` : ''}.</p>` : ''}`;
   }
+
+  /* ---------- VISÃO GERAL: séries, gráficos, dicas e notícias ---------- */
+  const DASH = { metric:'volume', weeks:8, news:'esporte', tip:null, hover:null, donutHover:null,
+                 geo:null, kindSegs:null, newsBusy:false };
+
+  function isoOf(d){ return d.toLocaleDateString('en-CA'); }
+  function mondayOf(d){ const x = new Date(d); const k = (x.getDay()+6)%7; x.setDate(x.getDate()-k); x.setHours(0,0,0,0); return x; }
+  function weekKeyOf(dateStr){ return isoOf(mondayOf(new Date(`${dateStr}T12:00:00`))); }
+
+  function weeklySeries(n){
+    const monday = mondayOf(new Date()), out = [];
+    for (let i = n-1; i >= 0; i--){
+      const start = new Date(monday); start.setDate(monday.getDate() - i*7);
+      const end = new Date(start); end.setDate(start.getDate() + 6);
+      const from = isoOf(start), to = isoOf(end);
+      const ss = sessionsFor().filter(s => s.date >= from && s.date <= to);
+      let sets = 0, volume = 0;
+      ss.forEach(s => (s.exercises||[]).forEach(e => workSets(e).forEach(x => { sets++; volume += num(x.reps)*num(x.load); })));
+      out.push({ label: `${String(start.getDate()).padStart(2,'0')}/${String(start.getMonth()+1).padStart(2,'0')}`,
+        volume, sets, sessions: ss.length, from });
+    }
+    return out;
+  }
+
+  function kindTotals(){
+    const t = { aquecimento:0, reconhecimento:0, trabalho:0 };
+    sessionsFor().forEach(s => (s.exercises||[]).forEach(e => (e.sets||[]).forEach(x => {
+      const k = kindOf(x); t[k] = (t[k] || 0) + 1;
+    })));
+    return t;
+  }
+
+  function topExercises(n){
+    const map = new Map();
+    sessionsFor().forEach(s => (s.exercises||[]).forEach(e => {
+      const k = shortName(e.name); if (!k) return;
+      map.set(k, (map.get(k) || 0) + volumeOf(e));
+    }));
+    return [...map.entries()].map(([name, value]) => ({ name, value }))
+      .sort((a,b) => b.value - a.value).slice(0, n || 6);
+  }
+
+  function streakWeeks(){
+    const weeks = new Set(sessionsFor().map(s => weekKeyOf(s.date)));
+    if (!weeks.size) return 0;
+    let count = 0, cur = mondayOf(new Date());
+    if (!weeks.has(isoOf(cur))) cur = new Date(cur.getTime() - 7*86400000);
+    while (weeks.has(isoOf(cur)) && count < 260){ count++; cur = new Date(cur.getTime() - 7*86400000); }
+    return count;
+  }
+
+  function avgRirOverall(){
+    let sum = 0, n = 0;
+    sessionsFor().forEach(s => (s.exercises||[]).forEach(e => workSets(e).forEach(x => { sum += num(x.rir); n++; })));
+    return n ? sum/n : 0;
+  }
+
+  function roundRect(c, x, y, w, h, r){
+    r = Math.max(0, Math.min(r, Math.abs(w)/2, Math.abs(h)/2));
+    c.beginPath();
+    c.moveTo(x+r, y);
+    c.arcTo(x+w, y, x+w, y+h, r);
+    c.arcTo(x+w, y+h, x, y+h, r);
+    c.arcTo(x, y+h, x, y, r);
+    c.arcTo(x, y, x+w, y, r);
+    c.closePath();
+  }
+  function prepCanvas(canvas, fallbackH){
+    if (!canvas) return null;
+    const rect = canvas.getBoundingClientRect();
+    const W = Math.round(rect.width) || canvas.clientWidth || 320;
+    const H = Math.round(rect.height) || canvas.clientHeight || fallbackH || 220;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.max(160, W*dpr); canvas.height = Math.max(120, H*dpr);
+    const c = canvas.getContext('2d'); if (!c) return null;
+    c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    c.clearRect(0, 0, W, H);
+    return { c, W, H };
+  }
+  function drawDashboardCharts(){
+    try { drawDashChart(); drawKindChart(); }
+    catch(e){ /* gráfico é acessório — nunca pode derrubar o app */ }
+  }
+
+  function drawDashChart(){
+    const p = prepCanvas($('#dashChart')); if (!p) return;
+    const { c, W, H } = p;
+    const data = weeklySeries(DASH.weeks), key = DASH.metric;
+    const max = Math.max(1, ...data.map(d => d[key]));
+    const total = data.reduce((a,d) => a + d[key], 0);
+    const hint = $('#chartHint');
+    if (hint) hint.textContent = key === 'volume' ? `${fmt(total)} kg no período`
+      : key === 'sets' ? `${fmt(total)} séries de trabalho` : `${fmt(total)} treino(s) no período`;
+    const pad = { l: 54, r: 14, t: 16, b: 32 };
+    const iw = Math.max(40, W - pad.l - pad.r), ih = Math.max(40, H - pad.t - pad.b);
+    c.font = '11px system-ui';
+    c.strokeStyle = '#2a382e'; c.fillStyle = '#9daea3'; c.textAlign = 'right'; c.lineWidth = 1;
+    for (let i = 0; i <= 4; i++){
+      const y = pad.t + ih*i/4;
+      c.beginPath(); c.moveTo(pad.l, y); c.lineTo(W-pad.r, y); c.stroke();
+      c.fillText(fmt(Math.round(max*(4-i)/4)), pad.l - 8, y + 4);
+    }
+    const slot = iw/data.length;
+    const bw = Math.max(6, Math.min(46, slot - 10));
+    DASH.geo = [];
+    data.forEach((d, i) => {
+      const cx = pad.l + slot*(i + 0.5);
+      const v = d[key], h = max ? (v/max)*ih : 0;
+      const y = pad.t + ih - h;
+      const on = DASH.hover === i;
+      const g = c.createLinearGradient(0, y, 0, pad.t + ih);
+      g.addColorStop(0, on ? '#ffe9a8' : '#f2cf72');
+      g.addColorStop(1, '#8f6412');
+      c.fillStyle = v ? g : '#1b251f';
+      const hh = v ? Math.max(3, h) : 3;
+      const yy = v ? y : pad.t + ih - 3;
+      roundRect(c, cx - bw/2, yy, bw, hh, Math.min(6, bw/2));
+      c.fill();
+      if (on){
+        c.strokeStyle = '#d8a93d'; c.lineWidth = 2;
+        roundRect(c, cx - bw/2 - 3, yy - 3, bw + 6, hh + 6, Math.min(9, bw/2 + 3));
+        c.stroke();
+      }
+      DASH.geo.push({ cx, bw, top: yy, d, i });
+    });
+    c.fillStyle = '#9daea3'; c.textAlign = 'center';
+    const step = Math.max(1, Math.ceil(data.length/7));
+    DASH.geo.forEach((g, i) => {
+      if (i % step === 0 || i === data.length - 1) c.fillText(g.d.label, g.cx, H - 12);
+    });
+    if (DASH.hover != null && DASH.geo[DASH.hover]){
+      const g = DASH.geo[DASH.hover], d = g.d;
+      const lines = [ d.label, key === 'volume' ? `${fmt(d.volume)} kg`
+        : key === 'sets' ? `${d.sets} séries` : `${d.sessions} treino(s)` ];
+      c.font = 'bold 11px system-ui';
+      const w = Math.max(...lines.map(t => c.measureText(t).width)) + 20, h = lines.length*15 + 12;
+      const tx = Math.min(Math.max(g.cx - w/2, 4), Math.max(4, W - w - 4));
+      const ty = Math.max(4, g.top - h - 8);
+      c.fillStyle = '#0d1511'; c.strokeStyle = '#d8a93d'; c.lineWidth = 1;
+      roundRect(c, tx, ty, w, h, 9); c.fill(); c.stroke();
+      c.fillStyle = '#f4f7f4'; c.textAlign = 'left';
+      lines.forEach((t, k) => c.fillText(t, tx + 10, ty + 19 + k*15));
+    }
+  }
+
+  function drawKindChart(){
+    const p = prepCanvas($('#kindChart')); if (!p) return;
+    const { c, W, H } = p;
+    const t = kindTotals();
+    const segs = [
+      { label:'Trabalho', color:'#63c58b', value:t.trabalho },
+      { label:'Reconhecimento', color:'#d8a93d', value:t.reconhecimento },
+      { label:'Aquecimento', color:'#5b8fc7', value:t.aquecimento }
+    ];
+    const total = segs.reduce((a,s) => a + s.value, 0);
+    const cx = W/2, cy = H/2, R = Math.max(20, Math.min(W,H)/2 - 6), r = R*0.63;
+    if (!total){
+      c.beginPath(); c.arc(cx, cy, (R+r)/2, 0, Math.PI*2);
+      c.strokeStyle = '#1b251f'; c.lineWidth = Math.max(6, R-r); c.stroke();
+      c.fillStyle = '#9daea3'; c.font = '11px system-ui'; c.textAlign = 'center';
+      c.fillText('Sem séries ainda', cx, cy + 4);
+      DASH.kindSegs = null;
+      return;
+    }
+    let a0 = -Math.PI/2;
+    segs.forEach((s, i) => {
+      s.a0 = a0; s.a1 = a0 + (s.value/total)*Math.PI*2;
+      if (s.value){
+        const on = DASH.donutHover === i;
+        c.beginPath();
+        c.arc(cx, cy, on ? R + 3 : R, s.a0, s.a1);
+        c.arc(cx, cy, r, s.a1, s.a0, true);
+        c.closePath();
+        c.globalAlpha = (DASH.donutHover != null && !on) ? 0.4 : 1;
+        c.fillStyle = s.color; c.fill(); c.globalAlpha = 1;
+      }
+      a0 = s.a1;
+    });
+    c.fillStyle = '#f4f7f4'; c.font = 'bold 21px system-ui'; c.textAlign = 'center';
+    c.fillText(fmt(total), cx, cy + 3);
+    c.fillStyle = '#9daea3'; c.font = '10px system-ui';
+    c.fillText('SÉRIES', cx, cy + 18);
+    DASH.kindSegs = segs;
+  }
+
+  function renderKindLegend(){
+    const box = $('#kindLegend'); if (!box) return;
+    const t = kindTotals();
+    const total = t.trabalho + t.reconhecimento + t.aquecimento;
+    const rows = [
+      { label:'Trabalho', color:'#63c58b', value:t.trabalho, note:'conta no volume' },
+      { label:'Reconhecimento', color:'#d8a93d', value:t.reconhecimento, note:'não conta' },
+      { label:'Aquecimento', color:'#5b8fc7', value:t.aquecimento, note:'não conta' }
+    ];
+    box.innerHTML = rows.map(r => `<div class="legend-row">
+        <span class="legend-dot" style="background:${r.color}"></span>
+        <span><b>${fmt(r.value)}</b> <em>${esc(r.label)} · ${r.note}</em></span>
+        <b>${total ? Math.round(r.value/total*100) : 0}%</b></div>`).join('');
+  }
+
+  function renderTopExercises(){
+    const box = $('#topExercises'); if (!box) return;
+    const list = topExercises(6);
+    if (!list.length){ box.innerHTML = '<div class="empty">Registre treinos para ver o ranking.</div>'; return; }
+    const max = Math.max(...list.map(x => x.value), 1);
+    box.innerHTML = list.map(x => `<div class="bar-row">
+        <div class="bar-top"><span class="n">${esc(x.name)}</span><span class="v">${fmt(x.value)} kg</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.max(3, x.value/max*100)}%"></div></div>
+      </div>`).join('');
+  }
+
+  /* ---------- DICAS ---------- */
+  const TIPS = [
+    { c:'Técnica', t:'Em qualquer exercício, a fase excêntrica (a descida) deve levar cerca de 2 segundos. Descer controlado é o que mais gera estímulo de força e hipertrofia — e é o que mais se perde quando a carga sobe rápido demais.' },
+    { c:'Progressão', t:'Só aumente a carga quando todas as séries de trabalho baterem o topo da faixa de repetições com RIR 1 ou 2. Antes disso, o ganho vem de fazer mais repetições com a mesma carga.' },
+    { c:'Aquecimento', t:'As séries de aquecimento existem para ativar, não para cansar. Use 35% a 50% da carga de trabalho, 10 a 15 repetições e pare bem longe da falha.' },
+    { c:'Reconhecimento', t:'A série de reconhecimento serve para calibrar o peso do dia. Ela não é treino: 60% a 75% da carga, sem chegar perto da falha, só para o corpo confirmar qual é o peso certo.' },
+    { c:'Rest pause', t:'No rest pause, vá perto da falha, pare de 15 a 20 segundos e faça mais repetições com a mesma carga. Duas ou três mini-séries bastam — mais que isso vira fadiga improdutiva.' },
+    { c:'Cluster set', t:'No cluster set, divida as repetições em blocos com 10 a 20 segundos de pausa dentro da própria série, como 6+4+2. Você acumula mais repetições de qualidade com uma carga pesada.' },
+    { c:'Descanso', t:'De 60 a 90 segundos entre séries para hipertrofia; de 2 a 3 minutos para força. Encurtar o descanso não aumenta o estímulo, apenas reduz a qualidade das séries seguintes.' },
+    { c:'Volume', t:'Mais séries nem sempre é melhor. Quando o volume semanal de um grupo muscular passa de 20 a 25 séries de trabalho, a recuperação costuma não acompanhar o estímulo.' },
+    { c:'Sono', t:'Dormir menos de 6 horas derruba força e recuperação muscular. O sono é onde o treino vira resultado — trate como parte da prescrição, não como tempo perdido.' },
+    { c:'Recuperação', t:'Dor muscular tardia não é medida de bom treino; progressão de carga é. Se a dor atrapalha o treino seguinte, o volume daquele dia foi alto demais.' },
+    { c:'Nutrição', t:'Distribua a proteína ao longo do dia: de 1,6 a 2,2 g por quilo de peso corporal, em 3 a 5 refeições. O total do dia importa mais do que o horário exato de cada refeição.' },
+    { c:'Hidratação', t:'Perder 2% do peso corporal em líquido já reduz força e resistência. Beba ao longo do treino — não espere a sede aparecer para começar a repor.' },
+    { c:'Técnica', t:'Amplitude completa vale mais que carga extra. Meia amplitude com 20 kg a mais não substitui o estímulo do movimento inteiro feito com a carga correta.' },
+    { c:'Consistência', t:'Treinar 3 vezes por semana durante 8 semanas seguidas supera qualquer plano perfeito cumprido por 3 semanas. Regularidade é a variável mais subestimada do treino.' },
+    { c:'Mobilidade', t:'Cinco minutos de mobilidade antes do treino, focados nas articulações que você vai usar, melhoram a execução. Não é preciso meia hora de alongamento antes de puxar ferro.' },
+    { c:'Falha', t:'Treinar até a falha em todas as séries aumenta a fadiga mais do que o resultado. Guarde a falha para a última série de trabalho, e só quando a execução estiver segura.' },
+    { c:'Aquecimento', t:'Um aquecimento geral de 5 a 8 minutos, elevando a temperatura corporal, prepara melhor para cargas altas do que alongamento estático feito antes de pegar peso.' },
+    { c:'Progressão', t:'Sobrecarga pode vir de mais carga, mais repetições, mais séries, mais amplitude ou menos descanso. Mude só uma variável por semana para saber o que realmente funcionou.' },
+    { c:'Descanso', t:'Semanas de descarga a cada 6 ou 8 semanas, com 40% a 50% do volume, costumam devolver mais força do que insistir na mesma intensidade sem aliviar.' },
+    { c:'Técnica', t:'Anote o RIR de cada série de trabalho. Sem essa informação não dá para saber se a carga estava adequada ou se você apenas estava mais cansado naquele dia.' },
+    { c:'Nutrição', t:'Carboidrato antes do treino melhora o desempenho nas séries de alta intensidade. Não é obrigatório, mas ajuda bastante quem treina cedo ou em jejum.' },
+    { c:'Recuperação', t:'Caminhada leve, mobilidade e boa hidratação no dia seguinte ajudam mais na recuperação do que ficar totalmente parado — desde que não virem um treino extra.' }
+  ];
+
+  function tipIndex(){
+    if (DASH.tip != null) return ((DASH.tip % TIPS.length) + TIPS.length) % TIPS.length;
+    return Math.floor(Date.now()/86400000) % TIPS.length;
+  }
+  function renderTips(){
+    const box = $('#tipsCard'); if (!box) return;
+    const i = tipIndex(), t = TIPS[i];
+    box.innerHTML = `<div class="tips-box">
+        <span class="tip-cat">${esc(t.c)}</span>
+        <p class="tip-text">${esc(t.t)}</p>
+        <div class="tip-foot"><span>Dica ${i+1} de ${TIPS.length}</span>
+          <button class="btn ghost small" id="tipNext">Próxima dica →</button></div>
+      </div>`;
+    const nb = $('#tipNext');
+    if (nb) nb.addEventListener('click', () => { DASH.tip = (i + 1) % TIPS.length; renderTips(); });
+  }
+
+  /* ---------- NOTÍCIAS ---------- */
+  const NEWS_SOURCES = [
+    { id:'esporte',  label:'ge.globo',     url:'https://ge.globo.com/rss/ge/' },
+    { id:'futebol',  label:'ge Futebol',   url:'https://ge.globo.com/rss/ge/futebol/' },
+    { id:'saude',    label:'g1 Bem Estar', url:'https://g1.globo.com/rss/g1/bemestar/' },
+    { id:'bemestar', label:'Veja Saúde',   url:'https://saude.abril.com.br/feed/' }
+  ];
+  const NEWS_TTL = 30*60*1000, NEWS_BACKOFF = 5*60*1000, NEWS_KEY = 'ghPerformance.news.v1';
+  const NEWS_MAX_AGE = 120*86400000;
+
+  function newsDate(it){
+    const t = new Date(String((it && it.pubDate) || '').replace(' ', 'T')).getTime();
+    return isNaN(t) ? 0 : t;
+  }
+  function newsRecent(items){
+    const now = Date.now();
+    return (items || [])
+      .filter(it => { const t = newsDate(it); return !t || (now - t) < NEWS_MAX_AGE; })
+      .sort((a, b) => newsDate(b) - newsDate(a));
+  }
+
+  function newsRead(){ try { return JSON.parse(localStorage.getItem(NEWS_KEY)) || {}; } catch(e){ return {}; } }
+  function newsWrite(o){ try { localStorage.setItem(NEWS_KEY, JSON.stringify(o)); } catch(e){} }
+  function newsSource(){ return NEWS_SOURCES.find(x => x.id === DASH.news) || NEWS_SOURCES[0]; }
+  function newsThumb(it){
+    return it.thumbnail || (it.enclosure && it.enclosure.link) ||
+      (String(it.description || '').match(/<img[^>]+src=["']([^"']+)/i) || [])[1] || '';
+  }
+  function newsAgo(iso){
+    if (!iso) return '';
+    const t = new Date(String(iso).replace(' ', 'T')).getTime();
+    if (isNaN(t)) return '';
+    const s = Math.max(0, (Date.now() - t)/1000);
+    if (s < 3600) return `${Math.max(1, Math.round(s/60))} min atrás`;
+    if (s < 86400) return `${Math.round(s/3600)} h atrás`;
+    if (s < 604800) return `${Math.round(s/86400)} d atrás`;
+    return new Date(t).toLocaleDateString('pt-BR');
+  }
+  function renderNews(){
+    const strip = $('#newsStrip'), hint = $('#newsHint'); if (!strip) return;
+    const src = newsSource(), entry = newsRead()[src.id];
+    const items = (entry && entry.items) || [];
+    if (!items.length){
+      strip.innerHTML = Array.from({ length:4 }).map(() => '<div class="news-skel"></div>').join('');
+      if (hint) hint.textContent = (entry && entry.error)
+        ? 'Sem notícias recentes nesta fonte agora — tentamos de novo em alguns minutos.'
+        : 'Carregando notícias…';
+      return;
+    }
+    strip.innerHTML = items.slice(0, 10).map(it => {
+      const img = newsThumb(it);
+      return `<a class="news-card" href="${esc(it.link || '#')}" target="_blank" rel="noopener noreferrer">
+        ${img ? `<img class="news-thumb" src="${esc(img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">`
+              : '<div class="news-thumb"></div>'}
+        <div class="news-body"><div class="news-title">${esc(it.title || '')}</div>
+          <div class="news-meta">${esc(newsAgo(it.pubDate))}</div></div></a>`;
+    }).join('');
+    if (hint){
+      const at = entry.at ? new Date(entry.at).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }) : '';
+      hint.textContent = `Fonte: ${src.label} · ${items.length} notícias` + (at ? ` · atualizado às ${at}` : '') +
+        (entry.error ? ' · offline, mostrando a última busca' : '');
+    }
+  }
+  async function newsLoad(force){
+    const src = newsSource(), cache = newsRead(), entry = cache[src.id] || {};
+    const hasItems = Array.isArray(entry.items) && entry.items.length;
+    const fresh = hasItems && (Date.now() - (entry.at || 0)) < NEWS_TTL;
+    const cooling = (Date.now() - (entry.failAt || 0)) < NEWS_BACKOFF;
+    if (!force && (fresh || cooling)) return;
+    if (navigator.onLine === false){ renderNews(); return; }
+    if (DASH.newsBusy) return;
+    DASH.newsBusy = true;
+    let next;
+    try {
+      const ctl = new AbortController();
+      const to = setTimeout(() => ctl.abort(), 12000);
+      const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(src.url), { signal: ctl.signal });
+      clearTimeout(to);
+      const j = await res.json();
+      const recent = (j && j.status === 'ok' && Array.isArray(j.items)) ? newsRecent(j.items) : [];
+      next = recent.length
+        ? Object.assign({}, entry, { items: recent, at: Date.now(), error:false, failAt:0 })
+        : Object.assign({ items: [] }, entry, { error:true, failAt: Date.now() });
+    } catch(e){
+      next = Object.assign({ items: [] }, entry, { error:true, failAt: Date.now() });
+    }
+    DASH.newsBusy = false;
+    const c2 = newsRead(); c2[src.id] = next; newsWrite(c2);
+    renderNews();
+  }
+
+  /* ---------- VISÃO GERAL: interações ---------- */
+  $$('#kpiStrip .metric').forEach(b => b.addEventListener('click', () => showPage(b.dataset.goto || 'history')));
+  const qaSession = $('#qaSession'); if (qaSession) qaSession.addEventListener('click', () => showPage('session'));
+  const qaFicha = $('#qaFicha'); if (qaFicha) qaFicha.addEventListener('click', () => showPage('fichas'));
+  const qaGroup = $('#qaGroup'); if (qaGroup) qaGroup.addEventListener('click', () => showPage('grupo'));
+  const qaLoadDay = $('#qaLoadDay');
+  if (qaLoadDay) qaLoadDay.addEventListener('click', () => {
+    if (!active()){ notify('Selecione um aluno primeiro.', true); return; }
+    showPage('session');
+    const sel = $('#sessionDaySelect');
+    if (!sel || !sel.options.length){ notify('Este aluno ainda não tem ficha cadastrada.', true); return; }
+    loadDayIntoSession(num(sel.value) || 0);
+  });
+  $$('#chartMetric .seg-btn').forEach(b => b.addEventListener('click', () => {
+    DASH.metric = b.dataset.metric; DASH.hover = null;
+    $$('#chartMetric .seg-btn').forEach(x => x.classList.toggle('active', x === b));
+    drawDashChart();
+  }));
+  $$('#chartRange .seg-btn').forEach(b => b.addEventListener('click', () => {
+    DASH.weeks = num(b.dataset.weeks) || 8; DASH.hover = null;
+    $$('#chartRange .seg-btn').forEach(x => x.classList.toggle('active', x === b));
+    drawDashChart();
+  }));
+  $$('#newsTabs .seg-btn').forEach(b => b.addEventListener('click', () => {
+    DASH.news = b.dataset.news;
+    $$('#newsTabs .seg-btn').forEach(x => x.classList.toggle('active', x === b));
+    renderNews(); newsLoad(false);
+  }));
+  const newsRefresh = $('#newsRefresh');
+  if (newsRefresh) newsRefresh.addEventListener('click', () => {
+    newsRefresh.textContent = '…';
+    Promise.resolve(newsLoad(true)).then(() => { newsRefresh.textContent = '↻'; });
+  });
+  const dashCv = $('#dashChart');
+  if (dashCv){
+    dashCv.addEventListener('mousemove', ev => {
+      if (!DASH.geo) return;
+      const r = dashCv.getBoundingClientRect(), x = ev.clientX - r.left;
+      let hit = null;
+      DASH.geo.forEach(g => { if (Math.abs(x - g.cx) <= g.bw/2 + 4) hit = g.i; });
+      if (hit !== DASH.hover){ DASH.hover = hit; drawDashChart(); }
+    });
+    dashCv.addEventListener('mouseleave', () => { if (DASH.hover != null){ DASH.hover = null; drawDashChart(); } });
+  }
+  const kindCv = $('#kindChart');
+  if (kindCv){
+    kindCv.addEventListener('mousemove', ev => {
+      if (!DASH.kindSegs) return;
+      const r = kindCv.getBoundingClientRect();
+      const x = ev.clientX - r.left - r.width/2, y = ev.clientY - r.top - r.height/2;
+      let hit = null;
+      if (Math.hypot(x, y) <= Math.min(r.width, r.height)/2){
+        let a = Math.atan2(y, x); if (a < -Math.PI/2) a += Math.PI*2;
+        DASH.kindSegs.forEach((s, i) => { if (s.value && a >= s.a0 && a <= s.a1) hit = i; });
+      }
+      if (hit !== DASH.donutHover){ DASH.donutHover = hit; drawKindChart(); }
+    });
+    kindCv.addEventListener('mouseleave', () => { if (DASH.donutHover != null){ DASH.donutHover = null; drawKindChart(); } });
+  }
+  window.addEventListener('online', () => { if ($('#dashboard').classList.contains('active')) newsLoad(true); });
+  window.addEventListener('resize', () => { if ($('#dashboard').classList.contains('active')) drawDashboardCharts(); });
 
 /* ---------- HISTÓRICO ---------- */
   function exerciseNames(){
