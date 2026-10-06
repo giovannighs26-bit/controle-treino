@@ -268,6 +268,33 @@
     }
 
 
+
+    /* ===== CRONÔMETRO ===== */
+    .chrono{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:10px;
+      padding:8px 18px;background:#0d1511;border-bottom:1px solid var(--line);
+      box-shadow:0 6px 18px #00000059}
+    .chrono-ico{font-size:15px;opacity:.85}
+    .chrono-time{font-variant-numeric:tabular-nums;font-weight:800;font-size:19px;letter-spacing:.5px;
+      color:var(--accent2);cursor:pointer;user-select:none}
+    .chrono.run .chrono-time{color:#7dd6a5}
+    .chrono-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
+    .chrono-actions{margin-left:auto;display:flex;gap:6px;align-items:center}
+    .chrono-btn{border:1px solid var(--line);background:#131d17;color:var(--text);
+      min-width:40px;height:34px;padding:0 10px;border-radius:10px;font-size:14px;
+      display:grid;place-items:center;transition:border-color .15s,background .15s}
+    .chrono-btn:hover{border-color:var(--accent)}
+    .chrono-btn:active{transform:scale(.95)}
+    .chrono.run #chronoToggle{background:var(--accent);color:#1c1608;border-color:var(--accent)}
+    .chrono-btn.ghosty{font-size:12px;font-weight:600}
+    .sys-row{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+    @media(max-width:700px){
+      .chrono{padding:7px 12px;gap:8px}
+      .chrono-time{font-size:17px}
+      .chrono-lbl{display:none}
+      .chrono-btn{height:32px;min-width:34px;padding:0 7px;font-size:13px}
+      .chrono-btn span{display:none}
+    }
+
     /* ===== VISÃO GERAL ===== */
     .hero{grid-column:span 12;position:relative;overflow:hidden;
       background:linear-gradient(150deg,#1c2919,#121a14 58%,#0f1611)}
@@ -457,6 +484,18 @@
       <button class="btn ghost" id="logoutBtn" title="Sair do app">Sair</button>
     </div>
   </header>
+  <div class="chrono" id="chrono" role="group" aria-label="Cronometro">
+    <span class="chrono-ico">⏱</span>
+    <span class="chrono-time" id="chronoTime" title="Clique para iniciar ou pausar">00:00:00</span>
+    <span class="chrono-lbl">Cronometro do treino</span>
+    <div class="chrono-actions">
+      <button class="chrono-btn" id="chronoUse" title="Usar esta duracao no treino atual">⤓<span> Usar</span></button>
+      <button class="chrono-btn" id="chronoReset" title="Zerar cronometro">↺</button>
+      <button class="chrono-btn" id="chronoToggle" title="Iniciar cronometro">▶</button>
+      <button class="chrono-btn" id="chronoUpdate" title="Atualizar o sistema">⟳<span> Atualizar</span></button>
+    </div>
+  </div>
+
 
   <nav class="tabs" aria-label="Navegação">
     <button class="tab active" data-page="dashboard">Visão geral</button>
@@ -789,6 +828,14 @@
         <button class="btn ghost" id="resetBtn">Apagar tudo</button>
       </div></article>
     <article class="card"><h2>Alunos cadastrados</h2><div id="allStudents" class="list"></div></article>
+    <article class="card"><h2>Atualizar o sistema</h2>
+      <p class="hint" style="margin:0 0 12px">O app guarda uma cópia offline de si mesmo. Quando uma versão nova for publicada, use o botão abaixo para baixar a atualização e recarregar — os seus dados de treino não são afetados.</p>
+      <div class="sys-row">
+        <div><div class="item-title">Situação da instalação</div><div class="item-meta" id="sysVersion">verificando…</div></div>
+        <button class="btn" id="sysUpdateBtn">⟳ Atualizar sistema</button>
+      </div>
+      <p class="hint" id="sysUpdateMsg"></p>
+    </article>
   </div></section>
 </main>
 
@@ -2473,6 +2520,150 @@
   }
   window.addEventListener('online', () => { if ($('#dashboard').classList.contains('active')) newsLoad(true); });
   window.addEventListener('resize', () => { if ($('#dashboard').classList.contains('active')) drawDashboardCharts(); });
+
+  /* ---------- CRONÔMETRO DO TOPO ---------- */
+  const CHRONO_KEY = 'ghPerformance.chrono.v1';
+  const CHRONO_MAX = 12*60*60*1000;
+  const chrono = { running:false, base:0, acc:0, handle:null };
+
+  function chronoRead(){
+    try {
+      const o = JSON.parse(localStorage.getItem(CHRONO_KEY)) || {};
+      return { acc: num(o.acc) || 0, base: num(o.base) || 0, running: !!o.running };
+    } catch(e){ return { acc:0, base:0, running:false }; }
+  }
+  function chronoWrite(){
+    try { localStorage.setItem(CHRONO_KEY, JSON.stringify({ acc: chrono.acc, base: chrono.base, running: chrono.running })); }
+    catch(e){}
+  }
+  function chronoElapsed(){
+    return chrono.acc + (chrono.running && chrono.base ? (Date.now() - chrono.base) : 0);
+  }
+  function chronoFmt(ms){
+    const t = Math.max(0, Math.floor(ms/1000));
+    const h = Math.floor(t/3600), m = Math.floor(t/60)%60, s = t%60;
+    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }
+  function chronoPaint(){
+    const el = $('#chronoTime'); if (!el) return;
+    el.textContent = chronoFmt(chronoElapsed());
+    const bar = $('#chrono'); if (bar) bar.classList.toggle('run', chrono.running);
+    const tg = $('#chronoToggle');
+    if (tg){
+      tg.textContent = chrono.running ? '❚❚' : '▶';
+      tg.title = chrono.running ? 'Pausar cronômetro' : 'Iniciar cronômetro';
+      tg.setAttribute('aria-label', tg.title);
+    }
+  }
+  function chronoTick(){
+    clearInterval(chrono.handle);
+    if (chrono.running) chrono.handle = setInterval(chronoPaint, 250);
+  }
+  function chronoStart(){
+    if (chrono.running) return;
+    chrono.running = true; chrono.base = Date.now();
+    chronoWrite(); chronoPaint(); chronoTick();
+  }
+  function chronoPause(){
+    if (!chrono.running) return;
+    chrono.acc = chronoElapsed(); chrono.base = 0; chrono.running = false;
+    chronoWrite(); chronoPaint(); chronoTick();
+  }
+  function chronoReset(){
+    if (chronoElapsed() > 2000 && !confirm('Zerar o cronômetro?')) return;
+    chrono.acc = 0; chrono.base = 0; chrono.running = false;
+    chronoWrite(); chronoPaint(); chronoTick();
+    notify('Cronômetro zerado.');
+  }
+  function chronoUse(){
+    const el = chronoElapsed();
+    if (el < 60000){ notify('Marque pelo menos 1 minuto para usar.', true); return; }
+    const total = Math.round(el/60000);
+    const dur = $('#sessionDuration');
+    if (dur){ dur.value = String(total); }
+    const name = $('#sessionName');
+    if (name && !name.value.trim()){
+      const d = $('#sessionDaySelect');
+      const opt = d && d.options[d.selectedIndex];
+      if (opt && opt.value !== '') name.value = opt.textContent.trim();
+    }
+    showPage('session');
+    notify(`Duração de ${total} min aplicada ao treino.`);
+  }
+  function chronoInit(){
+    const saved = chronoRead();
+    chrono.acc = saved.acc; chrono.base = saved.base; chrono.running = saved.running;
+    if (chrono.running && !chrono.base) chrono.base = Date.now();
+    if (chrono.running && chronoElapsed() > CHRONO_MAX){ chrono.acc = 0; chrono.base = 0; chrono.running = false; chronoWrite(); }
+    chronoPaint(); chronoTick();
+    const tg = $('#chronoToggle'); if (tg) tg.addEventListener('click', () => chrono.running ? chronoPause() : chronoStart());
+    const rs = $('#chronoReset');  if (rs) rs.addEventListener('click', chronoReset);
+    const tm = $('#chronoTime');   if (tm) tm.addEventListener('click', () => chrono.running ? chronoPause() : chronoStart());
+    const us = $('#chronoUse');    if (us) us.addEventListener('click', chronoUse);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) chronoPaint(); });
+    window.addEventListener('focus', chronoPaint);
+  }
+
+  /* ---------- ATUALIZAR O SISTEMA ---------- */
+  async function renderSysInfo(){
+    const v = $('#sysVersion'); if (!v) return;
+    const parts = [];
+    try {
+      const keys = window.caches ? await caches.keys() : [];
+      parts.push(keys.length ? `cache offline: ${keys.join(', ')}` : 'sem cache offline');
+    } catch(e){ parts.push('cache indisponível'); }
+    try {
+      if ('serviceWorker' in navigator){
+        const regs = await navigator.serviceWorker.getRegistrations();
+        parts.push(regs.length ? 'service worker ativo' : 'service worker inativo');
+      } else parts.push('sem service worker');
+    } catch(e){}
+    parts.push(navigator.onLine === false ? 'offline' : 'online');
+    v.textContent = parts.join(' · ');
+  }
+  async function updateSystem(){
+    const btns = [$('#sysUpdateBtn'), $('#chronoUpdate')].filter(Boolean);
+    const msg = $('#sysUpdateMsg');
+    const say = t => { if (msg) msg.textContent = t; };
+    btns.forEach(b => { b.disabled = true; b.dataset.t = b.textContent; b.textContent = '⏳'; });
+    say('Procurando uma versão nova…');
+    // cada etapa é isolada: se uma falhar, a atualização continua
+    if ('serviceWorker' in navigator){
+      try {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map(r => r.update().catch(() => {})));
+        await Promise.all(regs.map(r => r.unregister().catch(() => {})));
+      } catch(e){}
+    }
+    say('Service worker removido. Limpando o cache…');
+    if (window.caches){
+      try {
+        const keys = await caches.keys();
+        await Promise.all(keys.map(k => caches.delete(k).catch(() => {})));
+      } catch(e){}
+    }
+    say('Cache limpo. Recarregando com a versão mais recente…');
+    await new Promise(r => setTimeout(r, 450));
+    try {
+      const url = new URL(location.href);
+      url.searchParams.set('v', String(Date.now()));
+      location.replace(url.toString());
+    } catch(e){
+      try { location.reload(); } catch(e2){
+        say('Recarregue o app manualmente para concluir a atualização.');
+        btns.forEach(b => { b.disabled = false; if (b.dataset.t) b.textContent = b.dataset.t; });
+      }
+    }
+  }
+  (function sysInit(){
+    const b1 = $('#sysUpdateBtn'), b2 = $('#chronoUpdate');
+    if (b1) b1.addEventListener('click', updateSystem);
+    if (b2) b2.addEventListener('click', updateSystem);
+    renderSysInfo();
+    window.addEventListener('online', renderSysInfo);
+    window.addEventListener('offline', renderSysInfo);
+  })();
+  chronoInit();
 
 /* ---------- HISTÓRICO ---------- */
   function exerciseNames(){
