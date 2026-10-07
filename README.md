@@ -11,6 +11,23 @@ treino em grupo e histórico com gráficos. Tudo salvo no `localStorage` do nave
 Abra `index.html` no navegador (ou instale pelo botão **⤓ Instalar**). Os dados ficam no
 dispositivo — use **Dados e backup** para exportar/importar.
 
+## Montar treino — editar a ficha do aluno
+Aba dedicada a montar e ajustar a ficha sem sair da tela (sem modal):
+
+- **+ Nova ficha** / **+ Novo treino** — cria a ficha ou mais um dia de treino
+- **+ Exercício** — acrescenta uma linha; o campo do exercício tem **autocomplete** com todos os
+  nomes que você já usa (fichas + histórico)
+- Campos por exercício: exercício, séries, reps (aceita faixa `6–8` ou blocos `6+4+2`), carga (aceita
+  vírgula, ex.: `42,5`), RIR e descanso/observações
+- **Duplicar** — cria um treino novo a partir de um existente
+- **Copiar p/ aluno** — leva o treino inteiro para a ficha de outro aluno
+- **Excluir** — remove o treino inteiro; o `×` de cada linha remove um exercício
+- **Prescrever** — itens de texto livre (ex.: “Aquecimento — 5 min de bike”) ficam guardados como
+  estão; o botão converte em séries quando você quiser
+- Salva sozinho (não existe botão Salvar) e **nada que você não tocou é reescrito**
+
+O botão **Editar** da aba *Fichas de treino* leva direto para esta aba.
+
 ## Registro de treino — três tipos de série
 Cada exercício monta, ao carregar a ficha:
 
@@ -50,6 +67,8 @@ Lê as séries de trabalho contra a faixa de repetições do exercício e sugere
 
 ## Estrutura
 - `index.html` — o app inteiro (HTML + CSS + JS, sem dependências externas)
+- Abas: Visão geral · Fichas de treino · **Montar treino** · Registrar treino · Treino em grupo ·
+  Histórico · Avaliação física · Dados e backup
 - `sw.js` — service worker (cache offline)
 - `manifest.json` / `manifest.webmanifest` — manifest do PWA
 - `icons/` — ícones
