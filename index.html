@@ -106,6 +106,12 @@
 #mtFicha .mt-free .ex-name{grid-column:1/3}
 #mtFicha .mt-row .mt-reps{min-width:0}
 @media (max-width:760px){#mtFicha .mt-day-head .actions{width:100%}#mtFicha .mt-day-head .actions .btn{flex:1}}
+/* ---------- aviso de sincronia entre abas ---------- */
+.sync-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0;padding:11px 13px;
+  border:1px solid var(--accent);border-radius:12px;background:rgba(216,169,61,.12);color:var(--accent2);
+  font-size:12.5px;line-height:1.45}
+.sync-bar[hidden]{display:none}
+.sync-bar span{flex:1;min-width:170px}
     .day{border-top:1px solid var(--line)}
     .day-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 15px;cursor:pointer}
     .day-head .dt{font-weight:700;color:var(--accent2);font-size:13px}
@@ -654,6 +660,10 @@
         </div>
         <p class="hint" id="sessionPeriodHint"></p>
         <h3 style="margin-top:16px">Exercícios — marque as séries feitas e ajuste carga, reps e RIR</h3>
+        <div id="sessionSync" class="sync-bar" hidden>
+          <span id="sessionSyncText"></span>
+          <button class="btn small" type="button" id="sessionSyncBtn">↻ Recarregar da ficha</button>
+        </div>
         <div id="exerciseCards"></div>
         <div class="actions" style="margin-top:14px">
           <button type="button" class="btn secondary" id="addExercise">+ Exercício</button>
@@ -1095,7 +1105,7 @@
     $$('.tab').forEach(b => b.classList.toggle('active', b.dataset.page === id));
     $$('.page').forEach(p => p.classList.toggle('active', p.id === id));
     if (id === 'history') setTimeout(drawChart, 30);
-    if (id === 'dashboard') setTimeout(drawDashboardCharts, 30);
+    if (id === 'dashboard') { renderDashboard(); setTimeout(drawDashboardCharts, 30); }
     if (id === 'session') autoLoadToday();
     if (id === 'grupo') renderGrupo();
     if (id === 'aval') { renderAval(); setTimeout(drawAvChart, 40); }
@@ -1117,7 +1127,11 @@
     sel.disabled = !state.students.length;
   }
   $('#activeStudent').addEventListener('change', e => {
-    state.activeStudentId = e.target.value; localStorage.setItem(KEY, JSON.stringify(state)); renderAll();
+    if ($('#montar') && $('#montar').classList.contains('active')) mtSyncNow();
+    state.activeStudentId = e.target.value;
+    localStorage.setItem(KEY, JSON.stringify(state));
+    save();
+    autoLoadToday();
   });
   function openStudent(s){
     $('#studentModalTitle').textContent = s ? 'Editar aluno' : 'Cadastrar aluno';
@@ -2087,16 +2101,72 @@
     });
     const sel = $('#sessionDaySelect'); if (sel) sel.value = String(index);
     updateSessionHint();
+    sessionSig = fichaSigDay(day);
+    sessionStudent = s ? s.id : null;
+    sessionBody = sessionBodySig();
     if (!silent) notify(`“${day.title}” carregado — ajuste as cargas e marque as séries.`);
   }
+  /* ---------- SINCRONIA ENTRE AS ABAS ----------
+     "Registrar treino" guarda uma CÓPIA do dia da ficha. Se a ficha for editada depois
+     (aba "Montar treino"), essa cópia fica velha. Aqui a gente detecta e recarrega
+     sozinho quando é seguro; se houver trabalho na tela, avisa em vez de apagar por cima. */
+  let sessionSig = null;      // assinatura da ficha que está carregada na tela
+  let sessionBody = null;     // assinatura do que foi renderizado ao carregar
+  let sessionStudent = null;  // de quem é o treino carregado
+  function fichaSigDay(day){ return day ? `${day.title || ''}\u0002${(day.items || []).join('\u0001')}` : ''; }
+  function sessionBodySig(){
+    return $$('#exerciseCards .ex-card').map(c => {
+      const v = sel => { const el = c.querySelector(sel); return el ? String(el.value) : ''; };
+      const sets = [...c.querySelectorAll('.set-row')].map(r => {
+        const g = sel => { const el = r.querySelector(sel); return el ? String(el.value) : ''; };
+        const done = r.querySelector('.s-done');
+        return [g('.s-reps'), g('.s-load'), g('.s-rir'), done && done.checked ? '1' : '0'].join(',');
+      }).join('|');
+      return [v('.ex-name'), v('.ex-sets'), sets].join('~');
+    }).join('\u0003');
+  }
+  function sessionDirty(){ return sessionBody !== null && sessionBodySig() !== sessionBody; }
+  function sessionCheckSync(){
+    const bar = $('#sessionSync'); if (!bar) return;
+    const s = active(); const plan = s ? plansOf(s.id) : null;
+    const idx = num($('#sessionDaySelect').value) || 0;
+    const day = plan && plan.days ? plan.days[idx] : null;
+    const cards = $$('#exerciseCards .ex-card');
+    const vazio = cards.length === 0 || (cards.length === 1 && !cards[0].querySelector('.ex-name').value.trim());
+    const trocouAluno = !!(sessionStudent && s && sessionStudent !== s.id);
+    const mudouFicha = sessionSig !== null && fichaSigDay(day) !== sessionSig;
+    if (vazio || (!trocouAluno && !mudouFicha)){ bar.hidden = true; return; }
+    $('#sessionSyncText').textContent = trocouAluno
+      ? 'Você trocou de aluno — estes exercícios são do aluno anterior. Recarregue para trazer o treino certo.'
+      : 'A ficha deste treino foi alterada depois que ela foi carregada aqui.';
+    bar.hidden = false;
+  }
+  function sessionReload(){
+    const idx = num($('#sessionDaySelect').value) || 0;
+    loadDayIntoSession(idx, true);
+    sessionCheckSync();
+  }
+  $('#sessionSyncBtn').addEventListener('click', () => {
+    sessionReload();
+    notify('Treino recarregado da ficha.');
+  });
+
   function autoLoadToday(){
     renderSessionDays();
     const cards = $$('#exerciseCards .ex-card');
     const onlyBlank = cards.length === 1 && !cards[0].querySelector('.ex-name').value.trim()
       && ![...cards[0].querySelectorAll('.s-done')].some(c => c.checked);
     const s = active(); const plan = s ? plansOf(s.id) : null;
-    if (plan && plan.days.length && (cards.length === 0 || onlyBlank))
-      loadDayIntoSession(num($('#sessionDaySelect').value) || 0, true);
+    const idx = num($('#sessionDaySelect').value) || 0;
+    const day = plan && plan.days ? plan.days[idx] : null;
+    const trocouAluno = !!(sessionStudent && s && sessionStudent !== s.id);
+    const mudouFicha = sessionSig !== null && fichaSigDay(day) !== sessionSig;
+    /* Recarrega sozinho quando não há nada digitado; se o usuário já mexeu, não apaga
+       nada — mostra a faixa e deixa ele decidir. */
+    const seguro = (trocouAluno || mudouFicha) && !sessionDirty();
+    if (plan && plan.days.length && (cards.length === 0 || onlyBlank || seguro))
+      loadDayIntoSession(idx, true);
+    sessionCheckSync();
   }
   function clearSession(){
     $('#sessionDate').value = today();
