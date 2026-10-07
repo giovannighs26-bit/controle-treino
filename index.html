@@ -81,10 +81,10 @@
     .week{padding:12px;background:#101813;border:1px solid var(--line);border-radius:12px}
     .week.current{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
     .week strong{display:block;color:var(--accent2)}.week small{color:var(--muted)}
-    .toast{position:fixed;right:18px;bottom:18px;z-index:60;max-width:360px;padding:12px 16px;border-radius:12px;
+    .toast{position:fixed;right:18px;bottom:18px;z-index:120;max-width:360px;padding:12px 16px;border-radius:12px;
       background:#25342b;border:1px solid #486051;box-shadow:var(--shadow);transform:translateY(120px);opacity:0;transition:.25s}
     .toast.show{transform:none;opacity:1}.toast.error{background:#432724;border-color:#78423d}
-    .modal{display:none;position:fixed;inset:0;z-index:50;background:#000c;padding:18px;place-items:center}
+    .modal{display:none;position:fixed;inset:0;z-index:100;background:#000c;padding:18px;place-items:center}
     .modal.open{display:grid}
     .modal-box{width:min(100%,680px);max-height:90vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:var(--shadow)}
     .modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
@@ -185,7 +185,7 @@
     .set-row .check{font-size:11px;white-space:nowrap;padding-bottom:9px}
     .ex-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px}
     .ex-note{margin-top:9px}
-    .timer-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;z-index:70;display:flex;align-items:center;gap:14px;
+    .timer-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;z-index:90;display:flex;align-items:center;gap:14px;
       padding:12px 16px;border-radius:16px;background:#16211b;border:1px solid var(--accent);box-shadow:0 18px 50px #000a;
       min-width:min(92vw,430px);justify-content:space-between}
     .timer-bar.alarm{background:#432724;border-color:var(--danger);animation:pulse .7s infinite}
@@ -439,6 +439,98 @@
       .av-cmp th,.av-cmp td{padding:7px 5px;font-size:12px}
       .photo-thumbs img{width:62px;height:82px}
     }
+
+    /* ---------- FINANCEIRO ---------- */
+    .fin-toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+    .fin-month{display:flex;align-items:center;gap:6px}
+    .fin-month .btn{white-space:nowrap}
+    .fin-month input[type=month]{background:#0d1511;border:1px solid var(--line);color:var(--text);
+      border-radius:11px;padding:9px 11px;font:inherit}
+    .fin-nav{width:38px;height:38px;border-radius:11px;border:1px solid var(--line);background:var(--panel2);
+      color:var(--accent2);font-size:19px;font-weight:800;line-height:1;display:inline-grid;place-items:center}
+    .fin-nav:hover{border-color:var(--accent);color:var(--accent)}
+    .fin-input{background:#0d1511;border:1px solid var(--line);color:var(--text);border-radius:11px;
+      padding:9px 11px;font:inherit;min-width:0}
+    .fin-input:focus{outline:none;border-color:var(--accent)}
+
+    .fin-kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+    .fin-kpi{padding:13px;border-radius:14px;background:#0d1511;border:1px solid var(--line);
+      display:grid;gap:4px;min-width:0}
+    .fin-kpi b{font-size:19px;font-weight:900;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .fin-kpi span{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700}
+    .fin-kpi small{font-size:11px;color:var(--muted)}
+    .fin-kpi.ok b{color:var(--ok)} .fin-kpi.warn b{color:var(--accent2)} .fin-kpi.bad b{color:var(--danger)}
+    .fin-kpi .bar{height:5px;border-radius:99px;background:#1b2620;overflow:hidden;margin-top:2px}
+    .fin-kpi .bar i{display:block;height:100%;border-radius:99px;background:var(--gh-grad)}
+
+    .fin-table{width:100%;border-collapse:collapse;min-width:800px}
+    .fin-table th{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);
+      text-align:left;padding:11px 12px;border-bottom:1px solid var(--line);position:sticky;top:0;
+      background:var(--panel2);z-index:2}
+    .fin-table td{padding:10px 12px;border-bottom:1px solid #1e2a23;font-size:13px;vertical-align:middle}
+    .fin-table tr:last-child td{border-bottom:0}
+    .fin-table tbody tr{cursor:pointer}
+    .fin-table tbody tr:hover{background:#152019}
+    .fin-table .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+    .fin-table .nome{font-weight:700}
+    .fin-table .nome small{display:block;font-weight:400;color:var(--muted);font-size:11px}
+    .fin-table .acoes{display:flex;gap:6px;justify-content:flex-end}
+
+    .fin-st{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;
+      font-size:11px;font-weight:800;white-space:nowrap;border:1px solid transparent}
+    .fin-st i{width:7px;height:7px;border-radius:99px;background:currentColor;flex:0 0 auto}
+    .fin-st.pago{background:#12301f;color:#7fdca4;border-color:#1e4a32}
+    .fin-st.pendente{background:#2a2616;color:var(--accent2);border-color:#4a3f1c}
+    .fin-st.atrasado{background:#341a19;color:#f0938f;border-color:#5a2724}
+    .fin-st.parcial{background:#1a2733;color:#8ec2ea;border-color:#26455c}
+    .fin-st.semvalor,.fin-st.inativo,.fin-st.previsto{background:#1a231d;color:var(--muted);border-color:var(--line)}
+
+    .fin-ico{width:32px;height:32px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);
+      color:var(--accent2);font-size:14px;line-height:1;display:inline-grid;place-items:center}
+    .fin-ico:hover{border-color:var(--accent)}
+    .fin-ico.go{background:var(--accent);border-color:var(--accent);color:#1c1608}
+
+    .fin-donut-wrap{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center}
+    .fin-donut-wrap canvas{height:190px;width:190px}
+    .fin-leg{display:grid;gap:8px;align-content:center}
+    .fin-leg-row{display:grid;grid-template-columns:auto 1fr auto auto;gap:9px;align-items:center;font-size:12.5px}
+    .fin-leg-row i{width:10px;height:10px;border-radius:99px}
+    .fin-leg-row em{font-style:normal;color:var(--muted);font-size:11px;min-width:38px;text-align:right}
+
+    .fin-alert{display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:12px;
+      background:#2a1d16;border:1px solid #4d3323;color:var(--accent2);font-size:12.5px;flex-wrap:wrap}
+    .fin-alert b{color:#ffd9a8}
+    .fin-alert.info{background:#16202a;border-color:#26384a;color:#9dc4e6}
+    .fin-alert.info b{color:#cfe6f8}
+    .fin-chips{display:flex;gap:7px;flex-wrap:wrap}
+    .fin-chip{border:1px solid var(--line);background:var(--panel2);color:var(--muted);border-radius:999px;
+      padding:7px 12px;font-size:12px;font-weight:700}
+    .fin-chip.on{background:var(--accent);border-color:var(--accent);color:#1c1608}
+    .fin-hist{display:grid;gap:8px;max-height:250px;overflow:auto;padding-right:2px}
+    .fin-hist-row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:9px 11px;
+      border:1px solid var(--line);border-radius:11px;background:#0d1511;font-size:12.5px}
+    .fin-hist-row b{font-weight:800}
+    .fin-hist-row small{display:block;color:var(--muted);font-size:11px}
+    .fin-x{border:0;background:none;color:var(--danger);font-size:16px;line-height:1;padding:4px 6px;border-radius:8px}
+    .fin-x:hover{background:#341a19}
+    .fin-tot{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:14px}
+    .fin-tot div{padding:11px;border-radius:12px;background:#0d1511;border:1px solid var(--line)}
+    .fin-tot b{display:block;font-size:17px;font-weight:900}
+    .fin-tot span{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
+    .fin-msg{width:100%;min-height:104px;background:#0d1511;border:1px solid var(--line);color:var(--text);
+      border-radius:12px;padding:11px;font:inherit;font-size:13px;resize:vertical}
+    .fin-sep{border:0;border-top:1px solid var(--line);margin:16px 0}
+    @media(max-width:1150px){.fin-kpis{grid-template-columns:repeat(3,1fr)}}
+    @media(max-width:760px){
+      .fin-kpis{grid-template-columns:repeat(2,1fr)}
+      .fin-donut-wrap{grid-template-columns:1fr}
+      .fin-donut-wrap canvas{margin:0 auto}
+      .fin-toolbar > .actions,.fin-toolbar > .fin-month{width:100%}
+      .fin-toolbar > .actions > *{flex:1}
+      .fin-month{justify-content:space-between}
+      .fin-month input[type=month]{flex:1;min-width:0}
+    }
+  
   </style>
 </head>
 <body>
@@ -522,6 +614,7 @@
     <button class="tab" data-page="grupo">Treino em grupo</button>
     <button class="tab" data-page="history">Histórico</button>
     <button class="tab" data-page="aval">Avaliação física</button>
+    <button class="tab" data-page="financeiro">Financeiro</button>
     <button class="tab" data-page="data">Dados e backup</button>
   </nav>
 
@@ -844,7 +937,190 @@
 
   </div></section>
 
-  <section class="page" id="data"><div class="grid">
+  <section class="page" id="financeiro">
+      <div class="grid">
+
+        <article class="card">
+          <div class="fin-toolbar">
+            <div class="fin-month">
+              <button class="fin-nav" id="finPrev" type="button" title="Mês anterior" aria-label="Mês anterior">‹</button>
+              <input type="month" id="finMes" aria-label="Mês de referência">
+              <button class="fin-nav" id="finNext" type="button" title="Próximo mês" aria-label="Próximo mês">›</button>
+              <button class="btn ghost small" id="finHoje" type="button">Mês atual</button>
+            </div>
+            <div class="actions">
+              <input class="fin-input" id="finBusca" type="search" placeholder="Buscar aluno…" style="width:170px">
+              <button class="btn secondary small" id="finCsv" type="button">↧ CSV do mês</button>
+              <button class="btn secondary small" id="finAjustes" type="button">⚙ Ajustes</button>
+            </div>
+          </div>
+          <div class="fin-chips" id="finChips" style="margin-top:12px"></div>
+        </article>
+
+        <article class="card">
+          <div class="fin-kpis" id="finKpis"></div>
+          <div id="finAlertas" style="margin-top:12px"></div>
+        </article>
+
+        <article class="card half">
+          <div class="card-head">
+            <h2>Evolução dos últimos 6 meses</h2>
+            <span class="badge">Previsto × recebido</span>
+          </div>
+          <div class="chart-box" style="height:260px"><canvas id="finChartEvol"></canvas></div>
+        </article>
+
+        <article class="card half">
+          <div class="card-head">
+            <h2>Situação do mês</h2>
+            <span class="hint" id="finMesLabel"></span>
+          </div>
+          <div class="fin-donut-wrap">
+            <canvas id="finChartDonut"></canvas>
+            <div class="fin-leg" id="finLegenda"></div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <h2>Mensalidades dos alunos</h2>
+            <span class="badge" id="finResumo"></span>
+          </div>
+          <div class="table-wrap">
+            <table class="fin-table">
+              <thead>
+                <tr>
+                  <th>Aluno</th>
+                  <th>Plano</th>
+                  <th class="num">Mensalidade</th>
+                  <th>Vencimento</th>
+                  <th>Situação</th>
+                  <th class="num">Pago no mês</th>
+                  <th class="num">Em falta</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="finTbody"></tbody>
+            </table>
+          </div>
+          <p class="hint">Clique na linha para abrir a ficha financeira do aluno. <b>✓</b> registra o pagamento · <b>💬</b> monta a cobrança para o WhatsApp · <b>⚙</b> define o valor da mensalidade.</p>
+        </article>
+
+      </div>
+    </section>
+
+    <div class="modal" id="finPayModal">
+      <div class="modal-box">
+        <div class="modal-head">
+          <h2 id="finPayTitle">Registrar pagamento</h2>
+          <button class="close" type="button" data-close>&times;</button>
+        </div>
+        <form id="finPayForm">
+          <div class="form">
+            <div class="field span6"><label>Aluno</label><select id="finPayAluno"></select></div>
+            <div class="field span3"><label>Mês de referência</label><input type="month" id="finPayMes" required></div>
+            <div class="field span3"><label>Tipo</label>
+              <select id="finPayTipo">
+                <option value="mensalidade">Mensalidade</option>
+                <option value="avulsa">Avulsa / extra</option>
+                <option value="outro">Outro</option>
+              </select>
+            </div>
+            <div class="field span3"><label>Valor (R$)</label><input id="finPayValor" inputmode="decimal" placeholder="0,00" required></div>
+            <div class="field span3"><label>Data do pagamento</label><input type="date" id="finPayData" required></div>
+            <div class="field span3"><label>Forma</label>
+              <select id="finPayForma">
+                <option value="pix">PIX</option>
+                <option value="dinheiro">Dinheiro</option>
+                <option value="cartao">Cartão</option>
+                <option value="transferencia">Transferência</option>
+                <option value="outro">Outro</option>
+              </select>
+            </div>
+            <div class="field span3"><label>Observação</label><input id="finPayObs" maxlength="80" placeholder="opcional"></div>
+          </div>
+          <p class="hint" id="finPayInfo"></p>
+          <div class="actions" style="margin-top:14px">
+            <button class="btn" type="submit">Salvar pagamento</button>
+            <button class="btn secondary" type="button" id="finPayQuitar">Quitar o que falta</button>
+            <button class="btn ghost" type="button" data-close>Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal" id="finAlunoModal">
+      <div class="modal-box">
+        <div class="modal-head">
+          <h2 id="finAlunoTitulo">Ficha financeira</h2>
+          <button class="close" type="button" data-close>&times;</button>
+        </div>
+        <div class="fin-tot" id="finAlunoTot"></div>
+        <form id="finAlunoForm">
+          <div class="form">
+            <div class="field span3"><label>Mensalidade (R$)</label><input id="finAlunoValor" inputmode="decimal" placeholder="0,00"></div>
+            <div class="field span3"><label>Dia de vencimento</label><input id="finAlunoDia" type="number" min="1" max="31" step="1"></div>
+            <div class="field span3"><label>Desconto (%)</label><input id="finAlunoDesc" inputmode="decimal" placeholder="0"></div>
+            <div class="field span3"><label>Cobrar a partir de</label><input type="month" id="finAlunoDesde"></div>
+            <div class="field span4"><label>Situação</label>
+              <select id="finAlunoAtivo">
+                <option value="1">Ativo</option>
+                <option value="0">Inativo / encerrado</option>
+              </select>
+            </div>
+            <div class="field span4"><label>Plano</label><input id="finAlunoPlano" maxlength="40" placeholder="Ex.: 3x por semana"></div>
+            <div class="field span4"><label>WhatsApp</label><input id="finAlunoTel" inputmode="tel" maxlength="20" placeholder="DDD + número"></div>
+            <div class="field span12"><label>Observações</label><input id="finAlunoObs" maxlength="120" placeholder="opcional"></div>
+          </div>
+          <div class="actions" style="margin-top:14px">
+            <button class="btn" type="submit">Salvar</button>
+            <button class="btn secondary" type="button" id="finAlunoCobrar">💬 Cobrar no WhatsApp</button>
+            <button class="btn ghost" type="button" data-close>Fechar</button>
+          </div>
+        </form>
+        <hr class="fin-sep">
+        <div class="card-head" style="margin-bottom:10px">
+          <h3 style="margin:0">Histórico de pagamentos</h3>
+          <button class="btn secondary small" type="button" id="finAlunoNovo">+ Lançar pagamento</button>
+        </div>
+        <div class="fin-hist" id="finAlunoHist"></div>
+      </div>
+    </div>
+
+    <div class="modal" id="finAjustesModal">
+      <div class="modal-box">
+        <div class="modal-head">
+          <h2>Ajustes do financeiro</h2>
+          <button class="close" type="button" data-close>&times;</button>
+        </div>
+        <form id="finAjustesForm">
+          <div class="form">
+            <div class="field span6"><label>Nome do titular (quem recebe)</label><input id="finCfgTitular" maxlength="60" placeholder="Seu nome"></div>
+            <div class="field span6"><label>Chave PIX</label><input id="finCfgPix" maxlength="80" placeholder="CPF, telefone, e-mail ou aleatória"></div>
+            <div class="field span3"><label>Valor padrão (R$)</label><input id="finCfgValor" inputmode="decimal" placeholder="0,00"></div>
+            <div class="field span3"><label>Dia de vencimento padrão</label><input id="finCfgDia" type="number" min="1" max="31" step="1"></div>
+            <div class="field span6"><label>Aplicar o valor padrão</label>
+              <div class="actions" style="margin-top:4px">
+                <button class="btn secondary small" type="button" id="finCfgAplicar">Aos alunos sem valor</button>
+                <button class="btn secondary small" type="button" id="finCfgAplicarTodos">A todos os ativos</button>
+                <button class="btn secondary small" type="button" id="finCfgAplicarDia">Aplicar o dia a todos</button>
+              </div>
+            </div>
+            <div class="field span12"><label>Mensagem de cobrança</label>
+              <textarea class="fin-msg" id="finCfgMsg" maxlength="700"></textarea>
+            </div>
+          </div>
+          <p class="hint">Campos disponíveis: <b>{aluno}</b> <b>{primeiro}</b> <b>{mes}</b> <b>{valor}</b> <b>{venc}</b> <b>{plano}</b> <b>{pix}</b> <b>{titular}</b></p>
+          <div class="actions" style="margin-top:14px">
+            <button class="btn" type="submit">Salvar ajustes</button>
+            <button class="btn secondary" type="button" id="finCfgResetMsg">Restaurar mensagem padrão</button>
+            <button class="btn ghost" type="button" data-close>Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <section class="page" id="data"><div class="grid">
     <article class="card half"><h2>Backup local</h2>
       <p class="muted">Exporte todos os alunos, fichas, sessões e periodizações em um arquivo JSON.</p>
       <div class="actions">
@@ -941,7 +1217,7 @@
 
   let state = load();
 
-  function blank(){ return {version:1, auth:null, activeStudentId:null, students:[], plans:{}, sessions:[], periodizations:{}, assessments:[], group:null}; }
+  function blank(){ return {version:1, auth:null, activeStudentId:null, students:[], plans:{}, sessions:[], periodizations:{}, assessments:[], group:null, finance:null}; }
   function load(){
     try { const p = JSON.parse(localStorage.getItem(KEY)); if (p && Array.isArray(p.students)) return Object.assign(blank(), p); } catch(e){}
     return blank();
@@ -1018,6 +1294,609 @@
     if (b) b.addEventListener('click', baseApplyFromUI);
   })();
 
+  /* ================= FINANCEIRO =================
+     Gestão de mensalidades: valor por aluno, vencimento, lançamentos de pagamento,
+     situação mês a mês, gráficos e cobrança pronta para o WhatsApp.
+     Todo o dado vive em state.finance — nada mais do app é tocado. */
+  const FIN_MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  const FIN_MESES_CURTO = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  const FIN_FORMAS = {pix:'PIX', dinheiro:'Dinheiro', cartao:'Cartão', transferencia:'Transferência', outro:'Outro'};
+  const FIN_TIPOS = {mensalidade:'Mensalidade', avulsa:'Avulsa', outro:'Outro'};
+  const FIN_COR = {pago:'#63c58b', pendente:'#d8a93d', atrasado:'#df6a67', parcial:'#6fa8d6', semvalor:'#3a4a40'};
+  const FIN_ST = {
+    pago:{t:'Pago', c:'pago'}, pendente:{t:'Pendente', c:'pendente'}, atrasado:{t:'Atrasado', c:'atrasado'},
+    parcial:{t:'Parcial', c:'parcial'}, semvalor:{t:'Sem valor', c:'semvalor'},
+    inativo:{t:'Inativo', c:'inativo'}, previsto:{t:'Previsto', c:'previsto'},
+    fora:{t:'Não cobrado', c:'semvalor'}
+  };
+  const FIN_FILTROS = [['todos','Todos'],['atrasado','Atrasados'],['pendente','Pendentes'],['parcial','Parciais'],
+    ['pago','Pagos'],['semvalor','Sem valor'],['fora','Não cobrados'],['inativo','Inativos']];
+  const FIN_MSG_PADRAO = 'Olá, {primeiro}! Tudo bem? 😊\n\nPassando para lembrar da mensalidade de {mes} — {valor} — com vencimento em {venc}.\n{pix}Se já pagou, desconsidere. Obrigado! 💪';
+
+  let finMes = today().slice(0, 7);
+  let finFiltro = 'todos';
+  let finBusca = '';
+  let finEditId = null;
+
+  function finEnsure(){
+    if (!state.finance || typeof state.finance !== 'object') state.finance = {};
+    const f = state.finance;
+    f.settings = Object.assign({pix:'', titular:'', diaVenc:5, valorPadrao:0, msgPadrao:''}, f.settings || {});
+    if (!Array.isArray(f.payments)) f.payments = [];
+    if (!f.students || typeof f.students !== 'object') f.students = {};
+    return f;
+  }
+  function finCfg(id){
+    const f = finEnsure(), c = f.students[id] || {};
+    return {
+      valor: num(c.valor),
+      dia: Math.min(31, Math.max(1, Math.round(num(c.dia) || num(f.settings.diaVenc) || 5))),
+      plano: c.plano || '',
+      desconto: Math.min(100, Math.max(0, num(c.desconto))),
+      ativo: c.ativo !== false,
+      tel: c.tel || '', obs: c.obs || '',
+      /* Mês a partir do qual o aluno é cobrado. Sem isso o app marcaria como atrasado
+         todo o ano anterior a entrada do aluno no sistema. */
+      desde: c.desde || (String(((state.students || []).find(x => x.id === id) || {}).createdAt || '').slice(0, 7)) || today().slice(0, 7)
+    };
+  }
+  function finSetCfg(id, patch){
+    const f = finEnsure();
+    f.students[id] = Object.assign({}, f.students[id] || {}, patch);
+  }
+  function finAlunos(){ return state.students.filter(s => (s.name || '').trim()); }
+
+  /* ---------- dinheiro ---------- */
+  function finBR(v){ return 'R$ ' + (Number(v) || 0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+  function finNum(v){ return (Number(v) || 0).toFixed(2).replace('.', ','); }
+  function finEixo(v){
+    v = Number(v) || 0;
+    if (v >= 1000) return 'R$ ' + (v / 1000).toFixed(v >= 10000 ? 0 : 1).replace('.', ',') + 'k';
+    return 'R$ ' + Math.round(v);
+  }
+  function finParse(v){
+    let s = String(v ?? '').trim().replace(/[^\d.,-]/g, '');
+    if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
+    else if ((s.match(/\./g) || []).length > 1) s = s.replace(/\./g, '');
+    return Math.round((Number(s) || 0) * 100) / 100;
+  }
+
+  /* ---------- datas ---------- */
+  function finAddMes(mes, n){
+    const [y, m] = mes.split('-').map(Number);
+    const d = new Date(y, m - 1 + n, 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  }
+  function finDueISO(mes, dia){
+    const [y, m] = mes.split('-').map(Number);
+    const ultimo = new Date(y, m, 0).getDate();
+    return `${mes}-${String(Math.min(Math.max(1, dia), ultimo)).padStart(2, '0')}`;
+  }
+  function finDueLabel(mes, dia){ const p = finDueISO(mes, dia).split('-'); return `${p[2]}/${p[1]}`; }
+  function finMesLabel(mes){ const p = mes.split('-').map(Number); return `${FIN_MESES[p[1] - 1]} de ${p[0]}`; }
+  function finMesCurto(mes){ const p = mes.split('-').map(Number); return `${FIN_MESES_CURTO[p[1] - 1]}/${String(p[0]).slice(2)}`; }
+  function finDataBR(iso){ const p = String(iso || '').split('-'); return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : (iso || '—'); }
+
+  /* ---------- situação de um aluno em um mês ---------- */
+  function finPagoNoMes(id, mes){
+    return finEnsure().payments.filter(p => p.studentId === id && p.mes === mes).reduce((a, p) => a + num(p.valor), 0);
+  }
+  function finInfo(id, mes){
+    const cfg = finCfg(id);
+    const avulsas = finEnsure().payments
+      .filter(p => p.studentId === id && p.mes === mes && p.tipo !== 'mensalidade')
+      .reduce((a, p) => a + num(p.valor), 0);
+    const base = Math.round(cfg.valor * (1 - cfg.desconto / 100) * 100) / 100;
+    const fora = !!(cfg.desde && mes < cfg.desde);
+    /* Fora do período não há mensalidade prevista; só o que foi lançado à parte conta. */
+    const esperado = Math.round((fora ? avulsas : base + avulsas) * 100) / 100;
+    const pago = Math.round(finPagoNoMes(id, mes) * 100) / 100;
+    const falta = Math.max(0, Math.round((esperado - pago) * 100) / 100);
+    const hoje = today(), mesAtual = hoje.slice(0, 7);
+    const venc = finDueISO(mes, cfg.dia);
+    const futuro = mes > mesAtual;
+    const vencido = !futuro && venc < hoje && falta > 0;
+    let st;
+    if (!cfg.ativo) st = 'inativo';
+    else if (esperado <= 0 && pago <= 0) st = fora ? 'fora' : 'semvalor';
+    else if (esperado > 0 && falta <= 0) st = 'pago';
+    else if (pago > 0) st = vencido ? 'atrasado' : 'parcial';
+    else if (futuro) st = 'previsto';
+    else st = vencido ? 'atrasado' : 'pendente';
+    return {cfg, base, avulsas, esperado, pago, falta, venc, vencido, futuro, fora, st};
+  }
+  function finResumoMes(mes){
+    const r = {previsto:0, recebido:0, falta:0, atrasado:0, comValor:0, nAtivos:0, nPagos:0, nAtrasados:0};
+    finAlunos().forEach(s => {
+      const i = finInfo(s.id, mes);
+      if (!i.cfg.ativo) return;
+      r.nAtivos++;
+      if (i.cfg.valor > 0) r.comValor++;
+      r.previsto += i.esperado; r.recebido += i.pago; r.falta += i.falta;
+      if (i.st === 'atrasado'){ r.atrasado += i.falta; r.nAtrasados++; }
+      if (i.st === 'pago') r.nPagos++;
+    });
+    ['previsto','recebido','falta','atrasado'].forEach(k => r[k] = Math.round(r[k] * 100) / 100);
+    r.taxa = r.previsto > 0 ? r.recebido / r.previsto : 0;
+    return r;
+  }
+
+  /* ---------- render ---------- */
+  function finRender(){
+    const box = $('#financeiro');
+    if (!box || !box.classList.contains('active')) return;
+    const f = finEnsure();
+    const sel = $('#finMes');
+    if (sel && sel.value !== finMes) sel.value = finMes;
+    const r = finResumoMes(finMes);
+
+    $('#finKpis').innerHTML = `
+      <div class="fin-kpi"><span>Previsto no mês</span><b>${finBR(r.previsto)}</b><small>${r.comValor} aluno(s) com mensalidade</small></div>
+      <div class="fin-kpi ok"><span>Recebido</span><b>${finBR(r.recebido)}</b><small>${r.nPagos} de ${r.comValor} quitados</small></div>
+      <div class="fin-kpi ${r.falta > 0 ? 'warn' : 'ok'}"><span>Em aberto</span><b>${finBR(r.falta)}</b><small>${r.falta > 0 ? 'a receber neste mês' : 'tudo recebido 🎉'}</small></div>
+      <div class="fin-kpi ${r.atrasado > 0 ? 'bad' : ''}"><span>Em atraso</span><b>${finBR(r.atrasado)}</b><small>${r.nAtrasados} aluno(s)</small></div>
+      <div class="fin-kpi"><span>Taxa de recebimento</span><b>${Math.round(r.taxa * 100)}%</b>
+        <div class="bar"><i style="width:${Math.min(100, Math.round(r.taxa * 100))}%"></i></div></div>
+      <div class="fin-kpi"><span>Ticket médio</span><b>${finBR(r.comValor ? r.previsto / r.comValor : 0)}</b><small>${r.nAtivos} aluno(s) ativo(s)</small></div>`;
+
+    const contagem = {};
+    finAlunos().forEach(s => { const st = finInfo(s.id, finMes).st; contagem[st] = (contagem[st] || 0) + 1; });
+    $('#finChips').innerHTML = FIN_FILTROS.map(([k, t]) => {
+      const n = k === 'todos' ? finAlunos().length : (contagem[k] || 0);
+      return `<button class="fin-chip ${finFiltro === k ? 'on' : ''}" type="button" data-finfiltro="${k}">${t}${n ? ` · ${n}` : ''}</button>`;
+    }).join('');
+
+    $('#finAlertas').innerHTML = finAlertasHTML(r);
+    $('#finMesLabel').textContent = finMesLabel(finMes);
+
+    const linhas = finLinhas();
+    $('#finTbody').innerHTML = linhas.length
+      ? linhas.map(({s, i}) => finRowHTML(s, i)).join('')
+      : `<tr><td colspan="8"><div class="empty">${finAlunos().length ? 'Nenhum aluno neste filtro.' : 'Cadastre um aluno na aba Visão geral para começar.'}</div></td></tr>`;
+    $('#finResumo').textContent = `${r.nPagos}/${r.comValor} pagos · ${finBR(r.recebido)} de ${finBR(r.previsto)}`;
+
+    finDrawEvol();
+    finDrawDonut();
+  }
+
+  function finAlertasHTML(r){
+    const out = [];
+    const semValor = finAlunos().filter(s => { const c = finCfg(s.id); return c.ativo && c.valor <= 0; }).length;
+    if (semValor) out.push(`<div class="fin-alert info"><span>⚙</span><span><b>${semValor}</b> aluno(s) ativo(s) ainda sem mensalidade definida.</span><button class="btn secondary small" type="button" id="finAlertaValores">Definir valores</button></div>`);
+    const atrasados = finAlunos().map(s => ({s, i: finInfo(s.id, finMes)})).filter(x => x.i.st === 'atrasado');
+    if (atrasados.length){
+      const nomes = atrasados.slice(0, 4).map(x => esc(x.s.name.split(' ')[0])).join(', ');
+      out.push(`<div class="fin-alert"><span>⚠</span><span><b>${atrasados.length} em atraso</b> — ${finBR(r.atrasado)} a receber (${nomes}${atrasados.length > 4 ? '…' : ''}).</span><button class="btn secondary small" type="button" id="finAlertaVer">Ver só os atrasados</button></div>`);
+    }
+    if (r.previsto <= 0 && finAlunos().length && !semValor) out.push('<div class="fin-alert info"><span>ℹ</span><span>Nenhuma mensalidade prevista neste mês. Confira os valores em <b>⚙ Ajustes</b>.</span></div>');
+    if (r.previsto > 0 && r.falta <= 0) out.push(`<div class="fin-alert info"><span>✓</span><span>Mês fechado: <b>${finBR(r.recebido)}</b> recebidos de ${finBR(r.previsto)} previstos.</span></div>`);
+    return out.join('');
+  }
+
+  function finLinhas(){
+    const q = noAccent(finBusca || '');
+    const ordem = {atrasado:0, pendente:1, parcial:2, semvalor:3, previsto:4, pago:5, inativo:6};
+    return finAlunos()
+      .map(s => ({s, i: finInfo(s.id, finMes)}))
+      .filter(({s, i}) => {
+        if (finFiltro !== 'todos' && i.st !== finFiltro) return false;
+        if (q && !noAccent(s.name).includes(q)) return false;
+        return true;
+      })
+      .sort((a, b) => (ordem[a.i.st] - ordem[b.i.st]) || a.s.name.localeCompare(b.s.name, 'pt-BR'));
+  }
+
+  function finRowHTML(s, i){
+    const st = FIN_ST[i.st] || FIN_ST.pendente;
+    const c = i.cfg;
+    const liquido = Math.round(c.valor * (1 - c.desconto / 100) * 100) / 100;
+    return `<tr data-fin="${esc(s.id)}">
+      <td class="nome">${esc(s.name)}${c.desconto > 0 ? ` <span class="badge">−${c.desconto}%</span>` : ''}${c.ativo ? '' : '<small>inativo</small>'}</td>
+      <td class="muted">${esc(c.plano || '—')}</td>
+      <td class="num">${liquido > 0 ? finBR(liquido) : '—'}${i.avulsas > 0 ? `<br><small class="muted">+${finBR(i.avulsas)} avulsa</small>` : ''}</td>
+      <td class="muted">${i.esperado > 0 ? `dia ${c.dia}` : '—'}</td>
+      <td><span class="fin-st ${st.c}"><i></i>${st.t}</span>${i.vencido ? `<br><small class="muted">venceu ${finDueLabel(finMes, c.dia)}</small>` : ''}</td>
+      <td class="num">${i.pago > 0 ? finBR(i.pago) : '—'}</td>
+      <td class="num"${i.falta > 0 ? ' style="color:var(--danger);font-weight:800"' : ''}>${i.falta > 0 ? finBR(i.falta) : '—'}</td>
+      <td><div class="acoes">
+        <button class="fin-ico go" type="button" data-finpay="${esc(s.id)}" title="Registrar pagamento">✓</button>
+        <button class="fin-ico" type="button" data-fincobrar="${esc(s.id)}" title="Cobrar no WhatsApp">💬</button>
+        <button class="fin-ico" type="button" data-finval="${esc(s.id)}" title="Ficha financeira do aluno">⚙</button>
+      </div></td>
+    </tr>`;
+  }
+
+  /* ---------- gráficos ---------- */
+  function finDrawEvol(){
+    const p = prepCanvas($('#finChartEvol'));
+    if (!p) return;
+    const {c, W, H} = p;
+    const meses = [];
+    for (let i = 5; i >= 0; i--) meses.push(finAddMes(finMes, -i));
+    const dados = meses.map(m => { const r = finResumoMes(m); return {m, previsto:r.previsto, recebido:r.recebido}; });
+    const max = Math.max(1, ...dados.map(d => Math.max(d.previsto, d.recebido)));
+    const padL = 60, padR = 12, padT = 14, padB = 30;
+    const w = Math.max(40, W - padL - padR), h = Math.max(40, H - padT - padB);
+    c.font = '10px system-ui,sans-serif'; c.textBaseline = 'middle';
+    for (let g = 0; g <= 4; g++){
+      const y = padT + h - (h * g / 4);
+      c.strokeStyle = '#1e2a23'; c.lineWidth = 1;
+      c.beginPath(); c.moveTo(padL, y + 0.5); c.lineTo(padL + w, y + 0.5); c.stroke();
+      c.fillStyle = '#9daea3'; c.textAlign = 'right';
+      c.fillText(finEixo(max * g / 4), padL - 8, y);
+    }
+    const slot = w / dados.length;
+    const bw = Math.max(7, Math.min(24, slot / 3.2));
+    dados.forEach((d, i) => {
+      const cx = padL + slot * i + slot / 2;
+      const hp = h * (d.previsto / max), hr = h * (d.recebido / max);
+      c.fillStyle = '#26332b';
+      roundRect(c, cx - bw - 3, padT + h - hp, bw, Math.max(hp, 2), 4); c.fill();
+      const grad = c.createLinearGradient(0, padT + h - hr, 0, padT + h);
+      grad.addColorStop(0, '#f7d678'); grad.addColorStop(1, '#c9971f');
+      c.fillStyle = grad;
+      roundRect(c, cx + 3, padT + h - hr, bw, Math.max(hr, 2), 4); c.fill();
+      c.fillStyle = d.m === finMes ? '#f4f7f4' : '#9daea3';
+      c.textAlign = 'center'; c.textBaseline = 'top';
+      c.font = (d.m === finMes ? '800 ' : '') + '10px system-ui,sans-serif';
+      c.fillText(finMesCurto(d.m), cx, padT + h + 8);
+    });
+    c.textAlign = 'left'; c.textBaseline = 'top'; c.font = '10px system-ui,sans-serif';
+    c.fillStyle = '#26332b'; c.fillRect(padL, 2, 9, 9);
+    c.fillStyle = '#9daea3'; c.fillText('previsto', padL + 13, 2);
+    c.fillStyle = '#d8a93d'; c.fillRect(padL + 68, 2, 9, 9);
+    c.fillStyle = '#9daea3'; c.fillText('recebido', padL + 81, 2);
+  }
+
+  function finDrawDonut(){
+    const p = prepCanvas($('#finChartDonut'));
+    if (!p) return;
+    const {c, W, H} = p;
+    const ordem = ['pago', 'pendente', 'atrasado', 'parcial', 'semvalor'];
+    const val = {pago:0, pendente:0, atrasado:0, parcial:0, semvalor:0};
+    const cnt = {pago:0, pendente:0, atrasado:0, parcial:0, semvalor:0};
+    finAlunos().forEach(s => {
+      const i = finInfo(s.id, finMes);
+      const k = (i.st === 'inativo' || i.st === 'previsto') ? (i.esperado > 0 ? 'pendente' : 'semvalor') : i.st;
+      if (!(k in val)) return;
+      val[k] += i.esperado; cnt[k]++;
+    });
+    const total = ordem.reduce((a, k) => a + val[k], 0);
+    const cx = W / 2, cy = H / 2, R = Math.min(W, H) / 2 - 6, r0 = R * 0.63;
+    if (total <= 0){
+      c.beginPath(); c.arc(cx, cy, R, 0, Math.PI * 2); c.arc(cx, cy, r0, 0, Math.PI * 2, true);
+      c.fillStyle = '#1b2620'; c.fill();
+    } else {
+      let ang = -Math.PI / 2;
+      ordem.forEach(k => {
+        const v = val[k];
+        if (v <= 0) return;
+        let a2 = ang + (v / total) * Math.PI * 2;
+        const gap = (a2 - ang) > 0.14 ? 0.025 : 0;
+        c.beginPath();
+        c.arc(cx, cy, R, ang + gap, a2 - gap);
+        c.arc(cx, cy, r0, a2 - gap, ang + gap, true);
+        c.closePath();
+        c.fillStyle = FIN_COR[k]; c.fill();
+        ang = a2;
+      });
+    }
+    c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillStyle = '#f4f7f4'; c.font = '800 15px system-ui,sans-serif';
+    c.fillText(total > 0 ? finEixo(total) : '—', cx, cy - 8);
+    c.fillStyle = '#9daea3'; c.font = '10px system-ui,sans-serif';
+    c.fillText(total > 0 ? 'previsto no mês' : 'sem mensalidade', cx, cy + 9);
+
+    $('#finLegenda').innerHTML = ordem.map(k => {
+      const pct = total > 0 ? Math.round(val[k] / total * 100) : 0;
+      return `<div class="fin-leg-row"><i style="background:${FIN_COR[k]}"></i>
+        <span>${FIN_ST[k].t}</span><b>${finBR(val[k])}</b><em>${cnt[k]} · ${pct}%</em></div>`;
+    }).join('');
+  }
+
+  /* ---------- cobrança ---------- */
+  function finMsg(id, mes){
+    const f = finEnsure();
+    const s = state.students.find(x => x.id === id) || {name:''};
+    const i = finInfo(id, mes);
+    const valor = i.falta > 0 ? i.falta : (i.esperado || i.cfg.valor);
+    const pix = f.settings.pix
+      ? (f.settings.titular ? `PIX de ${f.settings.titular}: ${f.settings.pix}\n` : `PIX: ${f.settings.pix}\n`)
+      : '';
+    const tpl = (f.settings.msgPadrao || '').trim() || FIN_MSG_PADRAO;
+    return tpl
+      .replace(/\{aluno\}/g, s.name || '')
+      .replace(/\{primeiro\}/g, (s.name || '').split(' ')[0] || '')
+      .replace(/\{mes\}/g, finMesLabel(mes))
+      .replace(/\{valor\}/g, finBR(valor))
+      .replace(/\{venc\}/g, finDueLabel(mes, i.cfg.dia))
+      .replace(/\{plano\}/g, i.cfg.plano || '')
+      .replace(/\{pix\}/g, pix)
+      .replace(/\{titular\}/g, f.settings.titular || '');
+  }
+  function finCopiar(txt, cb){
+    const pronto = ok => { if (cb) cb(ok); };
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(() => pronto(true)).catch(() => pronto(finCopiarFallback(txt)));
+      return;
+    }
+    pronto(finCopiarFallback(txt));
+  }
+  function finCopiarFallback(txt){
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = txt; ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;left:-9999px;top:0';
+      document.body.appendChild(ta); ta.select();
+      const ok = document.execCommand('copy');
+      ta.remove();
+      return ok;
+    } catch(e){ return false; }
+  }
+  function finCobrar(id, mes, abrir){
+    const s = state.students.find(x => x.id === id);
+    if (!s) return;
+    const txt = finMsg(id, mes || finMes);
+    finCopiar(txt, ok => notify(ok ? 'Cobrança copiada — é só colar no WhatsApp.' : 'Não consegui copiar a mensagem.', !ok));
+    if (!abrir) return;
+    const tel = String(finCfg(id).tel || '').replace(/\D/g, '');
+    if (tel.length >= 10){
+      const url = 'https://wa.me/' + (tel.length <= 11 ? '55' + tel : tel) + '?text=' + encodeURIComponent(txt);
+      window.open(url, '_blank');
+    } else {
+      notify('Cadastre o WhatsApp do aluno para abrir a conversa direto.', true);
+    }
+  }
+
+  /* ---------- modal de pagamento ---------- */
+  function finPayFill(){
+    const id = $('#finPayAluno').value, mes = $('#finPayMes').value || finMes;
+    if (!id) return;
+    const i = finInfo(id, mes);
+    const sug = i.falta > 0 ? i.falta : Math.round(i.cfg.valor * (1 - i.cfg.desconto / 100) * 100) / 100;
+    $('#finPayValor').value = sug > 0 ? finNum(sug) : '';
+    $('#finPayInfo').textContent = i.esperado > 0
+      ? `Mensalidade ${finBR(i.cfg.valor)}${i.cfg.desconto ? ` (−${i.cfg.desconto}%)` : ''} · vence ${finDueLabel(mes, i.cfg.dia)} · já pago ${finBR(i.pago)} · falta ${finBR(i.falta)}`
+      : 'Este aluno ainda não tem mensalidade definida — o lançamento entra como valor avulso.';
+  }
+  function finPayOpen(studentId, mes){
+    const alunos = finAlunos();
+    if (!alunos.length) return notify('Cadastre um aluno primeiro.', true);
+    $('#finPayAluno').innerHTML = alunos.map(s => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('');
+    const alvo = studentId || (active() && (active().name || '').trim() ? active().id : alunos[0].id);
+    if (alvo) $('#finPayAluno').value = alvo;
+    $('#finPayMes').value = mes || finMes;
+    $('#finPayData').value = today();
+    $('#finPayForma').value = 'pix';
+    $('#finPayTipo').value = 'mensalidade';
+    $('#finPayObs').value = '';
+    finPayFill();
+    $('#finPayModal').classList.add('open');
+    setTimeout(() => $('#finPayValor').focus(), 60);
+  }
+
+  /* ---------- ficha financeira do aluno ---------- */
+  function finAlunoOpen(id){
+    const s = state.students.find(x => x.id === id);
+    if (!s) return;
+    finEditId = id;
+    const c = finCfg(id);
+    $('#finAlunoTitulo').textContent = s.name;
+    $('#finAlunoValor').value = c.valor > 0 ? finNum(c.valor) : '';
+    $('#finAlunoDia').value = c.dia;
+    $('#finAlunoDesc').value = c.desconto > 0 ? c.desconto : '';
+    $('#finAlunoAtivo').value = c.ativo ? '1' : '0';
+    $('#finAlunoPlano').value = c.plano;
+    $('#finAlunoTel').value = c.tel;
+    $('#finAlunoObs').value = c.obs;
+    $('#finAlunoDesde').value = c.desde || '';
+    finAlunoRender();
+    $('#finAlunoModal').classList.add('open');
+  }
+  function finAlunoRender(){
+    const id = finEditId;
+    if (!id) return;
+    const c = finCfg(id);
+    const pags = finEnsure().payments.filter(p => p.studentId === id)
+      .sort((a, b) => String(b.data || '').localeCompare(String(a.data || '')));
+    const ano = finMes.slice(0, 4);
+    const doAno = pags.filter(p => String(p.mes || '').slice(0, 4) === ano).reduce((a, p) => a + num(p.valor), 0);
+    const meses = new Set(pags.map(p => p.mes));
+    let atraso = 0;
+    for (let m = 0; m < 24; m++){
+      const mm = finAddMes(finMes, -m);
+      if (mm < c.desde) break;
+      if (finInfo(id, mm).st === 'atrasado') atraso++;
+    }
+    $('#finAlunoTot').innerHTML = `
+      <div><b>${finBR(doAno)}</b><span>recebido em ${ano}</span></div>
+      <div><b>${finBR(c.valor)}</b><span>mensalidade</span></div>
+      <div><b>${pags.length}</b><span>lançamentos</span></div>
+      <div><b>${atraso || 'nenhum'}</b><span>meses em atraso</span></div>`;
+    $('#finAlunoHist').innerHTML = pags.length
+      ? pags.map(p => `<div class="fin-hist-row">
+          <div><b>${esc(FIN_TIPOS[p.tipo] || 'Mensalidade')}</b> · ${finBR(p.valor)}
+            <small>${finMesCurto(p.mes)} · pago em ${finDataBR(p.data)} · ${FIN_FORMAS[p.forma] || 'Outro'}${p.obs ? ' · ' + esc(p.obs) : ''}</small></div>
+          <div class="muted">${finMesCurto(p.mes)}</div>
+          <button class="fin-x" type="button" data-finrm="${esc(p.id)}" title="Excluir lançamento">×</button>
+        </div>`).join('')
+      : '<div class="empty">Nenhum pagamento lançado ainda.</div>';
+  }
+
+  /* ---------- ajustes ---------- */
+  function finAjustesOpen(){
+    const f = finEnsure();
+    $('#finCfgTitular').value = f.settings.titular || '';
+    $('#finCfgPix').value = f.settings.pix || '';
+    $('#finCfgValor').value = num(f.settings.valorPadrao) > 0 ? finNum(f.settings.valorPadrao) : '';
+    $('#finCfgDia').value = f.settings.diaVenc || 5;
+    $('#finCfgMsg').value = (f.settings.msgPadrao || '').trim() || FIN_MSG_PADRAO;
+    $('#finAjustesModal').classList.add('open');
+  }
+  function finAplicarValor(modo){
+    const f = finEnsure();
+    const valor = finParse($('#finCfgValor').value) || num(f.settings.valorPadrao);
+    if (valor <= 0) return notify('Informe o valor padrão antes de aplicar.', true);
+    let n = 0;
+    finAlunos().forEach(s => {
+      const c = finCfg(s.id);
+      if (modo === 'todos' ? c.ativo : (c.ativo && c.valor <= 0)){ finSetCfg(s.id, {valor}); n++; }
+    });
+    save();
+    notify(n ? `Mensalidade de ${finBR(valor)} aplicada a ${n} aluno(s).` : 'Nenhum aluno precisava do valor.', !n);
+  }
+
+  /* ---------- CSV ---------- */
+  function finBaixar(nome, texto, mime){
+    try {
+      const blob = new Blob([texto], {type: mime || 'text/csv;charset=utf-8'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = nome;
+      document.body.appendChild(a); a.click();
+      setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 600);
+      return true;
+    } catch(e){ return false; }
+  }
+  function finCSV(){
+    const f = finEnsure();
+    const linhas = [['Aluno','Plano','Mensalidade','Desconto %','Vencimento','Cobrado desde','Situacao','Pago no mes','Em falta','Formas','Ultimo pagamento']];
+    finAlunos().forEach(s => {
+      const i = finInfo(s.id, finMes);
+      const pags = f.payments.filter(p => p.studentId === s.id && p.mes === finMes);
+      const ult = f.payments.filter(p => p.studentId === s.id).sort((a, b) => String(b.data || '').localeCompare(String(a.data || '')))[0];
+      linhas.push([s.name, i.cfg.plano, finNum(i.cfg.valor), i.cfg.desconto, finDueISO(finMes, i.cfg.dia), i.cfg.desde,
+        FIN_ST[i.st].t, finNum(i.pago), finNum(i.falta),
+        [...new Set(pags.map(p => FIN_FORMAS[p.forma] || 'Outro'))].join(' '), ult ? ult.data : '']);
+    });
+    linhas.push([]);
+    const r = finResumoMes(finMes);
+    linhas.push(['TOTAL', '', '', '', '', '', '', finNum(r.recebido), finNum(r.falta), '', '']);
+    linhas.push(['Previsto', '', '', '', '', '', '', finNum(r.previsto), '', '', '']);
+    const csv = '\uFEFF' + linhas.map(l => l.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(';')).join('\r\n');
+    const nome = `mensalidades-${finMes}.csv`;
+    notify(finBaixar(nome, csv) ? `CSV de ${finMesLabel(finMes)} gerado.` : 'Não foi possível gerar o CSV.', !finBaixar);
+  }
+
+  /* ---------- ligações ---------- */
+  function finWire(){
+    if (!$('#financeiro')) return;
+    $('#finMes').value = finMes;
+    $('#finPrev').addEventListener('click', () => { finMes = finAddMes(finMes, -1); finRender(); });
+    $('#finNext').addEventListener('click', () => { finMes = finAddMes(finMes, 1); finRender(); });
+    $('#finHoje').addEventListener('click', () => { finMes = today().slice(0, 7); finRender(); });
+    $('#finMes').addEventListener('change', e => { if (e.target.value) { finMes = e.target.value; finRender(); } });
+    $('#finBusca').addEventListener('input', e => { finBusca = e.target.value; finRender(); });
+    $('#finCsv').addEventListener('click', finCSV);
+    $('#finAjustes').addEventListener('click', finAjustesOpen);
+
+    $('#finChips').addEventListener('click', e => {
+      const b = e.target.closest('[data-finfiltro]');
+      if (!b) return;
+      finFiltro = b.dataset.finfiltro;
+      finRender();
+    });
+    $('#finAlertas').addEventListener('click', e => {
+      if (e.target.closest('#finAlertaValores')) return finAjustesOpen();
+      if (e.target.closest('#finAlertaVer')){ finFiltro = 'atrasado'; finRender(); }
+    });
+    $('#finTbody').addEventListener('click', e => {
+      const pay = e.target.closest('[data-finpay]');
+      if (pay){ e.stopPropagation(); return finPayOpen(pay.dataset.finpay, finMes); }
+      const cob = e.target.closest('[data-fincobrar]');
+      if (cob){ e.stopPropagation(); return finCobrar(cob.dataset.fincobrar, finMes, true); }
+      const val = e.target.closest('[data-finval]');
+      if (val){ e.stopPropagation(); return finAlunoOpen(val.dataset.finval); }
+      const tr = e.target.closest('tr[data-fin]');
+      if (tr) finAlunoOpen(tr.dataset.fin);
+    });
+
+    $('#finPayAluno').addEventListener('change', finPayFill);
+    $('#finPayMes').addEventListener('change', finPayFill);
+    $('#finPayQuitar').addEventListener('click', () => {
+      const i = finInfo($('#finPayAluno').value, $('#finPayMes').value || finMes);
+      const sug = i.falta > 0 ? i.falta : i.esperado;
+      if (sug <= 0) return notify('Não há valor em falta neste mês.', true);
+      $('#finPayValor').value = finNum(sug);
+    });
+    $('#finPayForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const id = $('#finPayAluno').value, mes = $('#finPayMes').value;
+      const valor = finParse($('#finPayValor').value);
+      if (!id) return notify('Escolha o aluno.', true);
+      if (!mes) return notify('Informe o mês de referência.', true);
+      if (valor <= 0) return notify('Informe um valor maior que zero.', true);
+      finEnsure().payments.push({
+        id: uid(), studentId: id, mes, valor, data: $('#finPayData').value || today(),
+        forma: $('#finPayForma').value, tipo: $('#finPayTipo').value, obs: $('#finPayObs').value.trim()
+      });
+      if (finEditId === id) finAlunoRender();
+      save();
+      $('#finPayModal').classList.remove('open');
+      const s = state.students.find(x => x.id === id);
+      notify(`Pagamento de ${finBR(valor)} lançado para ${s ? s.name.split(' ')[0] : 'o aluno'}.`);
+    });
+
+    $('#finAlunoForm').addEventListener('submit', e => {
+      e.preventDefault();
+      if (!finEditId) return;
+      const dia = Math.min(31, Math.max(1, Math.round(num($('#finAlunoDia').value) || 5)));
+      finSetCfg(finEditId, {
+        valor: finParse($('#finAlunoValor').value),
+        dia,
+        desconto: Math.min(100, Math.max(0, finParse($('#finAlunoDesc').value))),
+        ativo: $('#finAlunoAtivo').value === '1',
+        plano: $('#finAlunoPlano').value.trim(),
+        tel: $('#finAlunoTel').value.trim(),
+        obs: $('#finAlunoObs').value.trim(),
+        desde: $('#finAlunoDesde').value || ''
+      });
+      save();
+      finAlunoRender();
+      notify('Ficha financeira salva.');
+    });
+    $('#finAlunoNovo').addEventListener('click', () => { $('#finAlunoModal').classList.remove('open'); finPayOpen(finEditId, finMes); });
+    $('#finAlunoCobrar').addEventListener('click', () => finCobrar(finEditId, finMes, true));
+    $('#finAlunoHist').addEventListener('click', e => {
+      const b = e.target.closest('[data-finrm]');
+      if (!b) return;
+      const f = finEnsure();
+      const p = f.payments.find(x => x.id === b.dataset.finrm);
+      if (!p) return;
+      if (!confirm(`Excluir o lançamento de ${finBR(p.valor)} (${finMesCurto(p.mes)})?`)) return;
+      f.payments = f.payments.filter(x => x.id !== p.id);
+      save();
+      finAlunoRender();
+      notify('Lançamento excluído.');
+    });
+
+    $('#finAjustesForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const f = finEnsure();
+      f.settings.titular = $('#finCfgTitular').value.trim();
+      f.settings.pix = $('#finCfgPix').value.trim();
+      f.settings.valorPadrao = finParse($('#finCfgValor').value);
+      f.settings.diaVenc = Math.min(31, Math.max(1, Math.round(num($('#finCfgDia').value) || 5)));
+      f.settings.msgPadrao = $('#finCfgMsg').value.trim();
+      save();
+      $('#finAjustesModal').classList.remove('open');
+      notify('Ajustes do financeiro salvos.');
+    });
+    $('#finCfgAplicar').addEventListener('click', () => finAplicarValor('vazios'));
+    $('#finCfgAplicarTodos').addEventListener('click', () => {
+      if (!confirm('Aplicar o valor padrão a TODOS os alunos ativos, substituindo os valores atuais?')) return;
+      finAplicarValor('todos');
+    });
+    $('#finCfgAplicarDia').addEventListener('click', () => {
+      const dia = Math.min(31, Math.max(1, Math.round(num($('#finCfgDia').value) || 5)));
+      finAlunos().forEach(s => finSetCfg(s.id, {dia}));
+      save();
+      notify(`Vencimento movido para o dia ${dia} em todos os alunos.`);
+    });
+    $('#finCfgResetMsg').addEventListener('click', () => { $('#finCfgMsg').value = FIN_MSG_PADRAO; notify('Mensagem padrão restaurada — clique em Salvar ajustes.'); });
+  }
+  finWire();
+
   /* ---------- SEED (primeira execução) ---------- */
   function seedIfEmpty(){
     if (!GH_SEED || !GH_SEED.length || state.seedApplied) return;
@@ -1065,6 +1944,7 @@
     $('#loginScreen').classList.add('hidden');
     $('#app').classList.remove('hidden');
     seedIfEmpty();
+    finEnsure();
     seedAssessments();
     renderAll();
     setTimeout(() => { if ($('#history').classList.contains('active')) drawChart(); }, 50);
@@ -1111,6 +1991,7 @@
     if (id === 'aval') { renderAval(); setTimeout(drawAvChart, 40); }
     if (id === 'fichas') renderPlans();
     if (id === 'montar') mtRender();
+    if (id === 'financeiro'){ finRender(); setTimeout(() => { finDrawEvol(); finDrawDonut(); }, 40); }
   }
   $$('.tab').forEach(b => b.addEventListener('click', () => {
     if ($('#montar').classList.contains('active') && b.dataset.page !== 'montar'){ mtSyncNow(); save(); }
@@ -1147,8 +2028,9 @@
   $('#newStudentBtn').addEventListener('click', () => openStudent(null));
   $$('[data-close]').forEach(b => b.addEventListener('click', () => {
     $('#studentModal').classList.remove('open'); $('#mtCopyModal').classList.remove('open');
+    ['#finPayModal','#finAlunoModal','#finAjustesModal'].forEach(x => { const el = $(x); if (el) el.classList.remove('open'); });
   }));
-  [$('#studentModal'), $('#mtCopyModal')].forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
+  [$('#studentModal'), $('#mtCopyModal'), $('#finPayModal'), $('#finAlunoModal'), $('#finAjustesModal')].filter(Boolean).forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
   $('#studentForm').addEventListener('submit', e => {
     e.preventDefault();
     const id = $('#studentId').value;
@@ -3209,7 +4091,9 @@
       if (!confirm('Importar este arquivo substituirá os dados atuais. Continuar?')) return;
       state = {version:1, auth:state.auth, activeStudentId:data.activeStudentId || (data.students[0] && data.students[0].id) || null,
         students:data.students, sessions:data.sessions, plans:data.plans || {}, periodizations:data.periodizations || {},
-        assessments:Array.isArray(data.assessments) ? data.assessments : []};
+        assessments:Array.isArray(data.assessments) ? data.assessments : [],
+        group: data.group || state.group || null,
+        finance: (data.finance && typeof data.finance === 'object') ? data.finance : state.finance};
       save(); notify('Dados importados com sucesso.');
     } catch(err){ notify('Arquivo JSON inválido.', true); }
     finally { e.target.value = ''; }
@@ -3937,7 +4821,8 @@
 
   /* ---------- RENDER ---------- */
   function renderAll(){ renderPicker(); renderDashboard(); renderPlans(); renderHistory(); renderData(); renderSessionDays(); updateSessionHint(); renderAval(); renderGrupo();
-    if ($('#montar') && $('#montar').classList.contains('active')) mtRender(); }
+    if ($('#montar') && $('#montar').classList.contains('active')) mtRender();
+    finRender(); }
   $('#sessionDate').value = today();
   clearSession();
   renderAuth();
