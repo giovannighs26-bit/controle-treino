@@ -1523,6 +1523,7 @@
     }));
     box.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', () => mtCopyOpen(num(b.dataset.copy))));
     box.querySelectorAll('.mt-save').forEach(b => b.addEventListener('click', mtSalvarAgora));
+    box.querySelectorAll('#mtAddDay').forEach(b => b.addEventListener('click', mtAddDay));
     box.querySelectorAll('[data-reg]').forEach(b => b.addEventListener('click', () => {
       const i = num(b.dataset.reg);
       mtSyncNow();
@@ -1599,13 +1600,14 @@
     state.plans[s.id] = {title: `Ficha — ${s.name.split(' ')[0]}`, days: [{title: 'Treino A', items: []}]};
     mtWrite(); mtRender(); notify('Ficha criada.');
   });
-  $('#mtNovoTreino').addEventListener('click', () => {
+  function mtAddDay(){
     const s = active(); if (!s) return;
     if (!state.plans[s.id]) state.plans[s.id] = {title: `Ficha — ${s.name.split(' ')[0]}`, days: []};
     const days = state.plans[s.id].days = state.plans[s.id].days || [];
     days.push({title: `Treino ${String.fromCharCode(65 + (days.length % 26))}`, items: []});
     mtWrite(); mtRender(); notify('Treino adicionado.');
-  });
+  }
+  $('#mtNovoTreino').addEventListener('click', mtAddDay);
   $('#mtSalvar').addEventListener('click', mtSalvarAgora);
   $('#mtFicha').addEventListener('input', () => mtSave());
   function mtFocusDay(i){
