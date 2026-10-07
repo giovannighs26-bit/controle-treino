@@ -95,6 +95,17 @@
     .ficha-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:13px 15px;background:linear-gradient(90deg,#1b271f,#131b16)}
     .ficha-head .t{font-weight:800;font-size:14px}
     .ficha-head .s{font-size:11px;color:var(--muted);margin-top:2px}
+/* ---------- Montar treino ---------- */
+#mtFicha .mt-plan-title{width:100%;font-weight:700;font-size:15px;background:#0b110d;border:1px solid var(--line);border-radius:10px;padding:9px 11px;color:inherit}
+#mtFicha .mt-day{border:1px solid var(--line);border-radius:14px;background:#101813;margin-bottom:12px;overflow:hidden}
+#mtFicha .mt-day-head{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;background:linear-gradient(90deg,#1b271f,#131b16);flex-wrap:wrap}
+#mtFicha .mt-day-title{flex:1;min-width:150px;font-weight:700;color:var(--accent2);background:transparent;border:1px solid transparent;border-radius:8px;padding:7px 9px;font-size:13px}
+#mtFicha .mt-day-title:focus{border-color:var(--accent);background:#0b110d;outline:none}
+#mtFicha .mt-day-body{padding:2px 12px 12px}
+#mtFicha .mt-badge{font-size:10px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 9px;white-space:nowrap}
+#mtFicha .mt-free .ex-name{grid-column:1/3}
+#mtFicha .mt-row .mt-reps{min-width:0}
+@media (max-width:760px){#mtFicha .mt-day-head .actions{width:100%}#mtFicha .mt-day-head .actions .btn{flex:1}}
     .day{border-top:1px solid var(--line)}
     .day-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 15px;cursor:pointer}
     .day-head .dt{font-weight:700;color:var(--accent2);font-size:13px}
@@ -500,6 +511,7 @@
   <nav class="tabs" aria-label="Navegação">
     <button class="tab active" data-page="dashboard">Visão geral</button>
     <button class="tab" data-page="fichas">Fichas de treino</button>
+    <button class="tab" data-page="montar">Montar treino</button>
     <button class="tab" data-page="session">Registrar treino</button>
     <button class="tab" data-page="grupo">Treino em grupo</button>
     <button class="tab" data-page="history">Histórico</button>
@@ -600,6 +612,21 @@
       </div>
       <p class="hint" style="margin-top:0">Toque em um treino para ver os exercícios e registrá-lo em 1 clique.</p>
       <div id="planList"></div>
+    </article>
+  </div></section>
+
+  <section class="page" id="montar"><div class="grid">
+    <article class="card">
+      <div class="actions" style="justify-content:space-between;margin-bottom:14px">
+        <h2 style="margin:0">Montar treino</h2>
+        <div class="actions">
+          <button class="btn secondary" id="mtNovaFicha">+ Nova ficha</button>
+          <button class="btn" id="mtNovoTreino">+ Novo treino</button>
+        </div>
+      </div>
+      <p class="hint" style="margin-top:0">Edite direto nesta tela — salva sozinho. No campo do exercício, escolha um nome que você já usa.</p>
+      <div id="mtFicha"></div>
+      <datalist id="mtExList"></datalist>
     </article>
   </div></section>
 
@@ -860,16 +887,12 @@
   </form>
 </div></div>
 
-<div class="modal" id="dayModal"><div class="modal-box">
-  <div class="modal-head"><h2 id="dayModalTitle">Editar treino</h2><button class="close" type="button" data-close>&times;</button></div>
-  <form id="dayForm">
-    <input type="hidden" id="dayPlanIndex"><input type="hidden" id="dayIndex">
-    <div class="field span12" style="margin-bottom:12px"><label>Nome do treino / dia</label><input id="dayTitle" required maxlength="120"></div>
-    <div class="field span12" style="margin-bottom:10px"><label>Exercícios</label><div id="dayRows"></div></div>
-    <div class="actions"><button type="button" class="btn secondary" id="addDayEx">+ Exercício</button>
-      <button class="btn" type="submit">Salvar treino</button>
-      <button class="btn ghost" type="button" data-close>Cancelar</button></div>
-  </form>
+<div class="modal" id="mtCopyModal"><div class="modal-box">
+  <div class="modal-head"><h2>Copiar treino para outro aluno</h2><button class="close" type="button" data-close>&times;</button></div>
+  <div class="field span12" style="margin-bottom:12px"><label>Aluno de destino</label><select id="mtCopyStudent"></select></div>
+  <p class="hint" id="mtCopyHint"></p>
+  <div class="actions"><button class="btn" type="button" id="mtCopyGo">Copiar treino</button>
+    <button class="btn ghost" type="button" data-close>Cancelar</button></div>
 </div></div>
 
 <div class="timer-bar" id="timerBar" hidden>
@@ -1075,8 +1098,13 @@
     if (id === 'session') autoLoadToday();
     if (id === 'grupo') renderGrupo();
     if (id === 'aval') { renderAval(); setTimeout(drawAvChart, 40); }
+    if (id === 'fichas') renderPlans();
+    if (id === 'montar') mtRender();
   }
-  $$('.tab').forEach(b => b.addEventListener('click', () => showPage(b.dataset.page)));
+  $$('.tab').forEach(b => b.addEventListener('click', () => {
+    if ($('#montar').classList.contains('active') && b.dataset.page !== 'montar'){ mtSyncNow(); save(); }
+    showPage(b.dataset.page);
+  }));
 
   /* ---------- ALUNOS ---------- */
   function renderPicker(){
@@ -1103,9 +1131,9 @@
   function closeStudent(){ $('#studentModal').classList.remove('open'); }
   $('#newStudentBtn').addEventListener('click', () => openStudent(null));
   $$('[data-close]').forEach(b => b.addEventListener('click', () => {
-    $('#studentModal').classList.remove('open'); $('#dayModal').classList.remove('open');
+    $('#studentModal').classList.remove('open'); $('#mtCopyModal').classList.remove('open');
   }));
-  [$('#studentModal'), $('#dayModal')].forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
+  [$('#studentModal'), $('#mtCopyModal')].forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
   $('#studentForm').addEventListener('submit', e => {
     e.preventDefault();
     const id = $('#studentId').value;
@@ -1223,7 +1251,7 @@
       ev.stopPropagation(); startFromDay(plan, num(b.dataset.start));
     }));
     box.querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', ev => {
-      ev.stopPropagation(); openDay(num(b.dataset.edit));
+      ev.stopPropagation(); mtFocusDay(num(b.dataset.edit));
     }));
     const rn = box.querySelector('[data-rename]');
     if (rn) rn.addEventListener('click', () => {
@@ -1257,46 +1285,294 @@
     save(); notify(`${items.length} exercícios importados.`);
   });
 
-  let editRef = null;
-  function dayRow(data){
-    const row = document.createElement('div');
-    row.className = 'exercise-row';
-    row.innerHTML = `
-      <div class="field ex-name"><label>Exercício</label><input class="e-name" value="${esc(data.name||'')}" placeholder="Ex.: Supino reto 4×8" required></div>
-      <div class="field"><label>Séries</label><input class="e-sets" type="number" min="1" value="${data.sets||3}"></div>
-      <div class="field"><label>Reps</label><input class="e-reps" type="number" min="1" value="${data.reps||10}"></div>
-      <div class="field"><label>Carga kg</label><input class="e-load" type="number" min="0" step="0.5" value="${data.load??''}"></div>
-      <div class="field"><label>RIR</label><input class="e-rir" type="number" min="0" max="10" value="${data.rir??2}"></div>
-      <div class="field ex-note"><label>Observações</label><input class="e-note" value="${esc(data.note||'')}" placeholder="Técnica, descanso..."></div>
-      <button class="remove" type="button" title="Remover">×</button>`;
-    row.querySelector('.remove').addEventListener('click', () => row.remove());
-    return row;
+  /* ---------- MONTAR TREINO (edição ágil da ficha) ----------
+     Serialização canônica de um item de ficha. parseItem() lê o descanso percorrendo
+     t.split(';') e casando o segmento exato ^(\d{2,3})\s*(?:s|seg|segundos?)$ — por isso o
+     separador TEM de ser ';' (nunca '·'), senão o descanso cai no padrão de 60 s.
+     Regra de ouro: item que o usuário não tocou é gravado byte a byte como veio. */
+  let mtTimer = null;
+  function mtHasRx(it){ return /\d+\s*[x×]/.test(String(it || '')); }
+  function mtSplitItem(it){
+    const t = String(it || '');
+    const cut = t.search(/\s[—–]\s|\d+\s*[x×]|;/);
+    const name = cut > 0 ? t.slice(0, cut).trim() : t.trim();
+    const rest = cut > 0 ? t.slice(cut).replace(/^\s*[—–]\s*/, '').trim() : '';
+    return {name: name || t.trim(), rest};
   }
-  function openDay(index){
-    const s = active(); const plan = plansOf(s.id); if (!plan) return;
-    const day = plan.days[index]; if (!day) return;
-    editRef = {planIndex: index};
-    $('#dayModalTitle').textContent = 'Editar treino';
-    $('#dayTitle').value = day.title;
-    const box = $('#dayRows'); box.innerHTML = '';
-    (day.items.length ? day.items : ['']).forEach(it => box.append(dayRow(it ? parseItem(it) : {})));
-    $('#dayModal').classList.add('open');
+  function mtNoteOf(it){
+    let rem = mtSplitItem(it).rest;
+    rem = rem.replace(/^\s*\d+\s*[x×]\s*\(?[\d\s–\-+]+\)?\s*s?/i, '');
+    rem = rem.replace(/\(\s*[\d.,]+\s*kg\s*\)/gi, '');
+    rem = rem.replace(/[\d.,]+\s*kg/gi, '');
+    rem = rem.replace(/\bRIR\s*\d+\b/gi, '');
+    return rem.split(';').map(x => x.trim()).filter(Boolean).join('; ');
   }
-  $('#addDayEx').addEventListener('click', () => $('#dayRows').append(dayRow({})));
-  $('#dayForm').addEventListener('submit', e => {
-    e.preventDefault();
-    const s = active(); const plan = plansOf(s.id); if (!plan || !editRef) return;
-    const items = $$('#dayRows .exercise-row').map(r => {
-      const name = r.querySelector('.e-name').value.trim();
-      if (!name) return null;
-      const sets = num(r.querySelector('.e-sets').value), reps = num(r.querySelector('.e-reps').value);
-      const load = num(r.querySelector('.e-load').value), rir = num(r.querySelector('.e-rir').value);
-      const note = r.querySelector('.e-note').value.trim();
-      return `${name} — ${sets}×${reps}${load ? ` · ${fmt(load)} kg` : ''} · RIR ${rir}${note ? ` · ${note}` : ''}`;
-    }).filter(Boolean);
-    plan.days[editRef.planIndex] = {title: $('#dayTitle').value.trim() || 'Treino', items};
-    $('#dayModal').classList.remove('open'); save(); notify('Treino salvo.');
+  function mtRepsText(p){
+    if (p.blocks && p.blocks.length) return `(${p.blocks.join('+')})`;
+    return p.repsMin !== p.repsMax ? `${p.repsMin}–${p.repsMax}` : String(p.reps);
+  }
+  function mtBuildItem(name, sets, reps, load, rir, note){
+    const n = String(note || '').trim().replace(/^;+|\s*;+$/g, '');
+    return `${name} — ${sets}×${reps}${load ? ` (${fmt(load)} kg)` : ''}${n ? `; ${n}` : ''}; RIR ${rir}`;
+  }
+  function mtRowData(it){
+    const raw = String(it == null ? '' : it).trim();
+    if (!raw) return {free:false, name:'', sets:3, reps:'10', load:'', rir:2, note:''};
+    const free = !mtHasRx(raw);
+    const p = parseItem(raw);
+    return {free, name: free ? raw : mtSplitItem(raw).name, sets: p.sets || 3,
+      reps: mtRepsText(p), load: p.load || '', rir: p.rir, note: free ? '' : mtNoteOf(raw)};
+  }
+  function mtCatalog(){
+    const set = new Set();
+    state.sessions.forEach(s => (s.exercises || []).forEach(e => { const n = String(e.name || '').trim(); if (n) set.add(n); }));
+    Object.keys(state.plans || {}).forEach(id => {
+      const p = state.plans[id]; if (!p) return;
+      (p.days || []).forEach(d => (d.items || []).forEach(it => {
+        if (mtHasRx(it)){ const n = mtSplitItem(it).name; if (n) set.add(n); }
+      }));
+    });
+    return [...set].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  }
+  function mtFillCatalog(){
+    const list = $('#mtExList'); if (!list) return;
+    list.innerHTML = mtCatalog().map(n => `<option value="${esc(n)}"></option>`).join('');
+  }
+  function mtRowHTML(d, orig){
+    const at = orig === undefined ? '' : ` data-orig="${esc(orig)}"`;
+    if (d.free){
+      return `<div class="exercise-row mt-row mt-free"${at}>
+        <div class="field ex-name"><label>Item da ficha</label>
+          <input class="mt-name" value="${esc(d.name)}" placeholder="Ex.: Aquecimento 5 min de bike"></div>
+        <div class="field ex-note"><label>Situação</label>
+          <div class="actions" style="align-items:center;gap:8px">
+            <span class="mt-badge">sem prescrição</span>
+            <button class="btn ghost small mt-prescribe" type="button">Prescrever</button></div></div>
+        <button class="remove" type="button" title="Remover">×</button>
+      </div>`;
+    }
+    return `<div class="exercise-row mt-row"${at}>
+      <div class="field ex-name"><label>Exercício</label><input class="mt-name" list="mtExList" value="${esc(d.name)}" placeholder="Ex.: Supino reto"></div>
+      <div class="field"><label>Séries</label><input class="mt-sets" type="number" min="1" value="${d.sets}"></div>
+      <div class="field"><label>Reps</label><input class="mt-reps" value="${esc(d.reps)}" placeholder="10 ou 6–8"></div>
+      <div class="field"><label>Carga kg</label><input class="mt-load" type="text" inputmode="decimal" value="${d.load}" placeholder="—"></div>
+      <div class="field"><label>RIR</label><input class="mt-rir" type="number" min="0" max="10" value="${d.rir}"></div>
+      <div class="field ex-note"><label>Descanso / obs.</label><input class="mt-note" value="${esc(d.note)}" placeholder="Ex.: 90 s"></div>
+      <button class="remove" type="button" title="Remover">×</button>
+    </div>`;
+  }
+  function mtDayHTML(day, i){
+    const items = day.items || [];
+    return `<div class="mt-day" data-day="${i}">
+      <div class="mt-day-head">
+        <input class="mt-day-title" value="${esc(day.title || 'Treino')}" maxlength="120" placeholder="Nome do treino">
+        <div class="actions">
+          <button class="btn ghost small" type="button" data-dup="${i}" title="Criar um treino novo a partir deste">Duplicar</button>
+          <button class="btn ghost small" type="button" data-copy="${i}" title="Copiar este treino para outro aluno">Copiar p/ aluno</button>
+          <button class="btn danger small" type="button" data-delday="${i}">Excluir</button>
+        </div>
+      </div>
+      <div class="mt-day-body">
+        ${items.map(it => mtRowHTML(mtRowData(it), it)).join('') || '<div class="empty" style="padding:16px">Sem exercícios neste treino.</div>'}
+        <div class="actions" style="margin-top:10px;align-items:center">
+          <button class="btn secondary small" type="button" data-addex="${i}">+ Exercício</button>
+          <span class="mt-badge mt-count">${items.length} exercício(s)</span>
+        </div>
+      </div>
+    </div>`;
+  }
+  function mtRender(){
+    const box = $('#mtFicha'); if (!box) return;
+    mtFillCatalog();
+    const s = active();
+    if (!s){ box.innerHTML = '<div class="empty">Selecione um aluno na barra do topo.</div>'; return; }
+    const plan = state.plans[s.id];
+    if (!plan || !plan.days || !plan.days.length){
+      box.innerHTML = '<div class="empty">Nenhuma ficha para este aluno. Use “+ Nova ficha”.</div>';
+      return;
+    }
+    box.innerHTML = `
+      <div class="field span12" style="margin-bottom:12px"><label>Nome da ficha</label>
+        <input id="mtPlanTitle" class="mt-plan-title" maxlength="120" value="${esc(plan.title || 'Ficha de treino')}"></div>
+      ${plan.days.map((d, i) => mtDayHTML(d, i)).join('')}
+      <div class="actions" style="margin-top:12px;align-items:center">
+        <button class="btn secondary small" type="button" id="mtAddDay">+ Adicionar treino/dia</button>
+        <span class="mt-badge" id="mtStatus"></span>
+      </div>`;
+    box.querySelectorAll('.mt-row').forEach(r => { r.dataset.snap = mtRowSnap(r); });
+    mtWire(box);
+  }
+  const MT_FIELDS = ['mt-name', 'mt-sets', 'mt-reps', 'mt-load', 'mt-rir', 'mt-note'];
+  function mtRowSnap(r){
+    return MT_FIELDS.map(c => { const el = r.querySelector('.' + c); return el ? el.value : ''; }).join('\u0001');
+  }
+  function mtRowValue(r){
+    const orig = r.dataset.orig;
+    if (orig !== undefined && r.dataset.snap !== undefined && mtRowSnap(r) === r.dataset.snap) return orig;
+    const name = (r.querySelector('.mt-name').value || '').trim();
+    if (!name) return null;
+    if (r.classList.contains('mt-free')) return name;
+    const sets = Math.max(1, num(r.querySelector('.mt-sets').value) || 3);
+    const reps = (r.querySelector('.mt-reps').value || '').trim() || '10';
+    const load = num(String(r.querySelector('.mt-load').value || '').replace(',', '.'));
+    const rv = (r.querySelector('.mt-rir').value || '').trim();
+    const rir = rv === '' ? 2 : num(rv);
+    return mtBuildItem(name, sets, reps, load, rir, r.querySelector('.mt-note').value);
+  }
+  function mtSyncNow(){
+    const s = active(); if (!s) return false;
+    const plan = state.plans[s.id]; const box = $('#mtFicha');
+    if (!plan || !box) return false;
+    const pt = box.querySelector('#mtPlanTitle');
+    if (pt) plan.title = pt.value.trim() || 'Ficha de treino';
+    box.querySelectorAll('.mt-day').forEach(dayEl => {
+      const i = num(dayEl.dataset.day); const day = plan.days[i]; if (!day) return;
+      const tt = dayEl.querySelector('.mt-day-title');
+      if (tt) day.title = tt.value.trim() || 'Treino';
+      day.items = [...dayEl.querySelectorAll('.mt-row')].map(mtRowValue).filter(v => v !== null);
+    });
+    return true;
+  }
+  function mtStatus(txt){ const st = $('#mtStatus'); if (st) st.textContent = txt; }
+  function mtSave(){
+    if (!mtSyncNow()) return;
+    mtStatus('salvando…');
+    clearTimeout(mtTimer);
+    mtTimer = setTimeout(() => {
+      localStorage.setItem(KEY, JSON.stringify(state));
+      mtStatus('salvo ✓');
+    }, 400);
+  }
+  function mtWrite(){
+    clearTimeout(mtTimer);
+    localStorage.setItem(KEY, JSON.stringify(state));
+  }
+  function mtCounts(){
+    const box = $('#mtFicha'); if (!box) return;
+    box.querySelectorAll('.mt-day').forEach(dayEl => {
+      const c = dayEl.querySelector('.mt-count');
+      if (c) c.textContent = `${dayEl.querySelectorAll('.mt-row').length} exercício(s)`;
+    });
+  }
+  function mtWire(box){
+    box.querySelectorAll('[data-addex]').forEach(b => b.addEventListener('click', () => {
+      const i = num(b.dataset.addex);
+      mtSyncNow();
+      const s = active(); const plan = s && state.plans[s.id];
+      if (!plan || !plan.days[i]) return;
+      plan.days[i].items = plan.days[i].items || [];
+      plan.days[i].items.push('');
+      mtWrite(); mtRender();
+      const dayEl = box.querySelector(`.mt-day[data-day="${i}"]`);
+      const rows = dayEl ? dayEl.querySelectorAll('.mt-row') : [];
+      const last = rows[rows.length - 1];
+      if (last){ const inp = last.querySelector('.mt-name'); if (inp) inp.focus(); }
+    }));
+    box.querySelectorAll('[data-dup]').forEach(b => b.addEventListener('click', () => {
+      const i = num(b.dataset.dup);
+      mtSyncNow();
+      const s = active(); const plan = s && state.plans[s.id];
+      if (!plan || !plan.days[i]) return;
+      const copy = JSON.parse(JSON.stringify(plan.days[i]));
+      copy.title = `${copy.title || 'Treino'} (cópia)`;
+      plan.days.splice(i + 1, 0, copy);
+      mtWrite(); mtRender(); notify('Treino duplicado.');
+    }));
+    box.querySelectorAll('[data-delday]').forEach(b => b.addEventListener('click', () => {
+      const i = num(b.dataset.delday);
+      mtSyncNow();
+      const s = active(); const plan = s && state.plans[s.id];
+      if (!plan || !plan.days[i]) return;
+      if (!confirm(`Excluir o treino “${plan.days[i].title || 'Treino'}” deste aluno?`)) return;
+      plan.days.splice(i, 1);
+      mtWrite(); mtRender(); notify('Treino excluído.');
+    }));
+    box.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', () => mtCopyOpen(num(b.dataset.copy))));
+    box.querySelectorAll('.mt-row .remove').forEach(btn => btn.addEventListener('click', () => {
+      const row = btn.closest('.mt-row');
+      const dayEl = row.closest('.mt-day');
+      const i = num(dayEl.dataset.day);
+      mtSyncNow();
+      const s = active(); const plan = s && state.plans[s.id];
+      if (!plan || !plan.days[i]) return;
+      plan.days[i].items = [...dayEl.querySelectorAll('.mt-row')].filter(r => r !== row)
+        .map(mtRowValue).filter(v => v !== null);
+      mtWrite(); mtRender();
+    }));
+    box.querySelectorAll('.mt-prescribe').forEach(btn => btn.addEventListener('click', () => {
+      const row = btn.closest('.mt-row');
+      const nome = (row.querySelector('.mt-name').value || '').trim();
+      const dados = mtRowData(nome);
+      dados.free = false;
+      const novo = document.createElement('div');
+      novo.innerHTML = mtRowHTML(dados, undefined);
+      const el = novo.firstElementChild;
+      el.dataset.snap = mtRowSnap(el);
+      row.replaceWith(el);
+      mtWire(box);
+      mtSave();
+      const inp = el.querySelector('.mt-sets'); if (inp) inp.focus();
+    }));
+  }
+  let mtCopyIdx = null;
+  function mtCopyOpen(i){
+    const s = active(); if (!s) return;
+    mtSyncNow();
+    const plan = state.plans[s.id]; if (!plan || !plan.days[i]) return;
+    mtCopyIdx = i;
+    const sel = $('#mtCopyStudent');
+    sel.innerHTML = state.students.filter(x => x.id !== s.id)
+      .map(x => `<option value="${x.id}">${esc(x.name)}</option>`).join('')
+      || '<option value="">Nenhum outro aluno cadastrado</option>';
+    const destino = state.plans[sel.value];
+    $('#mtCopyHint').textContent = `O treino “${plan.days[i].title || 'Treino'}” (${(plan.days[i].items || []).length} exercícios) será adicionado à ficha do aluno escolhido.`;
+    $('#mtCopyGo').disabled = !sel.value;
+    $('#mtCopyModal').classList.add('open');
+  }
+  $('#mtCopyStudent').addEventListener('change', e => {
+    $('#mtCopyGo').disabled = !e.target.value;
+    const p = state.plans[e.target.value];
+    $('#mtCopyHint').textContent = p && p.days && p.days.length
+      ? `Este aluno já tem ${p.days.length} treino(s) — o treino será adicionado no fim.`
+      : 'Este aluno ainda não tem ficha — uma nova ficha será criada.';
   });
+  $('#mtCopyGo').addEventListener('click', () => {
+    const s = active(); const destId = $('#mtCopyStudent').value;
+    const plan = s && state.plans[s.id];
+    if (!s || !plan || !plan.days[mtCopyIdx] || !destId) return;
+    const copia = JSON.parse(JSON.stringify(plan.days[mtCopyIdx]));
+    const alvo = state.plans[destId];
+    if (alvo){ (alvo.days = alvo.days || []).push(copia); }
+    else { state.plans[destId] = {title: `Ficha — ${(state.students.find(x => x.id === destId) || {}).name || 'aluno'}`, days: [copia]}; }
+    const nome = (state.students.find(x => x.id === destId) || {}).name || 'aluno';
+    $('#mtCopyModal').classList.remove('open');
+    mtWrite(); save();
+    notify(`Treino copiado para ${nome}.`);
+  });
+  $('#mtNovaFicha').addEventListener('click', () => {
+    const s = active(); if (!s) return;
+    if (state.plans[s.id] && state.plans[s.id].days && state.plans[s.id].days.length && !confirm('Este aluno já tem ficha. Criar uma ficha nova por cima?')) return;
+    state.plans[s.id] = {title: `Ficha — ${s.name.split(' ')[0]}`, days: [{title: 'Treino A', items: []}]};
+    mtWrite(); mtRender(); notify('Ficha criada.');
+  });
+  $('#mtNovoTreino').addEventListener('click', () => {
+    const s = active(); if (!s) return;
+    if (!state.plans[s.id]) state.plans[s.id] = {title: `Ficha — ${s.name.split(' ')[0]}`, days: []};
+    const days = state.plans[s.id].days = state.plans[s.id].days || [];
+    days.push({title: `Treino ${String.fromCharCode(65 + (days.length % 26))}`, items: []});
+    mtWrite(); mtRender(); notify('Treino adicionado.');
+  });
+  $('#mtFicha').addEventListener('input', () => mtSave());
+  function mtFocusDay(i){
+    showPage('montar');
+    setTimeout(() => {
+      const box = $('#mtFicha'); if (!box) return;
+      const el = box.querySelector(`.mt-day[data-day="${i}"]`);
+      if (!el) return;
+      el.scrollIntoView({block:'center', behavior:'smooth'});
+      const t = el.querySelector('.mt-day-title'); if (t) t.focus();
+    }, 40);
+  }
 
   /* ---------- SESSÕES ---------- */
   function sessionsFor(id){ return state.sessions.filter(s => s.studentId === (id || state.activeStudentId)).sort((a,b) => b.date.localeCompare(a.date)); }
@@ -3557,7 +3833,8 @@
   });
 
   /* ---------- RENDER ---------- */
-  function renderAll(){ renderPicker(); renderDashboard(); renderPlans(); renderHistory(); renderData(); renderSessionDays(); updateSessionHint(); renderAval(); renderGrupo(); }
+  function renderAll(){ renderPicker(); renderDashboard(); renderPlans(); renderHistory(); renderData(); renderSessionDays(); updateSessionHint(); renderAval(); renderGrupo();
+    if ($('#montar') && $('#montar').classList.contains('active')) mtRender(); }
   $('#sessionDate').value = today();
   clearSession();
   renderAuth();
