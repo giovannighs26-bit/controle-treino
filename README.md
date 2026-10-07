@@ -24,7 +24,12 @@ Aba dedicada a montar e ajustar a ficha sem sair da tela (sem modal):
 - **Excluir** — remove o treino inteiro; o `×` de cada linha remove um exercício
 - **Prescrever** — itens de texto livre (ex.: “Aquecimento — 5 min de bike”) ficam guardados como
   estão; o botão converte em séries quando você quiser
-- Salva sozinho (não existe botão Salvar) e **nada que você não tocou é reescrito**
+- **Salvar treino** — grava na hora e confirma (“Salvo ✓”), sem esperar o salvamento automático.
+  O botão fica na barra de cima e no rodapé da ficha
+- **Registrar** — em cada treino: salva e abre a aba *Registrar treino* com aquele treino já carregado
+- A ficha também **salva sozinha** enquanto você digita; o rodapé mostra
+  “alterações não salvas” / “salvo ✓”
+- **Nada que você não tocou é reescrito**
 
 O botão **Editar** da aba *Fichas de treino* leva direto para esta aba.
 
