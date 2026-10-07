@@ -33,6 +33,19 @@ Aba dedicada a montar e ajustar a ficha sem sair da tela (sem modal):
 
 O botão **Editar** da aba *Fichas de treino* leva direto para esta aba.
 
+### As abas ficam sincronizadas
+A aba *Registrar treino* guarda uma cópia do dia da ficha. Se você editar a ficha depois, ela se
+atualiza sozinha:
+
+- **Sem nada digitado na tela** — o treino é recarregado automaticamente, sem aviso
+- **Com trabalho já feito** (carga digitada ou série marcada) — **nada é apagado**. Aparece uma faixa
+  dourada avisando que a ficha mudou, com o botão **↻ Recarregar da ficha**
+- **Ao trocar de aluno no topo** — a ficha é gravada antes da troca e o treino do aluno novo é
+  carregado; se houver trabalho na tela, a faixa avisa em vez de apagar
+
+Ao entrar em *Fichas de treino*, *Visão geral*, *Histórico*, *Treino em grupo* ou *Avaliação física*,
+a aba é redesenhada com os dados atuais.
+
 ## Registro de treino — três tipos de série
 Cada exercício monta, ao carregar a ficha:
 
