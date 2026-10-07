@@ -14,7 +14,8 @@ dispositivo — use **Dados e backup** para exportar/importar.
 ## Montar treino — editar a ficha do aluno
 Aba dedicada a montar e ajustar a ficha sem sair da tela (sem modal):
 
-- **+ Nova ficha** / **+ Novo treino** — cria a ficha ou mais um dia de treino
+- **+ Nova ficha** / **+ Novo treino** / **+ Adicionar treino/dia** — cria a ficha ou mais um dia de
+  treino (o botão aparece na barra de cima e também no rodapé da ficha)
 - **+ Exercício** — acrescenta uma linha; o campo do exercício tem **autocomplete** com todos os
   nomes que você já usa (fichas + histórico)
 - Campos por exercício: exercício, séries, reps (aceita faixa `6–8` ou blocos `6+4+2`), carga (aceita
