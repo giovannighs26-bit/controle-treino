@@ -621,7 +621,8 @@
         <h2 style="margin:0">Montar treino</h2>
         <div class="actions">
           <button class="btn secondary" id="mtNovaFicha">+ Nova ficha</button>
-          <button class="btn" id="mtNovoTreino">+ Novo treino</button>
+          <button class="btn secondary" id="mtNovoTreino">+ Novo treino</button>
+          <button class="btn" id="mtSalvar">Salvar treino</button>
         </div>
       </div>
       <p class="hint" style="margin-top:0">Edite direto nesta tela — salva sozinho. No campo do exercício, escolha um nome que você já usa.</p>
@@ -1291,6 +1292,7 @@
      separador TEM de ser ';' (nunca '·'), senão o descanso cai no padrão de 60 s.
      Regra de ouro: item que o usuário não tocou é gravado byte a byte como veio. */
   let mtTimer = null;
+  let mtDirty = false;
   function mtHasRx(it){ return /\d+\s*[x×]/.test(String(it || '')); }
   function mtSplitItem(it){
     const t = String(it || '');
@@ -1367,6 +1369,7 @@
       <div class="mt-day-head">
         <input class="mt-day-title" value="${esc(day.title || 'Treino')}" maxlength="120" placeholder="Nome do treino">
         <div class="actions">
+          <button class="btn small" type="button" data-reg="${i}" title="Salvar e abrir em Registrar treino">Registrar</button>
           <button class="btn ghost small" type="button" data-dup="${i}" title="Criar um treino novo a partir deste">Duplicar</button>
           <button class="btn ghost small" type="button" data-copy="${i}" title="Copiar este treino para outro aluno">Copiar p/ aluno</button>
           <button class="btn danger small" type="button" data-delday="${i}">Excluir</button>
@@ -1397,9 +1400,11 @@
       ${plan.days.map((d, i) => mtDayHTML(d, i)).join('')}
       <div class="actions" style="margin-top:12px;align-items:center">
         <button class="btn secondary small" type="button" id="mtAddDay">+ Adicionar treino/dia</button>
+        <button class="btn small mt-save" type="button">Salvar treino</button>
         <span class="mt-badge" id="mtStatus"></span>
       </div>`;
     box.querySelectorAll('.mt-row').forEach(r => { r.dataset.snap = mtRowSnap(r); });
+    mtStatus(mtDirty ? 'alterações não salvas' : 'salvo ✓');
     mtWire(box);
   }
   const MT_FIELDS = ['mt-name', 'mt-sets', 'mt-reps', 'mt-load', 'mt-rir', 'mt-note'];
@@ -1434,18 +1439,33 @@
     return true;
   }
   function mtStatus(txt){ const st = $('#mtStatus'); if (st) st.textContent = txt; }
+  function mtPersist(){
+    localStorage.setItem(KEY, JSON.stringify(state));
+    mtDirty = false;
+    mtStatus('salvo ✓');
+  }
   function mtSave(){
     if (!mtSyncNow()) return;
-    mtStatus('salvando…');
+    mtDirty = true;
+    mtStatus('alterações não salvas');
     clearTimeout(mtTimer);
-    mtTimer = setTimeout(() => {
-      localStorage.setItem(KEY, JSON.stringify(state));
-      mtStatus('salvo ✓');
-    }, 400);
+    mtTimer = setTimeout(mtPersist, 400);
   }
   function mtWrite(){
     clearTimeout(mtTimer);
-    localStorage.setItem(KEY, JSON.stringify(state));
+    mtPersist();
+  }
+  /* Salvar treino: grava na hora e confirma. O autosave cobre o resto, mas este
+     botão existe para o usuário não depender do debounce de 400 ms. */
+  function mtSalvarAgora(ev){
+    if (!mtSyncNow()){ notify('Escolha um aluno para salvar a ficha.', true); return; }
+    mtWrite();
+    const b = ev && ev.currentTarget;
+    if (b){ const rot = b.textContent; b.textContent = 'Salvo ✓'; setTimeout(() => { b.textContent = rot; }, 1500); }
+    const s = active(); const plan = s && state.plans[s.id];
+    const treinos = plan ? plan.days.length : 0;
+    const n = plan ? plan.days.reduce((a, d) => a + (d.items || []).length, 0) : 0;
+    notify(`Ficha salva — ${treinos} treino(s), ${n} exercício(s).`);
   }
   function mtCounts(){
     const box = $('#mtFicha'); if (!box) return;
@@ -1488,6 +1508,16 @@
       mtWrite(); mtRender(); notify('Treino excluído.');
     }));
     box.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', () => mtCopyOpen(num(b.dataset.copy))));
+    box.querySelectorAll('.mt-save').forEach(b => b.addEventListener('click', mtSalvarAgora));
+    box.querySelectorAll('[data-reg]').forEach(b => b.addEventListener('click', () => {
+      const i = num(b.dataset.reg);
+      mtSyncNow();
+      const s = active(); const plan = s && state.plans[s.id];
+      if (!plan || !plan.days[i]) return;
+      if (!(plan.days[i].items || []).length){ notify('Adicione exercícios antes de registrar.', true); return; }
+      mtWrite();
+      startFromDay(plan, i);
+    }));
     box.querySelectorAll('.mt-row .remove').forEach(btn => btn.addEventListener('click', () => {
       const row = btn.closest('.mt-row');
       const dayEl = row.closest('.mt-day');
@@ -1562,6 +1592,7 @@
     days.push({title: `Treino ${String.fromCharCode(65 + (days.length % 26))}`, items: []});
     mtWrite(); mtRender(); notify('Treino adicionado.');
   });
+  $('#mtSalvar').addEventListener('click', mtSalvarAgora);
   $('#mtFicha').addEventListener('input', () => mtSave());
   function mtFocusDay(i){
     showPage('montar');
