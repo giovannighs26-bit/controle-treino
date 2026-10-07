@@ -65,6 +65,37 @@ Nas técnicas por blocos aparece o campo **Blocos** (ex.: `6+4+2`), cuja soma de
 A técnica e os blocos também são detectados automaticamente ao ler a ficha
 (ex.: `supino inclinado 4×(6+4) cluster 15s`).
 
+## Financeiro — gestão das mensalidades
+Aba de cobrança dos alunos, mês a mês. Os dados ficam em `state.finance` (dentro do mesmo backup).
+
+**Por aluno:** mensalidade, dia de vencimento, desconto, plano, WhatsApp, observações e
+**cobrar a partir de** (o mês em que ele entrou — antes disso o app não cobra nem marca atraso).
+
+**Por mês:**
+- **6 indicadores** — previsto, recebido, em aberto, em atraso, taxa de recebimento e ticket médio
+- **Gráfico de evolução** de 6 meses, comparando previsto × recebido
+- **Rosca da situação do mês** — quanto está pago, pendente, atrasado e parcial
+- **Tabela de mensalidades** com filtros por situação, busca por nome e ordenação por urgência
+  (atrasados primeiro)
+- **Alertas** — quantos estão em atraso, quanto há a receber e quem ainda está sem mensalidade
+
+**Ações rápidas em cada linha:**
+- **✓** registra o pagamento já com o valor em falta preenchido
+- **💬** copia a cobrança pronta e abre o WhatsApp do aluno (se o telefone estiver cadastrado)
+- **⚙** abre a ficha financeira do aluno: histórico de lançamentos, total do ano, meses em atraso
+
+**Pagamentos:** mensalidade, avulsa/extra ou outro; valor, data, forma (PIX, dinheiro, cartão,
+transferência) e observação. Pagamento parcial é aceito e a linha passa a mostrar o que falta.
+Qualquer lançamento pode ser excluído no histórico do aluno.
+
+**Ajustes:** nome do titular, chave PIX, valor padrão, dia de vencimento padrão e o texto da
+mensagem de cobrança (com `{aluno}`, `{primeiro}`, `{mes}`, `{valor}`, `{venc}`, `{plano}`,
+`{pix}` e `{titular}`). Os valores podem ser aplicados em massa a quem não tem valor, a todos os
+ativos, ou só o dia de vencimento.
+
+**CSV do mês** — uma linha por aluno com valor, vencimento, situação, pago, em falta e último
+pagamento, mais os totais. Separado por `;` e com BOM, abre direto no Excel.
+
 ## Sensor de progressão
 Lê as séries de trabalho contra a faixa de repetições do exercício e sugere:
 
@@ -87,7 +118,7 @@ Lê as séries de trabalho contra a faixa de repetições do exercício e sugere
 ## Estrutura
 - `index.html` — o app inteiro (HTML + CSS + JS, sem dependências externas)
 - Abas: Visão geral · Fichas de treino · **Montar treino** · Registrar treino · Treino em grupo ·
-  Histórico · Avaliação física · Dados e backup
+  Histórico · Avaliação física · **Financeiro** · Dados e backup
 - `sw.js` — service worker (cache offline)
 - `manifest.json` / `manifest.webmanifest` — manifest do PWA
 - `icons/` — ícones
