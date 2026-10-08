@@ -740,7 +740,17 @@
     </article>
 
     <article class="card" id="dashAlertsCard" hidden>
-      <div class="card-head"><h2>Precisa da sua atenção</h2><span class="badge" id="dashAlertsCount"></span></div>
+      <div class="card-head"><h2>Precisa da sua atenção</h2>
+        <div class="actions">
+          <label class="hint" style="margin:0;display:flex;align-items:center;gap:6px">Parado há
+            <select id="dashAlertaDias" class="fin-input" style="width:auto;padding:4px 6px" aria-label="Dias sem treinar para alertar">
+              <option value="3">3 dias</option><option value="5">5 dias</option><option value="7">7 dias</option>
+              <option value="10">10 dias</option><option value="14">14 dias</option><option value="21">21 dias</option>
+              <option value="30">30 dias</option>
+            </select>
+          </label>
+          <span class="badge" id="dashAlertsCount"></span>
+        </div></div>
       <div class="alerts" id="dashAlerts"></div>
     </article>
     <article class="card third"><h2>Aluno</h2><div id="studentCard" class="empty">Nenhum aluno selecionado.</div></article>
@@ -1298,7 +1308,7 @@
 
   let state = load();
 
-  function blank(){ return {version:1, auth:null, activeStudentId:null, students:[], plans:{}, sessions:[], periodizations:{}, assessments:[], group:null, finance:null}; }
+  function blank(){ return {version:1, auth:null, activeStudentId:null, students:[], plans:{}, sessions:[], periodizations:{}, assessments:[], group:null, finance:null, alertaDias:7}; }
   function load(){
     try { const p = JSON.parse(localStorage.getItem(KEY)); if (p && Array.isArray(p.students)) return Object.assign(blank(), p); } catch(e){}
     return blank();
@@ -1873,6 +1883,8 @@
     $('#finBusca').addEventListener('input', e => { finBusca = e.target.value; finRender(); });
     $('#finCsv').addEventListener('click', finCSV);
   const prFicha = $('#printFichaBtn'); if (prFicha) prFicha.addEventListener('click', printFicha);
+  const dAd = $('#dashAlertaDias');
+  if (dAd) dAd.addEventListener('change', () => { const n = num(dAd.value); state.alertaDias = n >= 1 ? Math.round(n) : 7; save(); });
   const prAval = $('#avPrintBtn'); if (prAval) prAval.addEventListener('click', () => printAvaliacao());
   const fRec = $('#finAlunoRecibo'); if (fRec) fRec.addEventListener('click', () => finEditId && finRecibo(finEditId, finMes));
   const fRecC = $('#finAlunoReciboCopiar'); if (fRecC) fRecC.addEventListener('click', () => finEditId && finCopiarRecibo(finEditId, finMes));
@@ -4553,6 +4565,8 @@ ${corpo}
 
   /* ---------- ALERTAS DA VISÃO GERAL ---------- */
   function dashDias(a, b){ return Math.round((new Date(b + 'T12:00:00') - new Date(a + 'T12:00:00')) / 86400000); }
+  /* Quantos dias sem treinar já contam como alerta (configurável na própria Visão geral). */
+  function dashLimite(){ const n = num(state.alertaDias); return n >= 1 ? Math.round(n) : 7; }
   function dashLastSession(id){
     const ss = state.sessions.filter(x => x.studentId === id);
     if (!ss.length) return null;
@@ -4562,6 +4576,7 @@ ${corpo}
     const hoje = today();
     const mes = hoje.slice(0, 7);
     const alunos = state.students.filter(s => (s.name || '').trim() && s.id !== 'usuario');
+    const limite = dashLimite();
     const parados = [], semFicha = [], nunca = [], aniversarios = [];
     alunos.forEach(s => {
       const ult = dashLastSession(s.id);
@@ -4571,7 +4586,7 @@ ${corpo}
       if (!ult){ if (temFicha) nunca.push(s); }
       else {
         const d = dashDias(ult, hoje);
-        if (d >= 7) parados.push({ s, d });
+        if (d >= limite) parados.push({ s, d });
       }
       // aniversario: usa a data de nascimento da avaliacao mais recente
       try {
@@ -4587,7 +4602,7 @@ ${corpo}
       atrasados = alunos.filter(s => { const i = finInfo(s.id, mes); return i.st === 'atrasado'; })
         .map(s => ({ s, falta: finInfo(s.id, mes).falta }));
     } catch (e){}
-    return { parados, semFicha, nunca, aniversarios, atrasados, mes };
+    return { parados, semFicha, nunca, aniversarios, atrasados, mes, limite };
   }
   function dashAlertRow(icone, texto, acao, rotulo, tom){
     return `<div class="alert-row${tom ? ' ' + tom : ''}">`
@@ -4600,6 +4615,8 @@ ${corpo}
     const card = $('#dashAlertsCard'), box = $('#dashAlerts');
     if (!card || !box) return;
     const A = dashAlerts();
+    const selD = $('#dashAlertaDias');
+    if (selD) selD.value = String(A.limite);
     const rows = [];
     if (A.atrasados.length){
       const total = A.atrasados.reduce((n, x) => n + x.falta, 0);
@@ -4608,7 +4625,7 @@ ${corpo}
     }
     if (A.parados.length){
       const nomes = A.parados.slice(0, 4).map(x => `${esc(x.s.name.split(' ')[0])} (${x.d}d)`).join(', ');
-      rows.push(dashAlertRow('⏸', `<b>${A.parados.length} aluno(s) sem treinar há 7 dias ou mais</b> — ${nomes}${A.parados.length > 4 ? '…' : ''}`, 'select:' + A.parados[0].s.id, 'Ver aluno', ''));
+      rows.push(dashAlertRow('⏸', `<b>${A.parados.length} aluno(s) sem treinar há ${A.limite} dias ou mais</b> — ${nomes}${A.parados.length > 4 ? '…' : ''}`, 'select:' + A.parados[0].s.id, 'Ver aluno', ''));
     }
     if (A.nunca.length){
       const nomes = A.nunca.slice(0, 4).map(x => esc(x.name.split(' ')[0])).join(', ');
