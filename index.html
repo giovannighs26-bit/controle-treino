@@ -2212,6 +2212,18 @@
       load: kgM ? num(kgM[1].replace(',','.')) : 0,
       rir: rirM ? num(rirM[1]) : 2, rest, note: '', method, blocks};
   }
+  /* Nome do exercício sem a prescrição colada nele: "Supino — 4×6–8; 90 s; RIR 2" -> "Supino" */
+  function exNome(texto){
+    const t = String(texto || '').trim();
+    const curto = t.split(/\s+[—–]\s+/)[0].replace(/\s*\d+\s*[x×]\s*.*$/i, '').trim();
+    return curto || t;
+  }
+  /* Repetições legíveis: faixa (6–8) ou soma dos blocos (cluster / rest-pause). */
+  function exReps(p){
+    if (p.blocks && p.blocks.length) return p.blocks.join('+');
+    if (p.repsMax && p.repsMax !== p.repsMin) return p.repsMin + '–' + p.repsMax;
+    return String(p.repsMin);
+  }
   function renderPlans(){
     const s = active(), box = $('#planList');
     if (!s){ box.innerHTML = '<div class="empty">Selecione um aluno para ver as fichas.</div>'; return; }
@@ -4236,7 +4248,7 @@ ${corpo}
         <table><thead><tr><th style="width:42%">Exercício</th><th class="n">Séries</th><th class="n">Reps</th>
         <th class="n">Carga</th><th class="n">RIR</th><th class="n">Descanso</th></tr></thead><tbody>
         ${(d.items || []).map(it => { const p = parseItem(it);
-          return `<tr><td>${esc(p.name)}</td><td class="n">${esc(String(p.sets))}</td><td class="n">${esc(String(p.reps))}</td>
+          return `<tr><td>${esc(exNome(p.name))}</td><td class="n">${esc(String(p.sets))}</td><td class="n">${esc(exReps(p))}</td>
             <td class="n">${p.load ? fmt(p.load) + ' kg' : '—'}</td><td class="n">${esc(String(p.rir))}</td>
             <td class="n">${p.rest ? esc(String(p.rest)) + ' s' : '—'}</td></tr>`;
         }).join('')}
@@ -4430,7 +4442,7 @@ ${corpo}
       d: (plan.days || []).map(d => ({
         t: d.title,
         i: (d.items || []).map(it => { const p = parseItem(it);
-          return { n: p.name, s: String(p.sets), r: String(p.reps), l: num(p.load), k: num(p.rest) }; })
+          return { n: exNome(p.name), s: String(p.sets), r: exReps(p), l: num(p.load), k: num(p.rest) }; })
       }))
     };
   }
