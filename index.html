@@ -35,6 +35,16 @@
     .student-picker{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;min-width:min(100%,430px)}
     .tabs{display:flex;gap:8px;overflow:auto;padding:4px 0 14px;scrollbar-width:none}
     .tabs::-webkit-scrollbar{display:none}
+    .alunos-bar{display:flex;align-items:center;gap:9px;margin:-6px 0 14px}
+    .alunos-bar[hidden]{display:none}
+    .alunos-bar-lbl{font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:var(--muted);font-weight:700;white-space:nowrap}
+    .alunos-bar-scroll{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 0;flex:1;min-width:0}
+    .alunos-bar-scroll::-webkit-scrollbar{display:none}
+    .al-chip{display:flex;align-items:center;gap:6px;white-space:nowrap;border:1px solid var(--line);background:var(--panel);color:var(--muted);padding:6px 11px;border-radius:999px;font-size:13px;cursor:pointer}
+    .al-chip b{font-size:11px;letter-spacing:.4px;opacity:.8}
+    .al-chip:hover{border-color:var(--accent)}
+    .al-chip.active{background:var(--accent);border-color:var(--accent);color:#1c1608;font-weight:800}
+    .al-chip.active b{opacity:1}
     .tab{white-space:nowrap;border:1px solid var(--line);background:var(--panel);color:var(--muted);padding:10px 15px;border-radius:999px}
     .tab.active{background:var(--accent);border-color:var(--accent);color:#1c1608;font-weight:800}
     .page{display:none}.page.active{display:block}
@@ -289,7 +299,7 @@
       .login-box{padding:18px 20px}.gh-mark{width:44px;height:44px}
     }
     @media print{
-      body{background:white;color:#111}.tabs,.top .btn,.actions,.remove{display:none!important}
+      body{background:white;color:#111}.tabs,.alunos-bar,.top .btn,.actions,.remove{display:none!important}
       .card{box-shadow:none;border:1px solid #bbb;background:white}
       .page{display:block!important}.page:not(#history):not(#fichas){display:none!important}
       .day-body{display:block!important}.muted,.item-meta,label{color:#555}
@@ -676,6 +686,11 @@
     <button class="tab" data-page="data">Dados e backup</button>
     <button class="tab" data-page="geral">Geral</button>
   </nav>
+
+  <div class="alunos-bar" id="alunosBar" hidden>
+    <span class="alunos-bar-lbl">Aluno</span>
+    <div class="alunos-bar-scroll" id="alunosBarList" role="group" aria-label="Selecionar aluno"></div>
+  </div>
 
   <section class="page" id="alunos"><div class="grid">
     <article class="card">
@@ -4727,6 +4742,15 @@ ${corpo}
         <div class="item-meta">${ult ? finBR(ult.valor) + ' · ' + finDataBR(ult.data) + ' · ' + esc(FIN_FORMAS[ult.forma] || 'Outro') : 'Nenhum lançamento'}</div></div>
         <button class="btn secondary small" type="button" id="alFinAbrir">Abrir financeiro</button></div>`;
     const b = $('#alFinAbrir'); if (b) b.addEventListener('click', () => showPage('financeiro'));
+    const barBox = $('#alunosBarList');
+    if (barBox && !barBox.dataset.wired){ barBox.dataset.wired = '1';
+      barBox.addEventListener('click', e => {
+        const c = e.target.closest('[data-chip]'); if (!c) return;
+        const sel = $('#activeStudent');
+        if (sel && [...sel.options].some(o => o.value === c.dataset.chip)){ sel.value = c.dataset.chip; sel.dispatchEvent(new Event('change')); }
+        else { state.activeStudentId = c.dataset.chip; save(); }
+      });
+    }
   }
   function alRenderRecentes(){
     const box = $('#alRecentes'); if (!box) return;
@@ -4740,6 +4764,22 @@ ${corpo}
       : '<div class="empty">Nenhum treino registrado para este aluno.</div>';
   }
   function alRender(){ alRenderLista(); alRenderFinanceiro(); alRenderRecentes(); }
+  /* Faixa de alunos junto das abas: troca rapida do aluno ativo em qualquer aba. */
+  function renderAlunosBar(){
+    const box = $('#alunosBarList'), bar = $('#alunosBar');
+    if (!box) return;
+    const lista = state.students
+      .filter(s => (s.name || '').trim() && s.id !== 'usuario')
+      .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'pt-BR'));
+    if (bar) bar.hidden = !lista.length;
+    box.innerHTML = lista.map(s => {
+      const on = s.id === state.activeStudentId;
+      return `<button type="button" class="al-chip${on ? ' active' : ''}" data-chip="${esc(s.id)}" title="${esc(s.name)}">`
+        + `<b>${esc(alIniciais(s.name))}</b><span>${esc(String(s.name).split(' ')[0])}</span></button>`;
+    }).join('');
+    const ativo = box.querySelector('.al-chip.active');
+    if (ativo) box.scrollLeft = Math.max(0, ativo.offsetLeft - box.clientWidth / 2 + ativo.offsetWidth / 2);
+  }
   function alWire(){
     const busca = $('#alBusca');
     if (busca && !busca.dataset.wired){ busca.dataset.wired = '1'; busca.addEventListener('input', alRenderLista); }
@@ -5472,7 +5512,10 @@ ${corpo}
     sel.innerHTML = state.students.length
       ? state.students.map(s => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('')
       : '<option value="">Nenhum aluno cadastrado</option>';
-    if (!keep || !state.students.some(s => s.id === keep)) avStudentId = (active() && active().id) || (state.students[0] && state.students[0].id) || null;
+    /* a aba Avaliacao acompanha o aluno ativo do app (mesma pessoa em todas as abas) */
+    const global = state.activeStudentId;
+    if (global && state.students.some(s => s.id === global)) avStudentId = global;
+    else if (!keep || !state.students.some(s => s.id === keep)) avStudentId = (active() && active().id) || (state.students[0] && state.students[0].id) || null;
     if (avStudentId) sel.value = avStudentId;
     const st = state.students.find(s => s.id === avStudentId);
     const list = avFor(avStudentId);
@@ -5660,7 +5703,14 @@ ${corpo}
   });
 
   avBuildInputs();
-  $('#avStudent').addEventListener('change', e => { avStudentId = e.target.value; avCmpTouched = false; avCloseForm(); renderAval(); });
+  $('#avStudent').addEventListener('change', e => {
+    avStudentId = e.target.value; avCmpTouched = false; avCloseForm();
+    /* mantem o app inteiro no mesmo aluno */
+    const selA = $('#activeStudent');
+    if (selA && [].some.call(selA.options, o => o.value === avStudentId)){ selA.value = avStudentId; selA.dispatchEvent(new Event('change')); }
+    else { state.activeStudentId = avStudentId; save(); }
+    renderAval();
+  });
   $('#avNewBtn').addEventListener('click', avNew);
   $('#avCancelBtn').addEventListener('click', avCloseForm);
   $('#avSaveBtn').addEventListener('click', avSave);
@@ -5768,7 +5818,7 @@ ${corpo}
   }
 
   /* ---------- RENDER ---------- */
-  function renderAll(){ renderPicker(); alWire(); alRender(); geralRender(); renderDashboard(); renderDashAlerts(); renderPlans(); renderHistory(); renderData(); renderSessionDays(); updateSessionHint(); renderAval(); renderGrupo();
+  function renderAll(){ renderPicker(); alWire(); alRender(); renderAlunosBar(); geralRender(); renderDashboard(); renderDashAlerts(); renderPlans(); renderHistory(); renderData(); renderSessionDays(); updateSessionHint(); renderAval(); renderGrupo();
     if ($('#montar') && $('#montar').classList.contains('active')) mtRender();
     finRender(); }
   $('#sessionDate').value = today();
