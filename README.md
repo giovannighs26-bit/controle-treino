@@ -124,7 +124,8 @@ inteira comprimida dentro dele mesmo.
 ## Alertas na Visão geral
 O card de alertas avisa quando há algo pedindo ação:
 
-- alunos **sem treino há 7 dias ou mais**;
+- alunos **sem treino há X dias ou mais** — o X é configurável ali mesmo no card (3, 5, 7, 10, 14, 21 ou 30
+  dias; padrão 7) e fica guardado no seu aparelho;
 - alunos **com ficha e nenhum treino registrado**;
 - alunos **sem ficha cadastrada**;
 - **aniversariantes do mês** (a data vem do nascimento informado na última avaliação);
