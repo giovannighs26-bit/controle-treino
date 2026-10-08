@@ -42,6 +42,18 @@
     .card{grid-column:span 12;background:linear-gradient(160deg,var(--panel2),var(--panel));border:1px solid var(--line);
       border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
     .half{grid-column:span 6}.third{grid-column:span 4}
+    /* ---------- ABA ALUNOS ---------- */
+    .al-list{display:grid;gap:8px;max-height:min(56vh,540px);overflow:auto;padding-right:2px}
+    .al-row{display:flex;align-items:center;gap:11px;width:100%;text-align:left;cursor:pointer;font:inherit;
+      border:1px solid var(--line);border-radius:14px;background:#101813;color:var(--text);padding:10px 12px}
+    .al-row:hover{border-color:#3d4c3d}
+    .al-row.on{border-color:var(--accent);background:#16211a}
+    .al-av{flex:0 0 38px;height:38px;border-radius:999px;display:grid;place-items:center;font-weight:900;
+      font-size:13px;background:#1d2a20;color:var(--accent2);border:1px solid var(--line)}
+    .al-nome{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+    .al-nome b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .al-nome small{color:var(--muted);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .al-tag{color:var(--muted);font-size:11px;white-space:nowrap}
     .card h2,.card h3{margin:0 0 14px}.card h2{font-size:18px}.card h3{font-size:15px;color:var(--accent2)}
     label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}
     .form{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
@@ -629,14 +641,15 @@
       <div><h1>GH Performance</h1><p>Engenharia do Estímulo Real</p></div>
     </div>
     <div class="student-picker">
-      <label for="activeStudent">Aluno ativo</label>
-      <select id="activeStudent"></select>
-      <button class="btn" id="newStudentBtn">+ Aluno</button>
       <button class="btn ghost hidden" id="installBtn" title="Adicionar à tela de início">⤓ Instalar</button>
       <button class="btn ghost" id="fsBtn" title="Tela cheia">⤢ Tela cheia</button>
       <button class="btn ghost" id="logoutBtn" title="Sair do app">Sair</button>
     </div>
   </header>
+  <div hidden aria-hidden="true" style="display:none">
+    <select id="activeStudent" tabindex="-1"></select>
+    <button type="button" id="newStudentBtn" tabindex="-1">+ Aluno</button>
+  </div>
   <div class="chrono" id="chrono" role="group" aria-label="Cronometro">
     <span class="chrono-ico">⏱</span>
     <span class="chrono-time" id="chronoTime" title="Clique para iniciar ou pausar">00:00:00</span>
@@ -651,6 +664,7 @@
 
 
   <nav class="tabs" aria-label="Navegação">
+    <button class="tab" data-page="alunos">Alunos</button>
     <button class="tab active" data-page="dashboard">Visão geral</button>
     <button class="tab" data-page="fichas">Fichas de treino</button>
     <button class="tab" data-page="montar">Montar treino</button>
@@ -660,7 +674,28 @@
     <button class="tab" data-page="aval">Avaliação física</button>
     <button class="tab" data-page="financeiro">Financeiro</button>
     <button class="tab" data-page="data">Dados e backup</button>
+    <button class="tab" data-page="geral">Geral</button>
   </nav>
+
+  <section class="page" id="alunos"><div class="grid">
+    <article class="card">
+      <div class="actions" style="justify-content:space-between;margin-bottom:14px">
+        <h2 style="margin:0">Alunos <span class="badge" id="alCount"></span></h2>
+        <div class="actions">
+          <input class="fin-input" id="alBusca" type="search" placeholder="Buscar aluno…" style="width:190px">
+          <button class="btn" id="alNovoBtn" type="button">+ Aluno</button>
+        </div>
+      </div>
+      <div class="al-list" id="alLista"></div>
+    </article>
+    <article class="card half"><h2>Perfil</h2><div id="studentCard" class="empty">Nenhum aluno selecionado.</div></article>
+    <article class="card half">
+      <div class="card-head"><h2>Financeiro</h2><span class="hint" id="alFinMes"></span></div>
+      <div class="list" id="alFinanceiro"></div>
+    </article>
+    <article class="card half"><h2>Ficha ativa</h2><div id="activeFichaCard" class="empty">Nenhuma ficha cadastrada.</div></article>
+    <article class="card half"><h2>Últimos treinos</h2><div class="list" id="alRecentes"></div></article>
+  </div></section>
 
   <section class="page active" id="dashboard"><div class="grid">
     <article class="card hero">
@@ -753,9 +788,7 @@
         </div></div>
       <div class="alerts" id="dashAlerts"></div>
     </article>
-    <article class="card third"><h2>Aluno</h2><div id="studentCard" class="empty">Nenhum aluno selecionado.</div></article>
-    <article class="card third"><h2>Ficha ativa</h2><div id="activeFichaCard" class="empty">Nenhuma ficha cadastrada.</div></article>
-    <article class="card third"><h2>Treinos recentes</h2><div id="recentSessions" class="list"></div></article>
+    <article class="card"><h2>Treinos recentes</h2><div id="recentSessions" class="list"></div></article>
   </div></section>
 
   <section class="page" id="fichas"><div class="grid">
@@ -1243,6 +1276,67 @@
       <label class="check"><input type="checkbox" id="seedForce"> Substituir também as fichas já existentes</label>
       <div style="margin-top:12px"><button class="btn" id="seedApplyBtn">⟳ Aplicar base de fichas</button></div>
       <p class="hint" id="seedApplyMsg"></p>
+    </article>
+  </div></section>
+
+  <section class="page" id="geral"><div class="grid">
+    <article class="card">
+      <div class="card-head"><h2>Sobre o app</h2><span class="badge">GH Performance</span></div>
+      <p class="hint" style="margin:0 0 12px">Engenharia do Estímulo Real — o app do seu acompanhamento, feito para o ginásio, que abre no celular e no computador sem depender de internet.</p>
+      <div class="list">
+        <div class="item"><div><div class="item-title">Tudo em um só lugar</div><div class="item-meta">Alunos, fichas, treinos, avaliações físicas e mensalidades</div></div></div>
+        <div class="item"><div><div class="item-title">Funciona offline</div><div class="item-meta">Depois de aberto uma vez, abre mesmo sem conexão</div></div></div>
+        <div class="item"><div><div class="item-title">Instalável</div><div class="item-meta">Vira um ícone na tela de início, como um app comum</div></div></div>
+        <div class="item"><div><div class="item-title">Sem bibliotecas externas</div><div class="item-meta">Um único arquivo — leve, rápido e sem rastreadores</div></div></div>
+      </div>
+    </article>
+
+    <article class="card half">
+      <h2>Seus dados</h2>
+      <div class="list">
+        <div class="item"><div><div class="item-title">Ficam só neste aparelho</div><div class="item-meta">O app não tem nuvem: nada é enviado para servidores</div></div></div>
+        <div class="item"><div><div class="item-title">Fotos das avaliações</div><div class="item-meta">Guardadas no aparelho e comprimidas automaticamente</div></div></div>
+        <div class="item"><div><div class="item-title">Atenção ao limpar o navegador</div><div class="item-meta">Apagar os dados do site apaga o app — faça backup antes</div></div></div>
+      </div>
+    </article>
+
+    <article class="card half">
+      <h2>Backup</h2>
+      <div class="list">
+        <div class="item"><div><div class="item-title">Exportar JSON</div><div class="item-meta">Arquivo leve: alunos, fichas, treinos, avaliações e financeiro</div></div></div>
+        <div class="item"><div><div class="item-title">Exportar com fotos</div><div class="item-meta">Leva também as fotos das avaliações dentro do arquivo</div></div></div>
+        <div class="item"><div><div class="item-title">Backups automáticos</div><div class="item-meta">Os 3 mais recentes ficam guardados no aparelho</div></div></div>
+      </div>
+      <div style="margin-top:12px"><button class="btn secondary" id="geralIrDados" type="button">Abrir Dados e backup</button></div>
+    </article>
+
+    <article class="card half">
+      <h2>Instalar como app</h2>
+      <div class="list">
+        <div class="item"><div><div class="item-title">Android (Chrome)</div><div class="item-meta">Menu ⋮ → “Instalar app” ou “Adicionar à tela inicial”</div></div></div>
+        <div class="item"><div><div class="item-title">iPhone (Safari)</div><div class="item-meta">Compartilhar → “Adicionar à Tela de Início”</div></div></div>
+        <div class="item"><div><div class="item-title">Computador</div><div class="item-meta">Ícone de instalar na barra de endereço, ou o botão ⤓ Instalar no topo</div></div></div>
+      </div>
+    </article>
+
+    <article class="card half">
+      <h2>Guia das abas</h2>
+      <div class="list" id="geralGuia"></div>
+    </article>
+
+    <article class="card">
+      <h2>Como escrever um exercício</h2>
+      <div class="list">
+        <div class="item"><div><div class="item-title">Formato do item</div><div class="item-meta"><code>Supino reto — 4×6–8 (42,5 kg); 90 s; RIR 2</code></div></div></div>
+        <div class="item"><div><div class="item-title">O descanso vem depois de “;”</div><div class="item-meta">Use ponto e vírgula antes do tempo — “; 90 s”. Nunca use “·”</div></div></div>
+        <div class="item"><div><div class="item-title">Técnicas por exercício</div><div class="item-meta">rest-pause, cluster, drop, bi-set e pirâmide — nos blocos, as repetições somam</div></div></div>
+        <div class="item"><div><div class="item-title">RIR</div><div class="item-meta">Repetições na reserva: 0 = falha, 2 = sobravam 2 repetições</div></div></div>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="card-head"><h2>Sobre esta versão</h2><span class="hint" id="geralVersao"></span></div>
+      <p class="hint" style="margin:0">GH Performance — app de página única, instalável e offline. Telas de alto contraste e alvos de toque grandes, pensados para usar em pé, entre as séries.</p>
     </article>
   </div></section>
 </main>
@@ -2108,6 +2202,7 @@
     $$('.tab').forEach(b => b.classList.toggle('active', b.dataset.page === id));
     $$('.page').forEach(p => p.classList.toggle('active', p.id === id));
     if (id === 'history') setTimeout(drawChart, 30);
+    if (id === 'alunos') alRender();
     if (id === 'dashboard') { renderDashboard(); renderDashAlerts(); setTimeout(drawDashboardCharts, 30); }
     if (id === 'session') autoLoadToday();
     if (id === 'grupo') renderGrupo();
@@ -2115,6 +2210,7 @@
     if (id === 'fichas') renderPlans();
     if (id === 'montar') mtRender();
     if (id === 'financeiro'){ finRender(); setTimeout(() => { finDrawEvol(); finDrawDonut(); }, 40); }
+    if (id === 'geral') geralRender();
   }
   $$('.tab').forEach(b => b.addEventListener('click', () => {
     if ($('#montar').classList.contains('active') && b.dataset.page !== 'montar'){ mtSyncNow(); save(); }
@@ -2148,7 +2244,7 @@
     setTimeout(() => $('#studentName').focus(), 20);
   }
   function closeStudent(){ $('#studentModal').classList.remove('open'); }
-  $('#newStudentBtn').addEventListener('click', () => openStudent(null));
+  const nbBtn = $('#newStudentBtn'); if (nbBtn) nbBtn.addEventListener('click', () => openStudent(null));
   $$('[data-close]').forEach(b => b.addEventListener('click', () => {
     $('#studentModal').classList.remove('open'); $('#mtCopyModal').classList.remove('open');
     ['#finPayModal','#finAlunoModal','#finAjustesModal'].forEach(x => { const el = $(x); if (el) el.classList.remove('open'); });
@@ -4563,6 +4659,97 @@ ${corpo}
     return msg;
   }
 
+  /* ---------- ABA ALUNOS (lista + perfil + ficha + treinos + financeiro) ----------
+     A lista é o seletor principal: clicar num aluno troca o "aluno ativo" pelo mesmo
+     caminho do <select id="activeStudent">, para a sincronia das abas continuar valendo. */
+  function alIniciais(nome){
+    const p = String(nome || '').trim().split(/\s+/).filter(Boolean);
+    if (!p.length) return '?';
+    return ((p[0][0] || '') + (p.length > 1 ? (p[p.length - 1][0] || '') : '')).toUpperCase();
+  }
+  function alLista(){
+    const q = (($('#alBusca') && $('#alBusca').value) || '').trim().toLowerCase();
+    return state.students
+      .filter(s => (s.name || '').trim() && s.id !== 'usuario')
+      .filter(s => !q || (s.name || '').toLowerCase().includes(q)
+        || String(s.goal || '').toLowerCase().includes(q)
+        || String(s.level || '').toLowerCase().includes(q))
+      .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'pt-BR'));
+  }
+  function alRenderLista(){
+    const box = $('#alLista'); if (!box) return;
+    const lista = alLista();
+    const total = state.students.filter(s => (s.name || '').trim() && s.id !== 'usuario').length;
+    const cnt = $('#alCount');
+    if (cnt) cnt.textContent = lista.length === total ? String(total) : `${lista.length}/${total}`;
+    if (!lista.length){ box.innerHTML = '<div class="empty">Nenhum aluno encontrado.</div>'; return; }
+    const atual = active();
+    box.innerHTML = lista.map(s => {
+      const ficha = plansOf(s.id);
+      const nT = ficha && ficha.days ? ficha.days.length : 0;
+      const ss = state.sessions.filter(x => x.studentId === s.id);
+      const ult = ss.map(x => String(x.date || '')).sort().pop() || '';
+      const on = !!(atual && atual.id === s.id);
+      return `<button class="al-row${on ? ' on' : ''}" type="button" data-al="${esc(s.id)}" aria-pressed="${on}">
+        <span class="al-av">${esc(alIniciais(s.name))}</span>
+        <span class="al-nome"><b>${esc(s.name)}</b><small>${nT ? nT + ' treino(s)' : 'sem ficha'} · ${ss.length} sessão(ões)${ult ? ' · último ' + dateFmt(ult) : ''}</small></span>
+        <span class="al-tag">${esc(s.level || '')}</span>
+      </button>`;
+    }).join('');
+  }
+  function alRenderFinanceiro(){
+    const box = $('#alFinanceiro'); if (!box) return;
+    const mes = today().slice(0, 7);
+    const lm = $('#alFinMes'); if (lm) lm.textContent = finMesLabel(mes);
+    const s = active();
+    if (!s){ box.innerHTML = '<div class="empty">Selecione um aluno.</div>'; return; }
+    let c = { valor: 0, plano: '', tel: '' }, info = { st: 'semvalor', falta: 0, pago: 0, esperado: 0 };
+    try { c = finCfg(s.id); info = finInfo(s.id, mes); } catch (e){}
+    const pags = ((finEnsure().payments) || []).filter(p => p.studentId === s.id)
+      .sort((a, b) => String(b.data || '').localeCompare(String(a.data || '')));
+    const ult = pags[0];
+    const ROT = { pago: 'Pago', pendente: 'Em aberto', atrasado: 'Atrasado', parcial: 'Parcial',
+      semvalor: 'Sem valor definido', inativo: 'Inativo', previsto: 'Previsto', fora: 'Não cobrado' };
+    const ruim = info.st === 'atrasado';
+    box.innerHTML = `
+      <div class="item"><div><div class="item-title">${c.valor ? finBR(c.valor) : 'Sem mensalidade'}</div>
+        <div class="item-meta">${esc(c.plano || 'Plano não informado')}${c.tel ? ' · ' + esc(c.tel) : ''}</div></div>
+        <span class="badge${ruim ? ' off' : ''}">${esc(ROT[info.st] || info.st)}</span></div>
+      <div class="item"><div><div class="item-title">Recebido no mês</div>
+        <div class="item-meta">${finBR(info.pago || 0)} de ${finBR(info.esperado || 0)}${info.falta > 0 ? ' · faltam ' + finBR(info.falta) : ''}</div></div></div>
+      <div class="item"><div><div class="item-title">Último pagamento</div>
+        <div class="item-meta">${ult ? finBR(ult.valor) + ' · ' + finDataBR(ult.data) + ' · ' + esc(FIN_FORMAS[ult.forma] || 'Outro') : 'Nenhum lançamento'}</div></div>
+        <button class="btn secondary small" type="button" id="alFinAbrir">Abrir financeiro</button></div>`;
+    const b = $('#alFinAbrir'); if (b) b.addEventListener('click', () => showPage('financeiro'));
+  }
+  function alRenderRecentes(){
+    const box = $('#alRecentes'); if (!box) return;
+    const s = active();
+    if (!s){ box.innerHTML = '<div class="empty">Selecione um aluno.</div>'; return; }
+    const ss = sessionsFor(s.id);
+    box.innerHTML = ss.length
+      ? ss.slice(0, 5).map(x => `<div class="item"><div><div class="item-title">${dateFmt(x.date)}</div>
+          <div class="item-meta">${(x.exercises || []).length} exercícios · ${fmt(sessionVolume(x))} kg</div></div>
+          <span class="badge">Semana ${x.week || 1}</span></div>`).join('')
+      : '<div class="empty">Nenhum treino registrado para este aluno.</div>';
+  }
+  function alRender(){ alRenderLista(); alRenderFinanceiro(); alRenderRecentes(); }
+  function alWire(){
+    const busca = $('#alBusca');
+    if (busca && !busca.dataset.wired){ busca.dataset.wired = '1'; busca.addEventListener('input', alRenderLista); }
+    const novo = $('#alNovoBtn');
+    if (novo && !novo.dataset.wired){ novo.dataset.wired = '1'; novo.addEventListener('click', () => openStudent(null)); }
+    const box = $('#alLista');
+    if (box && !box.dataset.wired){ box.dataset.wired = '1';
+      box.addEventListener('click', e => {
+        const b = e.target.closest('[data-al]'); if (!b) return;
+        const sel = $('#activeStudent');
+        if (sel && [...sel.options].some(o => o.value === b.dataset.al)){ sel.value = b.dataset.al; sel.dispatchEvent(new Event('change')); }
+        else { state.activeStudentId = b.dataset.al; save(); }
+      });
+    }
+  }
+
   /* ---------- ALERTAS DA VISÃO GERAL ---------- */
   function dashDias(a, b){ return Math.round((new Date(b + 'T12:00:00') - new Date(a + 'T12:00:00')) / 86400000); }
   /* Quantos dias sem treinar já contam como alerta (configurável na própria Visão geral). */
@@ -5546,8 +5733,36 @@ ${corpo}
     finally { e.target.value = ''; }
   });
 
+  /* ---------- GERAL (sobre o app) ---------- */
+  const GERAL_ABAS = [
+    ['alunos','Alunos','Lista com busca, cadastro, perfil, ficha ativa, financeiro e últimos treinos'],
+    ['dashboard','Visão geral','Indicadores, evolução, composição das séries e sensor de progressão'],
+    ['fichas','Fichas de treino','Ver, imprimir em PDF e compartilhar a ficha com o aluno'],
+    ['montar','Montar treino','Criar e editar os treinos e exercícios da ficha'],
+    ['session','Registrar treino','Anotar as séries feitas, com carga, repetições e RIR'],
+    ['grupo','Treino em grupo','Registrar a sessão de vários alunos de uma vez'],
+    ['history','Histórico','Todas as sessões do aluno, com volume e séries'],
+    ['aval','Avaliação física','Medidas, dobras, fotos e relatório em PDF'],
+    ['financeiro','Financeiro','Mensalidades, pagamentos, situação do mês e recibo'],
+    ['data','Dados e backup','Exportar, importar, backups automáticos e base de fichas'],
+  ];
+  function geralRender(){
+    const box = $('#geralGuia');
+    if (box && !box.dataset.wired){
+      box.dataset.wired = '1';
+      box.addEventListener('click', e => { const it = e.target.closest('[data-goto]'); if (it) showPage(it.dataset.goto); });
+    }
+    if (box) box.innerHTML = GERAL_ABAS.map(([pg, t, d]) =>
+      `<div class="item" data-goto="${pg}" style="cursor:pointer"><div><div class="item-title">${esc(t)}</div>
+        <div class="item-meta">${esc(d)}</div></div><span class="badge">abrir</span></div>`).join('');
+    const v = $('#geralVersao');
+    if (v) v.textContent = `${state.students.length} aluno(s) · ${state.sessions.length} treino(s) · ${state.plans ? Object.keys(state.plans).length : 0} ficha(s)`;
+    const ir = $('#geralIrDados');
+    if (ir && !ir.dataset.wired){ ir.dataset.wired = '1'; ir.addEventListener('click', () => showPage('data')); }
+  }
+
   /* ---------- RENDER ---------- */
-  function renderAll(){ renderPicker(); renderDashboard(); renderDashAlerts(); renderPlans(); renderHistory(); renderData(); renderSessionDays(); updateSessionHint(); renderAval(); renderGrupo();
+  function renderAll(){ renderPicker(); alWire(); alRender(); geralRender(); renderDashboard(); renderDashAlerts(); renderPlans(); renderHistory(); renderData(); renderSessionDays(); updateSessionHint(); renderAval(); renderGrupo();
     if ($('#montar') && $('#montar').classList.contains('active')) mtRender();
     finRender(); }
   $('#sessionDate').value = today();
