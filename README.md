@@ -96,6 +96,52 @@ ativos, ou só o dia de vencimento.
 **CSV do mês** — uma linha por aluno com valor, vencimento, situação, pago, em falta e último
 pagamento, mais os totais. Separado por `;` e com BOM, abre direto no Excel.
 
+**Recibo de pagamento** — na ficha financeira do aluno, "🧾 Recibo do mês" gera o recibo em PDF
+(janela de impressão) com valor, mês, forma, PIX e linha de assinatura; "💬 Copiar recibo" copia a
+versão em texto para colar no WhatsApp. Cada lançamento do histórico também tem o seu próprio recibo.
+
+## PDF da ficha e do relatório de avaliação
+- **🖨 PDF da ficha** (aba Fichas de treino) — ficha completa do aluno: dados, objetivo, nível, todos
+  os treinos com exercício, séries, repetições (faixa, ex. `6–8`), carga, RIR e descanso.
+- **🖨 PDF do relatório** (aba Avaliação física) — avaliação selecionada com idade, IMC e
+  classificação, perímetros, dobras, % de gordura, massas e as fotos do dia.
+
+Nos dois casos abre a janela de impressão: escolha **Salvar como PDF**. No celular use
+Compartilhar → Imprimir → Salvar em PDF.
+
+## Modo Aluno — a ficha no celular do aluno
+O botão **🔗 Compartilhar com o aluno** (aba Fichas de treino) gera um link que contém a ficha
+inteira comprimida dentro dele mesmo.
+
+- O aluno abre **sem login e sem instalar nada**; funciona offline depois de aberto.
+- Ele vê os treinos do dia e **marca os exercícios feitos**, com barra de progresso — a marcação fica
+  guardada no aparelho dele.
+- **Nada é enviado para a internet** e o app do treinador não aparece nesse modo: o link abre apenas
+  a ficha daquele aluno.
+- O link tem cerca de 1,3 KB (6 treinos / 43 exercícios) e pode ser enviado pelo WhatsApp direto do
+  próprio modal.
+
+## Alertas na Visão geral
+O card de alertas avisa quando há algo pedindo ação:
+
+- alunos **sem treino há 7 dias ou mais**;
+- alunos **com ficha e nenhum treino registrado**;
+- alunos **sem ficha cadastrada**;
+- **aniversariantes do mês** (a data vem do nascimento informado na última avaliação);
+- **mensalidades em atraso** no mês, com o total a receber.
+
+Cada linha é clicável e leva direto ao aluno.
+
+## Fotos, backup e compressão
+- As fotos são **reduzidas no próprio aparelho** (máx. 1600 px, JPEG ~82%) antes de irem para o
+  IndexedDB — uma foto de 676 KB vira ~156 KB. Se o navegador não conseguir processar, a foto
+  original é mantida (nunca se perde).
+- **Exportar JSON** guarda tudo menos as fotos (arquivo leve).
+- **Exportar com fotos** gera um backup completo, com as imagens embutidas — use este para levar os
+  dados para outro aparelho.
+- Os backups automáticos feitos a cada importação são **podados**: só os 3 mais recentes ficam, para
+  o armazenamento não estourar.
+
 ## Sensor de progressão
 Lê as séries de trabalho contra a faixa de repetições do exercício e sugere:
 
@@ -121,7 +167,8 @@ Lê as séries de trabalho contra a faixa de repetições do exercício e sugere
   Histórico · Avaliação física · **Financeiro** · Dados e backup
 - `sw.js` — service worker (cache offline)
 - `manifest.json` / `manifest.webmanifest` — manifest do PWA
-- `icons/` — ícones
+- `icons/` — ícones (o favicon é `icon.svg`; o ícone de atalho do iPhone vai embutido no
+  `index.html` como data-URI, porque o repositório não guarda o PNG)
 
 ## Notas
 - Os gráficos são desenhados em `<canvas>` puro — nada de bibliotecas externas.
@@ -129,3 +176,7 @@ Lê as séries de trabalho contra a faixa de repetições do exercício e sugere
   mostra a última busca salva.
 - A aba **Periodização** foi removida; a periodização agora é feita por exercício (técnica) e pelo
   sensor de progressão. Os dados antigos de periodização seguem preservados no backup.
+- Os PDFs (ficha, relatório e recibo) usam a janela de impressão do navegador — nenhuma biblioteca
+  externa é baixada.
+- Os ícones que davam erro 404 (`apple-touch-icon.png` e `icon-512.png`, que não existem no
+  repositório) foram removidos das referências.
