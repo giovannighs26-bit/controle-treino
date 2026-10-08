@@ -701,7 +701,7 @@
     <article class="card hero">
       <div class="hero-top">
         <div>
-          <div class="hero-hi" id="welcome">Selecione ou cadastre um aluno</div>
+          <div class="hero-hi" id="welcome">Olá!</div>
           <div class="hero-sub" id="heroSub">Cadastre um aluno para começar a acompanhar a evolução.</div>
         </div>
         <div class="hero-streak" id="heroStreak" title="Semanas seguidas com pelo menos um treino">
@@ -1394,6 +1394,12 @@
   const $ = s => document.querySelector(s);
   const $$ = s => [...document.querySelectorAll(s)];
   const today = () => new Date().toLocaleDateString('en-CA');
+  /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
+     05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
+  const saudacao = () => {
+    const h = new Date().getHours();
+    return (h >= 5 && h < 12) ? 'bom dia' : (h >= 12 && h < 18) ? 'boa tarde' : 'boa noite';
+  };
   const uid = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`;
   const esc = v => String(v ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
   const num = v => Number(v) || 0;
@@ -3607,7 +3613,7 @@
     sessions.forEach(x => (x.exercises||[]).forEach(e => { sets += workSets(e).length; }));
     const rir = avgRirOverall();
 
-    $('#welcome').textContent = s ? `Olá, ${s.name.split(' ')[0]}` : 'Selecione ou cadastre um aluno';
+    $('#welcome').textContent = `Olá, ${saudacao()}!`;
     const plan = s ? plansOf(s.id) : null;
     const days = plan && plan.days ? plan.days.length : 0;
     $('#heroSub').textContent = s
