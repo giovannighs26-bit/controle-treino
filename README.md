@@ -151,6 +151,28 @@ Lê as séries de trabalho contra a faixa de repetições do exercício e sugere
 - **Segure a carga** — topo atingido com RIR baixo, ou séries no limite
 - **Atenção** — alguma série abaixo do mínimo → sugere reduzir ~5%
 
+## Alunos — a primeira aba
+Tudo o que é do aluno mora aqui; a Visão geral ficou só com os indicadores do treino.
+
+- **Lista de todos os alunos**, em ordem alfabética, com as iniciais, o nº de treinos e o nº de
+  sessões; **busca** por nome, objetivo ou nível (o contador mostra `filtrados/total`)
+- **+ Aluno** abre o cadastro; clicar num nome o torna o **aluno ativo** de todo o app
+- **Perfil** do aluno ativo (nome, objetivo, nível, contato) com acesso direto à edição
+- **Financeiro** — situação do mês, valor, vencimento e o que foi recebido, com atalho para a aba
+- **Ficha ativa** — nome da ficha, nº de treinos e de exercícios, com botão para abrir
+- **Últimos treinos** — as 5 sessões mais recentes do aluno, com data, volume e séries
+
+## Geral — sobre o app
+Aba final, informativa: o que o app é e como ele se comporta.
+
+- **Sobre o app** — o que faz, funciona offline, instalável, sem bibliotecas externas
+- **Seus dados** — ficam só no aparelho, nada vai para servidores; aviso sobre limpar o navegador
+- **Backup** — exportar JSON, exportar com fotos e os 3 backups automáticos, com atalho para a aba
+- **Instalar como app** — passo a passo para Android, iPhone e computador
+- **Guia das abas** — o que cada uma das 10 abas faz, com link direto para abrir
+- **Como escrever um exercício** — formato do item, separador `;` do descanso, técnicas e RIR
+- **Sobre esta versão** — resumo do que está guardado (alunos, treinos e fichas)
+
 ## Visão geral (painel)
 - **Hero** com saudação, objetivo do aluno, sequência de semanas treinadas e ações rápidas
 - **6 indicadores**: sessões, exercícios, séries de trabalho, volume, RIR médio e último treino
@@ -164,8 +186,10 @@ Lê as séries de trabalho contra a faixa de repetições do exercício e sugere
 
 ## Estrutura
 - `index.html` — o app inteiro (HTML + CSS + JS, sem dependências externas)
-- Abas: Visão geral · Fichas de treino · **Montar treino** · Registrar treino · Treino em grupo ·
-  Histórico · Avaliação física · **Financeiro** · Dados e backup
+- Abas: **Alunos** · Visão geral · Fichas de treino · **Montar treino** · Registrar treino ·
+  Treino em grupo · Histórico · Avaliação física · **Financeiro** · Dados e backup · **Geral**
+- O topo tem só as ações do app (instalar, tela cheia, sair) — a troca de aluno é feita na aba
+  **Alunos**, que é a primeira
 - `sw.js` — service worker (cache offline)
 - `manifest.json` / `manifest.webmanifest` — manifest do PWA
 - `icons/` — ícones (o favicon é `icon.svg`; o ícone de atalho do iPhone vai embutido no
