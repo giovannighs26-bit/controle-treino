@@ -41,11 +41,15 @@ atualiza sozinha:
 - **Sem nada digitado na tela** — o treino é recarregado automaticamente, sem aviso
 - **Com trabalho já feito** (carga digitada ou série marcada) — **nada é apagado**. Aparece uma faixa
   dourada avisando que a ficha mudou, com o botão **↻ Recarregar da ficha**
-- **Ao trocar de aluno no topo** — a ficha é gravada antes da troca e o treino do aluno novo é
-  carregado; se houver trabalho na tela, a faixa avisa em vez de apagar
+- **Ao trocar de aluno na faixa de alunos** (logo abaixo das abas) — a ficha é gravada antes da
+  troca e o treino do aluno novo é carregado; se houver trabalho na tela, a faixa avisa em vez de apagar
 
 Ao entrar em *Fichas de treino*, *Visão geral*, *Histórico*, *Treino em grupo* ou *Avaliação física*,
 a aba é redesenhada com os dados atuais.
+
+**O aluno ativo é o mesmo em todas as abas.** A aba *Avaliação física* acompanha o aluno escolhido
+em qualquer lugar do app — e trocar o aluno no seletor dela troca o aluno ativo de todo o app, então
+o laudo, a ficha e o financeiro nunca ficam apontando para pessoas diferentes.
 
 ## Registro de treino — três tipos de série
 Cada exercício monta, ao carregar a ficha:
@@ -157,6 +161,9 @@ Tudo o que é do aluno mora aqui; a Visão geral ficou só com os indicadores do
 - **Lista de todos os alunos**, em ordem alfabética, com as iniciais, o nº de treinos e o nº de
   sessões; **busca** por nome, objetivo ou nível (o contador mostra `filtrados/total`)
 - **+ Aluno** abre o cadastro; clicar num nome o torna o **aluno ativo** de todo o app
+- **Faixa de alunos** (fixa logo abaixo das abas, em todas as telas) — um botão por aluno, com as
+  iniciais e o primeiro nome, deslizando na horizontal; o aluno ativo fica em dourado. Troca o
+  aluno sem precisar voltar para esta aba
 - **Perfil** do aluno ativo (nome, objetivo, nível, contato) com acesso direto à edição
 - **Financeiro** — situação do mês, valor, vencimento e o que foi recebido, com atalho para a aba
 - **Ficha ativa** — nome da ficha, nº de treinos e de exercícios, com botão para abrir
@@ -174,7 +181,10 @@ Aba final, informativa: o que o app é e como ele se comporta.
 - **Sobre esta versão** — resumo do que está guardado (alunos, treinos e fichas)
 
 ## Visão geral (painel)
-- **Hero** com saudação, objetivo do aluno, sequência de semanas treinadas e ações rápidas
+- **Faixa de alunos** logo abaixo das abas — troca rápida do aluno ativo, de qualquer tela
+- **Hero** com saudação conforme a hora do aparelho — *bom dia* (5h–11h59), *boa tarde* (12h–17h59),
+  *boa noite* (18h–4h59) — seguida do objetivo do aluno, da sequência de semanas treinadas e das
+  ações rápidas. A saudação não traz mais o nome do aluno
 - **6 indicadores**: sessões, exercícios, séries de trabalho, volume, RIR médio e último treino
 - **Gráfico de evolução** semanal — volume / séries / treinos, em 4, 8 ou 12 semanas, com tooltip
 - **Composição das séries** em rosca (trabalho / reconhecimento / aquecimento) + ranking de
