@@ -1521,9 +1521,10 @@
           <option value="inativos">Sem portal ativado</option>
         </select>
       </div>
-      <p class="hint" style="margin-top:0">Ative o portal do aluno e envie o link. Ele abre no celular
-      <b>sem login</b> e acompanha a <b>avaliação física, a evolução</b> e a ficha de treino — funciona offline e nada
-      é enviado para a internet (tudo vai dentro do próprio link).</p>
+      <p class="hint" style="margin-top:0">Ative o portal do aluno e envie o link. Ele abre direto na
+      <b>área de evolução</b> do aluno — avaliação atual, gráfico de evolução e fotos antes/depois —
+      no celular, <b>sem login</b> e offline. O botão de baixar gera o arquivo completo, com a ficha de treino.
+      Nada é enviado para a internet: tudo vai dentro do próprio link.</p>
       <div class="actions" style="margin-bottom:14px;flex-wrap:wrap">
         <button class="btn secondary" id="paGerarTodos">🔗 Gerar links dos ativados</button>
         <button class="btn secondary" id="paCsv">⬇ Baixar lista (.csv)</button>
@@ -1661,6 +1662,7 @@
   // Modo aluno: quando a URL traz #a=<ficha>, o app abre direto na visão do
   // aluno, sem login e sem nunca mostrar os dados do treinador.
   const ALUNO_HASH = (location.hash || '').indexOf('#a=') === 0 ? (location.hash || '').slice(3) : '';
+  const ALUNO_APRES_HASH = (location.hash || '').indexOf('#av=') === 0 ? (location.hash || '').slice(4) : '';
   const KEY = 'ghPerformance.v1';
   const AUTHED = 'ghPerformance.authed';
   const $ = s => document.querySelector(s);
@@ -5826,9 +5828,10 @@ body{margin:0;background:linear-gradient(180deg,#0a0f0c,#0d1410 240px);color:var
   }
   function paMsg(s, url){
     const primeiro = String(s.name || '').split(' ')[0];
-    return 'Ola, ' + primeiro + '! Aqui esta o seu espaco de aluno:\n\n' + url +
-      '\n\nNele voce acompanha a sua avaliacao fisica, a sua evolucao e a sua ficha de treino. ' +
-      'Abra no celular e, se quiser, adicione a tela de inicio - funciona sem internet.';
+    return 'Ola, ' + primeiro + '! Aqui esta a sua area de evolucao:\n\n' + url +
+      '\n\nNela voce acompanha a sua avaliacao fisica mais recente e toda a sua evolucao, com ' +
+      'grafico e comparacao de fotos. Abra no celular e, se quiser, adicione a tela de inicio - ' +
+      'funciona sem internet.';
   }
   function paRowHTML(s){
     const i = paInfo(s.id);
@@ -5836,6 +5839,7 @@ body{margin:0;background:linear-gradient(180deg,#0a0f0c,#0d1410 240px);color:var
     const temFicha = !!(plan && plan.days && plan.days.length);
     let avs = [];
     try { avs = avFor(s.id) || []; } catch (e){ avs = []; }
+    const temAval = avs.length > 0;
     const ini = String(s.name || '?').trim().split(/\s+/).map(x => x[0]).slice(0, 2).join('').toUpperCase();
     const L = paLinks[s.id] || null;
     const tel = paTel(s.id);
@@ -5848,8 +5852,8 @@ body{margin:0;background:linear-gradient(180deg,#0a0f0c,#0d1410 240px);color:var
       '<label class="pa-sw"><input type="checkbox" data-pa="on"' + (i.ativo ? ' checked' : '') + '><span>' +
       (i.ativo ? 'Portal ativado' : 'Ativar portal') + '</span></label></div>';
     h += '<div class="pa-acts">' +
-      '<button class="btn secondary" type="button" data-pa="link"' + (temFicha ? '' : ' disabled') + '>🔗 Gerar link</button>' +
-      '<button class="btn secondary" type="button" data-pa="linkf"' + (temFicha ? '' : ' disabled') + '>🖼 Com fotos</button>' +
+      '<button class="btn secondary" type="button" data-pa="link"' + (temAval ? '' : ' disabled') + '>🔗 Gerar link</button>' +
+      '<button class="btn secondary" type="button" data-pa="linkf"' + (temAval ? '' : ' disabled') + '>🖼 Com fotos</button>' +
       '<button class="btn secondary" type="button" data-pa="whats"' + (L ? '' : ' disabled') + '>💬 WhatsApp</button>' +
       '<button class="btn secondary" type="button" data-pa="apres">\u25b6 Apresentar</button>' +
       '<button class="btn ghost" type="button" data-pa="app"' + (temFicha ? '' : ' disabled') + '>\u2b07 App (.html)</button>' +
@@ -5858,7 +5862,7 @@ body{margin:0;background:linear-gradient(180deg,#0a0f0c,#0d1410 240px);color:var
       '<textarea readonly rows="2" spellcheck="false">' + esc(L ? L.url : '') + '</textarea>' +
       '<div class="actions" style="margin-top:8px"><button class="btn" type="button" data-pa="copiar">Copiar link</button>' +
       '<button class="btn secondary" type="button" data-pa="testar">Abrir</button>' +
-      '<span class="hint">' + (L ? L.url.length + ' caracteres' + (L.comFotos ? ' \u00b7 com fotos' : '') : '') +
+      '<span class="hint">' + (L ? L.url.length + ' caracteres \u00b7 abre a \u00e1rea de evolu\u00e7\u00e3o' + (L.comFotos ? ' \u00b7 com fotos' : '') : '') +
       (i.envAt ? ' \u00b7 enviado' : '') + (tel ? '' : ' \u00b7 sem WhatsApp cadastrado') + '</span></div></div>';
     h += '</div>';
     return h;
@@ -5911,17 +5915,16 @@ body{margin:0;background:linear-gradient(180deg,#0a0f0c,#0d1410 240px);color:var
   }
   async function paGerarLink(id, comFotos){
     const s = (state.students || []).find(x => x.id === id); if (!s) return;
-    const plan = plansOf(s.id);
-    if (!plan || !plan.days || !plan.days.length) return notify('Este aluno ainda nao tem ficha cadastrada.', true);
+    if (!alunoSeriePayload(s).length) return notify('Este aluno ainda nao tem avaliacao fisica cadastrada.', true);
     const box = $('#paLista');
     const row = box ? box.querySelector('.pa-row[data-id="' + id + '"]') : null;
     const dica = row ? row.querySelector('.pa-link .hint') : null;
     if (dica) dica.textContent = comFotos ? 'Preparando as fotos\u2026' : 'Gerando o link\u2026';
     let url = '';
     try {
-      const code = await alunoEncode(await alunoMontarPayload(s, plan, true, comFotos));
+      const code = await alunoEncode(await alunoApresentacaoPayload(s, comFotos ? 620 : 0, 0.62));
       const base = location.href.split('#')[0].split('?')[0];
-      if (code) url = base + '#a=' + code;
+      if (code) url = base + '#av=' + code;
     } catch (e){ url = ''; }
     if (!url) return notify('Nao foi possivel gerar o link.', true);
     paLinks[id] = { url: url, at: new Date().toISOString(), comFotos: !!comFotos };
@@ -5948,15 +5951,15 @@ body{margin:0;background:linear-gradient(180deg,#0a0f0c,#0d1410 240px);color:var
   }
   async function paGerarTodos(){
     const alvos = (state.students || []).filter(s => s.id !== 'usuario' && paInfo(s.id).ativo)
-      .filter(s => { const pl = plansOf(s.id); return !!(pl && pl.days && pl.days.length); });
-    if (!alvos.length) return notify('Nenhum aluno com portal ativado e ficha cadastrada.', true);
+      .filter(s => alunoSeriePayload(s).length);
+    if (!alvos.length) return notify('Nenhum aluno com portal ativado e avaliacao cadastrada.', true);
     notify('Gerando ' + alvos.length + ' link(s)\u2026');
     let ok = 0, falha = 0;
     for (const s of alvos){
       try {
-        const code = await alunoEncode(await alunoMontarPayload(s, plansOf(s.id), true, false));
+        const code = await alunoEncode(await alunoApresentacaoPayload(s, 0, 0.62));
         const base = location.href.split('#')[0].split('?')[0];
-        if (code){ paLinks[s.id] = { url: base + '#a=' + code, at: new Date().toISOString(), comFotos: false }; ok++; }
+        if (code){ paLinks[s.id] = { url: base + '#av=' + code, at: new Date().toISOString(), comFotos: false }; ok++; }
         else falha++;
       } catch (e){ falha++; }
       await new Promise(r => setTimeout(r, 0));
@@ -6046,11 +6049,13 @@ body{margin:0;background:linear-gradient(180deg,#0a0f0c,#0d1410 240px);color:var
   async function alunoApresentacaoPayload(s, maxPx, q){
     const p = { v: 1, a: s.name || 'Aluno', p: ghOwner(), dt: today(), g: s.goal || '',
       s: alunoSeriePayload(s) };
-    try {
-      const f = await alunoFotosComparativo(s, maxPx, q);
-      if (f.atual) p.phc = f.atual;
-      if (f.antes) p.php = f.antes;
-    } catch (e){}
+    if (maxPx && maxPx > 0){
+      try {
+        const f = await alunoFotosComparativo(s, maxPx, q);
+        if (f.atual) p.phc = f.atual;
+        if (f.antes) p.php = f.antes;
+      } catch (e){}
+    }
     return p;
   }
 
@@ -6117,7 +6122,8 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
 
   const AP_JS = `
 (function(){
-  var D = JSON.parse(document.getElementById('apd').textContent);
+  var _el = document.getElementById('apd');
+  var D = _el ? JSON.parse(_el.textContent || '{}') : {s:[]};
   var S = D.s || [];
   var METS = [
     {k:'w', l:'Peso', u:' kg', d:1},
@@ -6244,21 +6250,22 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
 })();
 `;
 
-  function alunoApresentacaoHtml(p){
+  function alunoApresentacaoDados(p){
+    const S = Array.isArray(p.s) ? p.s : [];
+    return JSON.stringify({ s: S, a: p.a, p: p.p }).replace(/</g, '\\u003c').replace(/[\u2028\u2029]/g, ' ');
+  }
+  function alunoApresentacaoBody(p, dados){
     const S = Array.isArray(p.s) ? p.s : [];
     const atual = S.length ? S[S.length - 1] : null;
     const primeira = S.length ? S[0] : null;
     const anterior = S.length > 1 ? S[S.length - 2] : null;
-    const dados = JSON.stringify({ s: S, a: p.a, p: p.p }).replace(/</g, '\\u003c').replace(/[\u2028\u2029]/g, ' ');
     let h = '<div class="ap-wrap">' +
       '<header class="ap-top"><span class="ap-lg">GH</span><div><b>' + esc(p.p || 'GH Performance') + '</b><small>Avalia\u00e7\u00e3o f\u00edsica</small></div></header>' +
       '<section class="ap-hero"><p class="ap-eyebrow">Avalia\u00e7\u00e3o f\u00edsica</p><h1>' + esc(p.a || 'Aluno') + '</h1>' +
       '<p>' + (atual ? 'Atualizada em ' + esc(alData(atual.dt)) : 'Nenhuma avalia\u00e7\u00e3o registrada') + (p.g ? ' \u00b7 ' + esc(p.g) : '') + '</p></section>';
     if (!atual){
       h += '<section class="ap-sec"><div class="ap-vazio">Ainda n\u00e3o h\u00e1 avalia\u00e7\u00e3o f\u00edsica cadastrada para este aluno.</div></section>';
-      return '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">' +
-        '<title>' + esc(p.a || 'Aluno') + ' \u00b7 Avalia\u00e7\u00e3o f\u00edsica</title><style>' + AP_CSS + '</style></head><body>' + h +
-        '<p class="ap-foot">' + esc(p.p || 'GH Performance') + '</p></div></body></html>';
+      return h + '<p class="ap-foot">' + esc(p.p || 'GH Performance') + '</p></div>';
     }
     const kpi = (rot, val, dec, suf, extra) => {
       if (val === null || val === undefined) return '';
@@ -6348,13 +6355,42 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
     h += '<p class="ap-foot">' + esc(p.p || 'GH Performance') + ' \u00b7 avalia\u00e7\u00e3o f\u00edsica \u00b7 ' + esc(alData(p.dt)) + '</p></div>' +
       '<div class="ap-lb" id="apLb"><button type="button" id="apLbX">&times;</button><img alt="Foto"></div>';
 
+    return h + '<script id="apd" type="application/json">' + dados + '<\/script>';
+  }
+  function alunoApresentacaoHtml(p){
+    const dados = alunoApresentacaoDados(p);
     return '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">' +
       '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">' +
       '<meta name="theme-color" content="#080d0a">' +
       '<title>' + esc(p.a || 'Aluno') + ' \u00b7 Avalia\u00e7\u00e3o f\u00edsica</title>' +
-      '<style>' + AP_CSS + '</style></head><body>' + h +
-      '<script id="apd" type="application/json">' + dados + '<\/script>' +
+      '<style>' + AP_CSS + '</style></head><body>' + alunoApresentacaoBody(p, dados) +
       '<script>' + AP_JS + '<\/script></body></html>';
+  }
+  /* abre a area de evolucao direto pelo link (#av=...), sem o app do treinador */
+  async function renderAlunoApresView(code){
+    let p = null;
+    try { p = await alunoDecode(code); } catch (e){ p = null; }
+    document.documentElement.classList.add('modo-aluno');
+    const host = document.createElement('div');
+    host.id = 'alunoApresView';
+    document.body.appendChild(host);
+    if (!p || !Array.isArray(p.s)){
+      host.innerHTML = '<div class="ap-wrap" style="padding:44px 16px;text-align:center">' +
+        '<h1 style="margin:0 0 8px;font-size:22px">Link inv\u00e1lido</h1>' +
+        '<p style="color:#93a698">Este link est\u00e1 incompleto ou foi corrompido. Pe\u00e7a um novo ao seu treinador.</p></div>';
+      return;
+    }
+    document.title = (p.a || 'Aluno') + ' \u00b7 Avalia\u00e7\u00e3o f\u00edsica';
+    if (!document.getElementById('apStyle')){
+      const st = document.createElement('style');
+      st.id = 'apStyle';
+      st.textContent = AP_CSS;
+      document.head.appendChild(st);
+    }
+    host.innerHTML = alunoApresentacaoBody(p, alunoApresentacaoDados(p));
+    const sc = document.createElement('script');
+    sc.textContent = AP_JS;
+    document.body.appendChild(sc);
   }
 
   function alunoFecharOverlay(){
@@ -7622,9 +7658,10 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
   clearSession();
   // Modo aluno: renderiza a visao do aluno e nunca abre o app do treinador.
   // (a quebra de linha abaixo em renderAuth() e usada pelas suites de teste)
+  if (ALUNO_APRES_HASH) renderAlunoApresView(ALUNO_APRES_HASH); else
   if (ALUNO_HASH) renderAlunoView(ALUNO_HASH); else
   renderAuth();
-  if (ALUNO_HASH){ /* visao do aluno: nao ha mais nada a inicializar */ }
+  if (ALUNO_HASH || ALUNO_APRES_HASH){ /* visao do aluno: nao ha mais nada a inicializar */ }
   else if (state.auth && localStorage.getItem(AUTHED)) enterApp();
   else showLogin();
 
