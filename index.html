@@ -728,7 +728,15 @@
       .fin-month input[type=month]{flex:1;min-width:0}
     }
   
-  </style>
+  
+    /* ---------- TELA DE APRESENTACAO DA AVALIACAO (overlay) ---------- */
+    .ap-overlay{position:fixed;inset:0;z-index:200;background:#080d0a}
+    .ap-overlay-f{width:100%;height:100%;border:0;display:block;background:#080d0a}
+    .ap-overlay-x{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom));
+      z-index:201;height:42px;padding:0 20px;border-radius:99px;border:1px solid #ffffff33;background:#000000cc;
+      color:#fff;font:600 13px/1 inherit;cursor:pointer;display:flex;align-items:center;gap:8px;
+      box-shadow:0 10px 26px #000a;backdrop-filter:blur(6px)}
+</style>
 </head>
 <body>
 
@@ -1112,6 +1120,7 @@
       <div class="actions" style="justify-content:space-between;margin-bottom:14px">
         <h2 style="margin:0">Avaliação física</h2>
         <div class="actions">
+          <button class="btn" id="avApresentar">▶ Apresentar ao aluno</button>
           <button class="btn secondary" id="avPrintBtn">🖨 PDF do relatório</button>
           <button class="btn secondary" id="avImportBtn">Importar avaliações</button>
           <input type="file" id="avImportFile" accept="application/json,.json" class="hidden">
@@ -1317,6 +1326,13 @@
         completa. O aluno pode adicionar à tela inicial.</p>
         <div class="actions">
           <button class="btn secondary" type="button" id="alunoBaixarApp">⬇ Baixar app do aluno (.html)</button>
+        </div>
+        <hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
+        <p class="hint" style="margin:0 0 10px">Tela de <b>apresentação da avaliação</b>: mostra <b>somente a avaliação atual e a evolução</b> do aluno,
+        com gráfico interativo e comparador de fotos <b>antes/depois</b>. Ótima para mostrar na hora ou enviar.</p>
+        <div class="actions">
+          <button class="btn" type="button" id="alunoApresentar">▶ Apresentar avaliação</button>
+          <button class="btn secondary" type="button" id="alunoBaixarApres">⬇ Baixar tela (.html)</button>
         </div>
       </div>
     </div>
@@ -2207,6 +2223,10 @@
   const aAvalChk = $('#alunoLinkAval'), aFotChk = $('#alunoLinkFotos');
   [aAvalChk, aFotChk].forEach(el => { if (el) el.addEventListener('change', () => alunoGerarLink(false)); });
   const aAppBtn = $('#alunoBaixarApp'); if (aAppBtn) aAppBtn.addEventListener('click', () => alunoBaixarApp());
+  const avAp = $('#avApresentar');
+  if (avAp) avAp.addEventListener('click', () => { const sel = $('#avStudent'); alunoApresentar('tela', sel ? sel.value : null); });
+  const aApres = $('#alunoApresentar'); if (aApres) aApres.addEventListener('click', () => alunoApresentar('tela'));
+  const aApresD = $('#alunoBaixarApres'); if (aApresD) aApresD.addEventListener('click', () => alunoApresentar('baixar'));
   const alCop = $('#alunoLinkCopiar');
   if (alCop) alCop.addEventListener('click', () => {
     const t = $('#alunoLinkTexto');
@@ -5738,6 +5758,431 @@ body{margin:0;background:linear-gradient(180deg,#0a0f0c,#0d1410 240px);color:var
     const wa = $('#alunoLinkWhats');
     if (wa) wa.dataset.tel = tel;
     return url;
+  }
+
+
+  /* ---------- APRESENTACAO DA AVALIACAO (tela interativa: avaliacao atual + evolucao) ---------- */
+  function alunoSeriePayload(s){
+    let lista = [];
+    try { lista = avFor(s.id); } catch (e){ lista = []; }
+    lista = lista.slice(0, 12).reverse();   /* ascendente: da mais antiga para a mais recente */
+    return lista.map(a => {
+      let c = { bf: null, src: '', fatMass: null, leanMass: null };
+      try { c = avComposition(a); } catch (e){}
+      const m = {};
+      AV_MEASURES.forEach(par => { const v = avNum((a.measures || {})[par[0]]); if (v !== null) m[par[0]] = v; });
+      let bmi = null, fs = null;
+      try { bmi = avBmi(a); } catch (e){}
+      try { fs = avFoldSum(a); } catch (e){}
+      return { dt: a.date || '', w: avNum(a.weight), h: avNum(a.height), bmi: bmi,
+        bf: (c && c.bf !== undefined) ? c.bf : null, src: (c && c.src) || '',
+        fm: (c && c.fatMass !== undefined) ? c.fatMass : null,
+        lm: (c && c.leanMass !== undefined) ? c.leanMass : null,
+        fs: fs, m: m, notes: a.notes || '', ex: a.examiner || '', sex: a.sex || '' };
+    });
+  }
+  /* fotos: a mais recente com foto ("depois") e a mais antiga com foto ("antes") */
+  async function alunoFotosComparativo(s, maxPx, q){
+    let lista = [];
+    try { lista = avFor(s.id); } catch (e){ lista = []; }
+    const com = lista.filter(a => { const ph = a.photos || {};
+      return ((((ph.front || []).length) + ((ph.side || []).length) + ((ph.back || []).length)) > 0); });
+    const out = { atual: null, antes: null };
+    async function pega(a){
+      const o = { front: [], side: [], back: [] };
+      let n = 0;
+      for (const par of AV_ANGLES){
+        const refs = (((a.photos || {})[par[0]]) || []).slice(0, 2);
+        for (const r of refs){
+          if (n >= 4) break;
+          try {
+            const blob = await avPhotoGet(r.id);
+            if (!blob) continue;
+            const d = await alunoFotoThumb(blob, maxPx || 560, q || 0.6);
+            if (d){ o[par[0]].push(d); n++; }
+          } catch (e){}
+          await new Promise(res => setTimeout(res, 0));
+        }
+        if (n >= 4) break;
+      }
+      return o;
+    }
+    if (com.length){
+      out.atual = { dt: com[0].date || '', f: await pega(com[0]) };
+      if (com.length > 1) out.antes = { dt: com[com.length - 1].date || '', f: await pega(com[com.length - 1]) };
+    }
+    return out;
+  }
+  async function alunoApresentacaoPayload(s, maxPx, q){
+    const p = { v: 1, a: s.name || 'Aluno', p: ghOwner(), dt: today(), g: s.goal || '',
+      s: alunoSeriePayload(s) };
+    try {
+      const f = await alunoFotosComparativo(s, maxPx, q);
+      if (f.atual) p.phc = f.atual;
+      if (f.antes) p.php = f.antes;
+    } catch (e){}
+    return p;
+  }
+
+  const AP_CSS = `
+:root{--bg:#080d0a;--panel:#111a14;--panel2:#16211a;--line:#26342a;--text:#f4f7f4;--muted:#93a698;--accent:#d8a93d;--accent2:#f2cf72;--ok:#63c58b;--gh-grad:linear-gradient(145deg,#f7d678,#c9971f 55%,#8f6412)}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,transparent 62%),var(--bg);color:var(--text);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+.ap-wrap{max-width:760px;margin:0 auto;padding:0 16px 46px}
+.ap-top{display:flex;align-items:center;gap:12px;padding:16px 4px;border-bottom:1px solid var(--line)}
+.ap-lg{width:42px;height:42px;border-radius:12px;background:var(--gh-grad);color:#1c1608;display:grid;place-items:center;font-weight:900;font-size:14px}
+.ap-top b{display:block;font-size:14px}
+.ap-top small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted)}
+.ap-hero{padding:30px 0 6px}
+.ap-eyebrow{margin:0 0 6px;font-size:11px;text-transform:uppercase;letter-spacing:.18em;color:var(--accent2)}
+.ap-hero h1{margin:0 0 6px;font-size:30px;letter-spacing:-.025em;line-height:1.15}
+.ap-hero p{margin:0;color:var(--muted);font-size:13.5px}
+.ap-sec{margin-top:30px}
+.ap-sec h2{margin:0 0 14px;font-size:15px;letter-spacing:-.01em}
+.ap-sec h2 span{color:var(--muted);font-weight:400;font-size:12px;margin-left:8px}
+.ap-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.ap-kpi{position:relative;background:linear-gradient(160deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:16px;padding:15px 16px;overflow:hidden}
+.ap-kpi::after{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--gh-grad)}
+.ap-kpi span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+.ap-kpi b{display:block;font-size:26px;letter-spacing:-.03em;margin-top:6px;font-variant-numeric:tabular-nums}
+.ap-kpi em{display:block;font-style:normal;font-size:11.5px;color:var(--muted);margin-top:2px}
+.ap-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.ap-chips button{padding:8px 13px;border-radius:99px;border:1px solid var(--line);background:transparent;color:var(--muted);font:600 12.5px/1 inherit;cursor:pointer;transition:.15s}
+.ap-chips button.on{background:var(--accent);border-color:var(--accent);color:#1c1608}
+.ap-chart{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px 10px 4px}
+.ap-chart svg{display:block;width:100%;height:210px}
+.ap-leg{display:flex;justify-content:space-between;gap:10px;font-size:11px;color:var(--muted);padding:6px 10px 10px}
+.ap-resumo{margin:12px 0 0;font-size:13px;color:var(--muted);line-height:1.6}
+.ap-resumo b{color:var(--text)}
+.ap-comp{display:grid;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:4px 16px}
+.ap-comp>div{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.ap-comp>div:last-child{border-bottom:0}
+.ap-comp span{color:var(--muted)}
+.ap-comp b{font-variant-numeric:tabular-nums}
+.ap-dif{font-style:normal;font-size:12px;padding:2px 8px;border-radius:99px;border:1px solid var(--line);margin-left:8px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.ap-dif.up{color:var(--ok);border-color:#2f5f45}
+.ap-dif.down{color:#e08a86;border-color:#5f3634}
+.ap-dif.eq{color:var(--muted)}
+.ap-med{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:0 20px}
+.ap-med>div{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.ap-med span{color:var(--muted)}
+.ap-ba{position:relative;aspect-ratio:3/4;max-width:400px;margin:0 auto;border-radius:18px;overflow:hidden;border:1px solid var(--line);background:#0d1410;touch-action:none;cursor:ew-resize;user-select:none;-webkit-user-select:none}
+.ap-ba img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
+.ap-ba .ap-before{clip-path:inset(0 50% 0 0)}
+.ap-ba-h{position:absolute;top:0;bottom:0;left:50%;width:2px;background:var(--accent2)}
+.ap-ba-h::after{content:"";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:36px;height:36px;border-radius:99px;background:var(--accent2);box-shadow:0 6px 18px #0008}
+.ap-ba-tag{position:absolute;top:10px;padding:4px 10px;border-radius:99px;background:#000000b3;color:#fff;font-size:10px;letter-spacing:.1em;text-transform:uppercase}
+.ap-ba-tag.l{left:10px}.ap-ba-tag.r{right:10px}
+.ap-fotos{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px}
+.ap-fotos img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:13px;border:1px solid var(--line);background:#16211a;cursor:zoom-in}
+.ap-vazio{background:var(--panel);border:1px dashed var(--line);border-radius:16px;padding:26px;text-align:center;color:var(--muted);font-size:13.5px}
+.ap-foot{margin-top:34px;text-align:center;color:var(--muted);font-size:11.5px}
+.ap-lb{position:fixed;inset:0;background:#000e;display:none;align-items:center;justify-content:center;z-index:99;padding:16px}
+.ap-lb.on{display:flex}
+.ap-lb img{max-width:100%;max-height:92vh;border-radius:14px}
+.ap-lb button{position:absolute;top:14px;right:16px;width:40px;height:40px;border-radius:99px;border:1px solid #fff4;background:#0008;color:#fff;font-size:22px}
+@media(max-width:520px){.ap-hero h1{font-size:25px}.ap-kpis{grid-template-columns:repeat(2,1fr)}.ap-kpi b{font-size:22px}.ap-sec{margin-top:24px}}
+@media print{.ap-chips,.ap-foot,.ap-ba-h{display:none}body{background:#fff;color:#111}.ap-kpi,.ap-chart,.ap-comp,.ap-vazio{background:#fff;border-color:#ccc;color:#111}.ap-hero h1{color:#111}.ap-kpi span,.ap-hero p,.ap-resumo,.ap-comp span{color:#555}}
+`;
+
+  const AP_JS = `
+(function(){
+  var D = JSON.parse(document.getElementById('apd').textContent);
+  var S = D.s || [];
+  var METS = [
+    {k:'w', l:'Peso', u:' kg', d:1},
+    {k:'bf', l:'% de gordura', u:'%', d:1},
+    {k:'lm', l:'Massa magra', u:' kg', d:1},
+    {k:'bmi', l:'IMC', u:'', d:1},
+    {k:'fs', l:'Soma das dobras', u:' mm', d:0}
+  ];
+  function nf(v, d){
+    if (v === null || v === undefined || isNaN(v)) return '\\u2014';
+    return Number(v).toLocaleString('pt-BR', {minimumFractionDigits:d, maximumFractionDigits:d});
+  }
+  function dtBR(iso){ if (!iso) return ''; var p = String(iso).split('-'); return p.length === 3 ? (p[2] + '/' + p[1] + '/' + p[0]) : String(iso); }
+  function esc(v){ return String(v == null ? '' : v).replace(/[&<>"]/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); }
+
+  var alvos = document.querySelectorAll('.ap-kpi b[data-val]');
+  Array.prototype.forEach.call(alvos, function(el){
+    var fim = parseFloat(el.getAttribute('data-val'));
+    var dec = parseInt(el.getAttribute('data-dec') || '0', 10);
+    var suf = el.getAttribute('data-suf') || '';
+    if (isNaN(fim)) return;
+    var ini = 0, t0 = 0;
+    function passo(ts){
+      if (!t0) t0 = ts;
+      var p = Math.min(1, (ts - t0) / 850);
+      var e = 1 - Math.pow(1 - p, 3);
+      el.textContent = nf(ini + (fim - ini) * e, dec) + suf;
+      if (p < 1) requestAnimationFrame(passo); else el.textContent = nf(fim, dec) + suf;
+    }
+    requestAnimationFrame(passo);
+  });
+
+  var svg = document.getElementById('apChart');
+  var resumo = document.getElementById('apResumo');
+  var leg = document.getElementById('apLeg');
+  var atual = 'w';
+  function desenha(k){
+    if (!svg) return;
+    var m = null;
+    for (var i = 0; i < METS.length; i++) if (METS[i].k === k) m = METS[i];
+    if (!m) return;
+    var pts = S.filter(function(x){ return x[k] !== null && x[k] !== undefined; });
+    if (pts.length < 2){
+      svg.innerHTML = '<text x="50%" y="50%" fill="#93a698" font-size="12" text-anchor="middle">Sao necessarias pelo menos duas avaliacoes para desenhar a evolucao.</text>';
+      if (resumo) resumo.innerHTML = '';
+      if (leg) leg.innerHTML = '';
+      return;
+    }
+    var W = Math.max(280, Math.round(svg.clientWidth || 320));
+    var H = Math.max(170, Math.round(svg.clientHeight || 210));
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    var vals = pts.map(function(x){ return x[k]; });
+    var min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
+    var folga = (max - min) * 0.18 || 1;
+    min -= folga; max += folga;
+    var L = 38, R = 14, T = 16, B = 28;
+    function X(i){ return L + (W - L - R) * (pts.length === 1 ? 0.5 : i / (pts.length - 1)); }
+    function Y(v){ return (H - B) - ((v - min) / (max - min)) * (H - B - T); }
+    var d = '', area = '';
+    for (var j = 0; j < pts.length; j++){
+      var x = X(j), y = Y(pts[j][k]);
+      d += (j === 0 ? 'M' : 'L') + x.toFixed(1) + ' ' + y.toFixed(1) + ' ';
+      area += (j === 0 ? 'M' + x.toFixed(1) + ' ' + (H - B) : 'L' + x.toFixed(1) + ' ' + y.toFixed(1)) + ' ';
+    }
+    area += 'L' + X(pts.length - 1).toFixed(1) + ' ' + (H - B) + ' Z';
+    var grade = '';
+    for (var g = 0; g <= 3; g++){
+      var vy = min + (max - min) * g / 3, yy = Y(vy);
+      grade += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + yy.toFixed(1) + '" y2="' + yy.toFixed(1) + '" stroke="#26342a" stroke-width="1"/>';
+      grade += '<text x="' + (L - 7) + '" y="' + (yy + 3.5).toFixed(1) + '" fill="#93a698" font-size="9.5" text-anchor="end">' + nf(vy, m.d) + '</text>';
+    }
+    var dots = '';
+    for (var q = 0; q < pts.length; q++){
+      dots += '<circle cx="' + X(q).toFixed(1) + '" cy="' + Y(pts[q][k]).toFixed(1) + '" r="4" fill="#0a0f0c" stroke="#f2cf72" stroke-width="2.5"><title>' +
+        esc(dtBR(pts[q].dt)) + ': ' + nf(pts[q][k], m.d) + m.u + '</title></circle>';
+    }
+    svg.innerHTML = grade +
+      '<defs><linearGradient id="gfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d8a93d" stop-opacity=".35"/><stop offset="1" stop-color="#d8a93d" stop-opacity="0"/></linearGradient></defs>' +
+      '<path d="' + area + '" fill="url(#gfill)"/>' +
+      '<path d="' + d + '" fill="none" stroke="#f2cf72" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>' + dots;
+    var p0 = pts[0][k], pn = pts[pts.length - 1][k], dif = pn - p0;
+    var sinal = dif > 0 ? '+' : '';
+    var cls = Math.abs(dif) < 0.05 ? 'eq' : (dif > 0 ? 'up' : 'down');
+    if (resumo) resumo.innerHTML = 'De <b>' + esc(dtBR(pts[0].dt)) + '</b> at\u00e9 <b>' + esc(dtBR(pts[pts.length - 1].dt)) +
+      '</b>: <b>' + nf(p0, m.d) + m.u + '</b> \u2192 <b>' + nf(pn, m.d) + m.u + '</b> <i class="ap-dif ' + cls + '">' +
+      sinal + nf(dif, m.d) + m.u + '</i>';
+    if (leg) leg.innerHTML = '<span>' + pts.length + ' avalia\u00e7\u00f5es</span><span>' + esc(m.l) + '</span>';
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.ap-chips button'), function(b){
+    b.addEventListener('click', function(){
+      Array.prototype.forEach.call(document.querySelectorAll('.ap-chips button'), function(x){ x.classList.remove('on'); });
+      b.classList.add('on');
+      atual = b.getAttribute('data-m');
+      desenha(atual);
+    });
+  });
+  var rt = null;
+  window.addEventListener('resize', function(){ clearTimeout(rt); rt = setTimeout(function(){ desenha(atual); }, 160); });
+  requestAnimationFrame(function(){ desenha(atual); });
+
+  var ba = document.getElementById('apBA');
+  if (ba){
+    var antes = ba.querySelector('.ap-before'), h = ba.querySelector('.ap-ba-h');
+    function pct(p){
+      p = Math.max(0, Math.min(100, p));
+      if (antes) antes.style.clipPath = 'inset(0 ' + (100 - p) + '% 0 0)';
+      if (h) h.style.left = p + '%';
+    }
+    pct(50);
+    var arrastando = false;
+    function move(cx){ var r = ba.getBoundingClientRect(); if (r.width) pct((cx - r.left) / r.width * 100); }
+    ba.addEventListener('pointerdown', function(e){ arrastando = true; move(e.clientX); try { ba.setPointerCapture(e.pointerId); } catch (x){} });
+    ba.addEventListener('pointermove', function(e){ if (arrastando) move(e.clientX); });
+    ba.addEventListener('pointerup', function(){ arrastando = false; });
+    ba.addEventListener('pointercancel', function(){ arrastando = false; });
+    ba.addEventListener('touchmove', function(e){ if (arrastando && e.touches[0]){ move(e.touches[0].clientX); e.preventDefault(); } }, {passive:false});
+  }
+
+  var lb = document.getElementById('apLb'), lbImg = lb ? lb.querySelector('img') : null;
+  Array.prototype.forEach.call(document.querySelectorAll('.ap-fotos img'), function(im){
+    im.addEventListener('click', function(){ if (!lb || !lbImg) return; lbImg.src = im.src; lb.classList.add('on'); });
+  });
+  if (lb) lb.addEventListener('click', function(e){ if (e.target === lb || e.target.id === 'apLbX') lb.classList.remove('on'); });
+})();
+`;
+
+  function alunoApresentacaoHtml(p){
+    const S = Array.isArray(p.s) ? p.s : [];
+    const atual = S.length ? S[S.length - 1] : null;
+    const primeira = S.length ? S[0] : null;
+    const anterior = S.length > 1 ? S[S.length - 2] : null;
+    const dados = JSON.stringify({ s: S, a: p.a, p: p.p }).replace(/</g, '\\u003c').replace(/[\u2028\u2029]/g, ' ');
+    let h = '<div class="ap-wrap">' +
+      '<header class="ap-top"><span class="ap-lg">GH</span><div><b>' + esc(p.p || 'GH Performance') + '</b><small>Avalia\u00e7\u00e3o f\u00edsica</small></div></header>' +
+      '<section class="ap-hero"><p class="ap-eyebrow">Avalia\u00e7\u00e3o f\u00edsica</p><h1>' + esc(p.a || 'Aluno') + '</h1>' +
+      '<p>' + (atual ? 'Atualizada em ' + esc(alData(atual.dt)) : 'Nenhuma avalia\u00e7\u00e3o registrada') + (p.g ? ' \u00b7 ' + esc(p.g) : '') + '</p></section>';
+    if (!atual){
+      h += '<section class="ap-sec"><div class="ap-vazio">Ainda n\u00e3o h\u00e1 avalia\u00e7\u00e3o f\u00edsica cadastrada para este aluno.</div></section>';
+      return '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">' +
+        '<title>' + esc(p.a || 'Aluno') + ' \u00b7 Avalia\u00e7\u00e3o f\u00edsica</title><style>' + AP_CSS + '</style></head><body>' + h +
+        '<p class="ap-foot">' + esc(p.p || 'GH Performance') + '</p></div></body></html>';
+    }
+    const kpi = (rot, val, dec, suf, extra) => {
+      if (val === null || val === undefined) return '';
+      return '<div class="ap-kpi"><span>' + esc(rot) + '</span><b data-val="' + val + '" data-dec="' + dec + '" data-suf="' + esc(suf) + '">0</b>' +
+        (extra ? '<em>' + esc(extra) + '</em>' : '') + '</div>';
+    };
+    h += '<section class="ap-sec"><h2>Resultado atual <span>' + esc(alData(atual.dt)) + '</span></h2><div class="ap-kpis">' +
+      kpi('Peso', atual.w, 1, ' kg') +
+      kpi('IMC', atual.bmi, 1, '', atual.bmi !== null && atual.bmi !== undefined ? avBmiClass(atual.bmi) : '') +
+      kpi('% de gordura', atual.bf, 1, '%', atual.src ? 'dado ' + atual.src : '') +
+      kpi('Massa gorda', atual.fm, 1, ' kg') +
+      kpi('Massa magra', atual.lm, 1, ' kg') +
+      kpi('Soma das dobras', atual.fs, 0, ' mm') +
+      kpi('Altura', atual.h, 0, ' cm') +
+      '</div></section>';
+
+    if (S.length > 1){
+      h += '<section class="ap-sec"><h2>Evolu\u00e7\u00e3o</h2><div class="ap-chips">' +
+        [['w', 'Peso'], ['bf', '% de gordura'], ['lm', 'Massa magra'], ['bmi', 'IMC'], ['fs', 'Dobras']]
+          .map((par, i) => '<button type="button" data-m="' + par[0] + '"' + (i === 0 ? ' class="on"' : '') + '>' + par[1] + '</button>').join('') +
+        '</div><div class="ap-chart"><svg id="apChart" viewBox="0 0 320 210"></svg></div>' +
+        '<div class="ap-leg" id="apLeg"></div><p class="ap-resumo" id="apResumo"></p></section>';
+    }
+
+    if (S.length > 1){
+      const itens = [
+        ['Peso', atual.w, primeira.w, ' kg', 1],
+        ['IMC', atual.bmi, primeira.bmi, '', 1],
+        ['% de gordura', atual.bf, primeira.bf, '%', 1],
+        ['Massa gorda', atual.fm, primeira.fm, ' kg', 1],
+        ['Massa magra', atual.lm, primeira.lm, ' kg', 1],
+        ['Soma das dobras', atual.fs, primeira.fs, ' mm', 0]
+      ].filter(x => x[1] !== null && x[1] !== undefined && x[2] !== null && x[2] !== undefined);
+      if (itens.length){
+        h += '<section class="ap-sec"><h2>Desde a primeira avalia\u00e7\u00e3o <span>' + esc(alData(primeira.dt)) + '</span></h2><div class="ap-comp">' +
+          itens.map(x => {
+            const dif = x[1] - x[2];
+            const cls = Math.abs(dif) < 0.05 ? 'eq' : (dif > 0 ? 'up' : 'down');
+            const seta = Math.abs(dif) < 0.05 ? '' : (dif > 0 ? '\u2191 ' : '\u2193 ');
+            const sinal = dif > 0 ? '+' : '';
+            return '<div><span>' + x[0] + '</span><span><b>' + esc(fmt(x[1], x[4]) + x[3]) + '</b>' +
+              '<i class="ap-dif ' + cls + '">' + seta + esc(sinal + fmt(dif, x[4]) + x[3]) + '</i></span></div>';
+          }).join('') + '</div></section>';
+      }
+    }
+
+    const medidas = AV_MEASURES.filter(par => atual.m && atual.m[par[0]] !== null && atual.m[par[0]] !== undefined);
+    if (medidas.length){
+      h += '<section class="ap-sec"><h2>Medidas <span>cm</span></h2><div class="ap-med">' +
+        medidas.map(par => {
+          const v = atual.m[par[0]];
+          const ant = (anterior && anterior.m) ? anterior.m[par[0]] : null;
+          let dif = '';
+          if (ant !== null && ant !== undefined){
+            const d = v - ant;
+            if (Math.abs(d) >= 0.05){
+              dif = '<i class="ap-dif ' + (d > 0 ? 'up' : 'down') + '">' + (d > 0 ? '\u2191 +' : '\u2193 ') + fmt(d, 1) + '</i>';
+            }
+          }
+          return '<div><span>' + esc(par[1]) + '</span><span><b>' + esc(fmt(v)) + '</b>' + dif + '</span></div>';
+        }).join('') + '</div></section>';
+    }
+
+    const fc = p.phc, fp = p.php;
+    if (fc || fp){
+      const pick = (o) => o ? ((o.front || [])[0] || (o.side || [])[0] || (o.back || [])[0] || null) : null;
+      const imgDepois = fc ? pick(fc.f) : null;
+      const imgAntes = fp ? pick(fp.f) : null;
+      if (imgDepois && imgAntes){
+        h += '<section class="ap-sec"><h2>Antes e depois</h2><div class="ap-ba" id="apBA">' +
+          '<img class="ap-after" src="' + imgDepois + '" alt="Depois">' +
+          '<img class="ap-before" src="' + imgAntes + '" alt="Antes">' +
+          '<span class="ap-ba-tag l">Antes \u00b7 ' + esc(alData(fp.dt)) + '</span>' +
+          '<span class="ap-ba-tag r">Depois \u00b7 ' + esc(alData(fc.dt)) + '</span>' +
+          '<div class="ap-ba-h"></div></div>' +
+          '<p class="ap-resumo" style="text-align:center">Arraste a linha para comparar.</p></section>';
+      }
+      if (fc){
+        h += '<section class="ap-sec"><h2>Fotos da avalia\u00e7\u00e3o <span>' + esc(alData(fc.dt)) + '</span></h2><div class="ap-fotos">';
+        AV_ANGLES.forEach(pp => {
+          (fc.f[pp[0]] || []).forEach((d, i) => { h += '<img src="' + d + '" alt="' + esc(pp[1] + ' ' + (i + 1)) + '">'; });
+        });
+        h += '</div></section>';
+      }
+    }
+
+    h += '<p class="ap-foot">' + esc(p.p || 'GH Performance') + ' \u00b7 avalia\u00e7\u00e3o f\u00edsica \u00b7 ' + esc(alData(p.dt)) + '</p></div>' +
+      '<div class="ap-lb" id="apLb"><button type="button" id="apLbX">&times;</button><img alt="Foto"></div>';
+
+    return '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">' +
+      '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">' +
+      '<meta name="theme-color" content="#080d0a">' +
+      '<title>' + esc(p.a || 'Aluno') + ' \u00b7 Avalia\u00e7\u00e3o f\u00edsica</title>' +
+      '<style>' + AP_CSS + '</style></head><body>' + h +
+      '<script id="apd" type="application/json">' + dados + '<\/script>' +
+      '<script>' + AP_JS + '<\/script></body></html>';
+  }
+
+  function alunoFecharOverlay(){
+    const box = document.getElementById('apOverlay');
+    if (!box) return;
+    if (box.dataset.url){ try { URL.revokeObjectURL(box.dataset.url); } catch (e){} }
+    try { box.remove(); } catch (e){}
+  }
+  function alunoApresentarOverlay(html){
+    alunoFecharOverlay();
+    const box = document.createElement('div');
+    box.className = 'ap-overlay';
+    box.id = 'apOverlay';
+    const bt = document.createElement('button');
+    bt.type = 'button'; bt.className = 'ap-overlay-x'; bt.id = 'apOverlayX';
+    bt.setAttribute('aria-label', 'Fechar apresenta\u00e7\u00e3o'); bt.textContent = '\u2715  Fechar apresenta\u00e7\u00e3o';
+    const f = document.createElement('iframe');
+    f.className = 'ap-overlay-f'; f.setAttribute('title', 'Apresenta\u00e7\u00e3o da avalia\u00e7\u00e3o');
+    let url = '';
+    try {
+      const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+      url = URL.createObjectURL(blob);
+      f.src = url;
+    } catch (e){ try { f.srcdoc = html; } catch (_){} }
+    box.appendChild(f); box.appendChild(bt);
+    if (url) box.dataset.url = url;
+    document.body.appendChild(box);
+    bt.addEventListener('click', alunoFecharOverlay);
+    document.addEventListener('keydown', function onEsc(e){
+      if (e.key === 'Escape'){ alunoFecharOverlay(); document.removeEventListener('keydown', onEsc); }
+    });
+  }
+  async function alunoApresentar(modo, sid){
+    const s = sid ? ((state.students || []).find(x => x.id === sid) || null) : active();
+    if (!s) return notify('Selecione um aluno.', true);
+    if (!alunoSeriePayload(s).length) return notify('Este aluno ainda n\u00e3o tem avalia\u00e7\u00e3o f\u00edsica cadastrada.', true);
+    notify('Montando a apresenta\u00e7\u00e3o\u2026');
+    let p = null;
+    try { p = await alunoApresentacaoPayload(s, 620, 0.62); } catch (e){ p = null; }
+    if (!p) return notify('N\u00e3o foi poss\u00edvel montar a apresenta\u00e7\u00e3o.', true);
+    let html = '';
+    try { html = alunoApresentacaoHtml(p); } catch (e){ return notify('Falha ao montar a tela.', true); }
+    const kb = Math.max(1, Math.round(html.length / 1024));
+    if (modo === 'baixar'){
+      const nome = 'avaliacao-' + noAccent(s.name || 'aluno').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') + '.html';
+      try {
+        const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = nome;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => { try { URL.revokeObjectURL(url); } catch (e){} }, 4000);
+        notify('Tela pronta (' + kb + ' KB). Envie o arquivo para o aluno.');
+      } catch (e){ notify('Falha ao gerar o arquivo.', true); }
+      return;
+    }
+    alunoApresentarOverlay(html);
+    notify('Apresenta\u00e7\u00e3o aberta (' + kb + ' KB).');
   }
 
   /* ---------- ABA ALUNOS (lista + perfil + ficha + treinos + financeiro) ----------
