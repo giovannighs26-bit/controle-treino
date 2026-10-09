@@ -1667,6 +1667,10 @@
   const AUTHED = 'ghPerformance.authed';
   const $ = s => document.querySelector(s);
   const $$ = s => [...document.querySelectorAll(s)];
+  /* Versao do app: usada no parametro ?v= dos links compartilhados.
+     BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
+     cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
+  const APP_V = '34';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -5794,7 +5798,7 @@ body{margin:0;background:linear-gradient(180deg,#0a0f0c,#0d1410 240px);color:var
     if (meu !== alunoLinkRun) return;          /* uma rodada mais nova assumiu */
     if (!code) return notify('Não foi possível montar o link.', true);
     const base = location.href.split('#')[0].split('?')[0];
-    const url = base + '#a=' + code;
+    const url = base + '?v=' + APP_V + '#a=' + code;
     const tel = String(finCfg(s.id).tel || '').replace(/\D/g, '');
     if (box) box.value = url;
     const temAval = alunoAvalPayload(s).length;
@@ -5924,7 +5928,7 @@ body{margin:0;background:linear-gradient(180deg,#0a0f0c,#0d1410 240px);color:var
     try {
       const code = await alunoEncode(await alunoApresentacaoPayload(s, comFotos ? 620 : 0, 0.62));
       const base = location.href.split('#')[0].split('?')[0];
-      if (code) url = base + '#av=' + code;
+      if (code) url = base + '?v=' + APP_V + '#av=' + code;
     } catch (e){ url = ''; }
     if (!url) return notify('Nao foi possivel gerar o link.', true);
     paLinks[id] = { url: url, at: new Date().toISOString(), comFotos: !!comFotos };
@@ -5959,7 +5963,7 @@ body{margin:0;background:linear-gradient(180deg,#0a0f0c,#0d1410 240px);color:var
       try {
         const code = await alunoEncode(await alunoApresentacaoPayload(s, 0, 0.62));
         const base = location.href.split('#')[0].split('?')[0];
-        if (code){ paLinks[s.id] = { url: base + '#av=' + code, at: new Date().toISOString(), comFotos: false }; ok++; }
+        if (code){ paLinks[s.id] = { url: base + '?v=' + APP_V + '#av=' + code, at: new Date().toISOString(), comFotos: false }; ok++; }
         else falha++;
       } catch (e){ falha++; }
       await new Promise(r => setTimeout(r, 0));
