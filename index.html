@@ -736,6 +736,24 @@
       z-index:201;height:42px;padding:0 20px;border-radius:99px;border:1px solid #ffffff33;background:#000000cc;
       color:#fff;font:600 13px/1 inherit;cursor:pointer;display:flex;align-items:center;gap:8px;
       box-shadow:0 10px 26px #000a;backdrop-filter:blur(6px)}
+
+    /* ---------- ABA AREA DO ALUNO (portal) ---------- */
+    .pa-row{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+    .pa-row.on{border-color:#2f5f45;box-shadow:inset 3px 0 0 var(--accent)}
+    .pa-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .pa-av{flex:0 0 38px;width:38px;height:38px;border-radius:99px;background:var(--accent);color:#1c1608;
+      display:grid;place-items:center;font-weight:800;font-size:13px}
+    .pa-id{flex:1 1 170px;min-width:0}
+    .pa-id b{display:block;font-size:14px}
+    .pa-id small{display:block;color:var(--muted);font-size:11.5px}
+    .pa-sw{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);cursor:pointer;user-select:none}
+    .pa-sw input{width:18px;height:18px;accent-color:var(--accent);cursor:pointer}
+    .pa-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .pa-link{margin-top:10px}
+    .pa-link textarea{width:100%;background:#0d1511;border:1px solid var(--line);color:var(--text);border-radius:11px;
+      padding:9px 11px;font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;resize:vertical}
+    html[data-theme="light"] .pa-row{background:#f3f6f3}
+    html[data-theme="light"] .pa-link textarea{background:#fff}
 </style>
 </head>
 <body>
@@ -823,6 +841,7 @@
     <button class="tab" data-page="grupo">Treino em grupo</button>
     <button class="tab" data-page="history">Histórico</button>
     <button class="tab" data-page="aval">Avaliação física</button>
+    <button class="tab" data-page="area">Área do aluno</button>
     <button class="tab" data-page="financeiro">Financeiro</button>
     <button class="tab" data-page="data">Dados e backup</button>
     <button class="tab" data-page="geral">Geral</button>
@@ -1492,6 +1511,28 @@
     </article>
   </div></section>
 
+  <section class="page" id="area"><div class="grid">
+    <article class="card">
+      <div class="actions" style="justify-content:space-between;margin-bottom:10px">
+        <h2 style="margin:0">Área do aluno <span class="badge" id="paCount"></span></h2>
+        <select class="fin-input" id="paFiltro" style="width:180px">
+          <option value="todos">Todos os alunos</option>
+          <option value="ativos">Com portal ativado</option>
+          <option value="inativos">Sem portal ativado</option>
+        </select>
+      </div>
+      <p class="hint" style="margin-top:0">Ative o portal do aluno e envie o link. Ele abre no celular
+      <b>sem login</b> e acompanha a <b>avaliação física, a evolução</b> e a ficha de treino — funciona offline e nada
+      é enviado para a internet (tudo vai dentro do próprio link).</p>
+      <div class="actions" style="margin-bottom:14px;flex-wrap:wrap">
+        <button class="btn secondary" id="paGerarTodos">🔗 Gerar links dos ativados</button>
+        <button class="btn secondary" id="paCsv">⬇ Baixar lista (.csv)</button>
+        <button class="btn ghost" id="paAtivarTodos">Ativar todos com ficha</button>
+      </div>
+      <div class="list" id="paLista"></div>
+    </article>
+  </div></section>
+
   <section class="page" id="geral"><div class="grid">
     <article class="card">
       <div class="card-head"><h2>Sobre o app</h2><span class="badge">GH Performance</span></div>
@@ -1639,7 +1680,7 @@
 
   let state = load();
 
-  function blank(){ return {version:1, auth:null, activeStudentId:null, students:[], plans:{}, sessions:[], periodizations:{}, assessments:[], group:null, finance:null, alertaDias:7}; }
+  function blank(){ return {version:1, auth:null, activeStudentId:null, students:[], plans:{}, sessions:[], periodizations:{}, assessments:[], group:null, finance:null, portal:null, alertaDias:7}; }
   function load(){
     try { const p = JSON.parse(localStorage.getItem(KEY)); if (p && Array.isArray(p.students)) return Object.assign(blank(), p); } catch(e){}
     return blank();
@@ -2226,6 +2267,10 @@
   const avAp = $('#avApresentar');
   if (avAp) avAp.addEventListener('click', () => { const sel = $('#avStudent'); alunoApresentar('tela', sel ? sel.value : null); });
   const aApres = $('#alunoApresentar'); if (aApres) aApres.addEventListener('click', () => alunoApresentar('tela'));
+  const paF = $('#paFiltro'); if (paF) paF.addEventListener('change', () => { paFiltro = paF.value || 'todos'; paRender(); });
+  const paGT = $('#paGerarTodos'); if (paGT) paGT.addEventListener('click', () => paGerarTodos());
+  const paCSV = $('#paCsv'); if (paCSV) paCSV.addEventListener('click', () => paCsv());
+  const paAT = $('#paAtivarTodos'); if (paAT) paAT.addEventListener('click', () => paAtivarTodos());
   const aApresD = $('#alunoBaixarApres'); if (aApresD) aApresD.addEventListener('click', () => alunoApresentar('baixar'));
   const alCop = $('#alunoLinkCopiar');
   if (alCop) alCop.addEventListener('click', () => {
@@ -2501,6 +2546,7 @@
     if (id === 'fichas') renderPlans();
     if (id === 'montar') mtRender();
     if (id === 'financeiro'){ finRender(); setTimeout(() => { finDrawEvol(); finDrawDonut(); }, 40); }
+    if (id === 'area') paRender();
     if (id === 'geral') geralRender();
   }
   $$('.tab').forEach(b => b.addEventListener('click', () => {
@@ -4121,7 +4167,7 @@
 
   /* ---------- BUSCA GLOBAL ---------- */
   const GS_PAGES = [['dashboard','Visão geral'],['session','Registrar treino'],['montar','Montar treino'],['fichas','Fichas de treino'],
-    ['alunos','Alunos'],['aval','Avaliação física'],['financeiro','Financeiro'],['history','Histórico'],['grupo','Treino em grupo'],['data','Dados e backup'],['geral','Sobre o app']];
+    ['alunos','Alunos'],['aval','Avaliação física'],['area','Área do aluno'],['financeiro','Financeiro'],['history','Histórico'],['grupo','Treino em grupo'],['data','Dados e backup'],['geral','Sobre o app']];
   function gsOpen(){
     const m = $('#gsModal'); if (!m) return;
     m.classList.add('open');
@@ -5686,8 +5732,8 @@ body{margin:0;background:linear-gradient(180deg,#0a0f0c,#0d1410 240px);color:var
       '<div class="alv-lb" id="alLb"><button type="button" id="alLbX">&times;</button><img alt="Foto"></div>' +
       '<script>' + js + '<\/script></body></html>';
   }
-  async function alunoBaixarApp(){
-    const s = active();
+  async function alunoBaixarApp(sid){
+    const s = sid ? ((state.students || []).find(x => x.id === sid) || null) : active();
     if (!s) return notify('Selecione um aluno.', true);
     const plan = plansOf(s.id);
     if (!plan || !plan.days || !plan.days.length) return notify('Este aluno ainda não tem ficha cadastrada.', true);
@@ -5760,6 +5806,190 @@ body{margin:0;background:linear-gradient(180deg,#0a0f0c,#0d1410 240px);color:var
     return url;
   }
 
+
+  /* ---------- ABA AREA DO ALUNO (portal do aluno: ativar + link + envio) ---------- */
+  var paLinks = {};          /* id -> {url, at, comFotos}  (memoria; sobrevive ao re-render) */
+  var paFiltro = 'todos';
+  function paEnsure(){
+    if (!state.portal || typeof state.portal !== 'object') state.portal = {};
+    return state.portal;
+  }
+  function paInfo(id){
+    const p = paEnsure()[id] || {};
+    return { ativo: !!p.ativo, at: p.at || '', linkAt: p.linkAt || '', envAt: p.envAt || '' };
+  }
+  function paTel(id){
+    try {
+      const c = state.finance && state.finance.students && state.finance.students[id];
+      return String((c && c.tel) || '').replace(/\D/g, '');
+    } catch (e){ return ''; }
+  }
+  function paMsg(s, url){
+    const primeiro = String(s.name || '').split(' ')[0];
+    return 'Ola, ' + primeiro + '! Aqui esta o seu espaco de aluno:\n\n' + url +
+      '\n\nNele voce acompanha a sua avaliacao fisica, a sua evolucao e a sua ficha de treino. ' +
+      'Abra no celular e, se quiser, adicione a tela de inicio - funciona sem internet.';
+  }
+  function paRowHTML(s){
+    const i = paInfo(s.id);
+    const plan = plansOf(s.id);
+    const temFicha = !!(plan && plan.days && plan.days.length);
+    let avs = [];
+    try { avs = avFor(s.id) || []; } catch (e){ avs = []; }
+    const ini = String(s.name || '?').trim().split(/\s+/).map(x => x[0]).slice(0, 2).join('').toUpperCase();
+    const L = paLinks[s.id] || null;
+    const tel = paTel(s.id);
+    let h = '<div class="pa-row' + (i.ativo ? ' on' : '') + '" data-id="' + esc(s.id) + '">';
+    h += '<div class="pa-top"><span class="pa-av">' + esc(ini) + '</span>' +
+      '<div class="pa-id"><b>' + esc(s.name || '') + '</b><small>' +
+      (temFicha ? plan.days.length + ' treino(s)' : 'sem ficha cadastrada') +
+      (avs.length ? ' \u00b7 ' + avs.length + ' avalia\u00e7\u00e3o(\u00f5es) \u00b7 \u00faltima ' + esc(alData(avs[0].date)) : ' \u00b7 sem avalia\u00e7\u00e3o') +
+      '</small></div>' +
+      '<label class="pa-sw"><input type="checkbox" data-pa="on"' + (i.ativo ? ' checked' : '') + '><span>' +
+      (i.ativo ? 'Portal ativado' : 'Ativar portal') + '</span></label></div>';
+    h += '<div class="pa-acts">' +
+      '<button class="btn secondary" type="button" data-pa="link"' + (temFicha ? '' : ' disabled') + '>🔗 Gerar link</button>' +
+      '<button class="btn secondary" type="button" data-pa="linkf"' + (temFicha ? '' : ' disabled') + '>🖼 Com fotos</button>' +
+      '<button class="btn secondary" type="button" data-pa="whats"' + (L ? '' : ' disabled') + '>💬 WhatsApp</button>' +
+      '<button class="btn secondary" type="button" data-pa="apres">\u25b6 Apresentar</button>' +
+      '<button class="btn ghost" type="button" data-pa="app"' + (temFicha ? '' : ' disabled') + '>\u2b07 App (.html)</button>' +
+      '</div>';
+    h += '<div class="pa-link"' + (L ? '' : ' hidden') + '>' +
+      '<textarea readonly rows="2" spellcheck="false">' + esc(L ? L.url : '') + '</textarea>' +
+      '<div class="actions" style="margin-top:8px"><button class="btn" type="button" data-pa="copiar">Copiar link</button>' +
+      '<button class="btn secondary" type="button" data-pa="testar">Abrir</button>' +
+      '<span class="hint">' + (L ? L.url.length + ' caracteres' + (L.comFotos ? ' \u00b7 com fotos' : '') : '') +
+      (i.envAt ? ' \u00b7 enviado' : '') + (tel ? '' : ' \u00b7 sem WhatsApp cadastrado') + '</span></div></div>';
+    h += '</div>';
+    return h;
+  }
+  function paRender(){
+    const box = $('#paLista'); if (!box) return;
+    const pg = $('#area'); if (!pg || !pg.classList.contains('active')) return;
+    paWire();
+    const todos = (state.students || []).filter(s => s.id !== 'usuario');
+    const ativos = todos.filter(s => paInfo(s.id).ativo).length;
+    const cnt = $('#paCount'); if (cnt) cnt.textContent = ativos + ' de ' + todos.length + ' com portal ativado';
+    let lista = todos;
+    if (paFiltro === 'ativos') lista = todos.filter(s => paInfo(s.id).ativo);
+    else if (paFiltro === 'inativos') lista = todos.filter(s => !paInfo(s.id).ativo);
+    if (!lista.length){ box.innerHTML = '<div class="empty">Nenhum aluno nesta lista.</div>'; return; }
+    box.innerHTML = lista.map(paRowHTML).join('');
+  }
+  function paWire(){
+    const box = $('#paLista'); if (!box || box.dataset.wired) return;
+    box.dataset.wired = '1';
+    box.addEventListener('change', e => {
+      const cb = e.target.closest('input[data-pa="on"]'); if (!cb) return;
+      const row = cb.closest('.pa-row'); if (!row) return;
+      paSet(row.dataset.id, cb.checked);
+    });
+    box.addEventListener('click', e => {
+      const b = e.target.closest('[data-pa]'); if (!b || b.tagName === 'INPUT') return;
+      const row = b.closest('.pa-row'); if (!row) return;
+      const id = row.dataset.id, acao = b.dataset.pa;
+      if (acao === 'link') paGerarLink(id, false);
+      else if (acao === 'linkf') paGerarLink(id, true);
+      else if (acao === 'whats') paEnviar(id);
+      else if (acao === 'apres') alunoApresentar('tela', id);
+      else if (acao === 'app') alunoBaixarApp(id);
+      else if (acao === 'copiar') paCopiar(id);
+      else if (acao === 'testar'){ const L = paLinks[id]; if (L) window.open(L.url, '_blank'); }
+    });
+  }
+  function paSet(id, ativo){
+    const s = (state.students || []).find(x => x.id === id); if (!s) return;
+    const p = paEnsure();
+    p[id] = Object.assign({}, p[id] || {}, { ativo: !!ativo, at: new Date().toISOString() });
+    save();
+    if (ativo){
+      notify('Portal ativado para ' + s.name + '. Gerando o link\u2026');
+      paGerarLink(id, false);
+    } else {
+      notify('Portal desativado para ' + s.name + '.');
+    }
+  }
+  async function paGerarLink(id, comFotos){
+    const s = (state.students || []).find(x => x.id === id); if (!s) return;
+    const plan = plansOf(s.id);
+    if (!plan || !plan.days || !plan.days.length) return notify('Este aluno ainda nao tem ficha cadastrada.', true);
+    const box = $('#paLista');
+    const row = box ? box.querySelector('.pa-row[data-id="' + id + '"]') : null;
+    const dica = row ? row.querySelector('.pa-link .hint') : null;
+    if (dica) dica.textContent = comFotos ? 'Preparando as fotos\u2026' : 'Gerando o link\u2026';
+    let url = '';
+    try {
+      const code = await alunoEncode(await alunoMontarPayload(s, plan, true, comFotos));
+      const base = location.href.split('#')[0].split('?')[0];
+      if (code) url = base + '#a=' + code;
+    } catch (e){ url = ''; }
+    if (!url) return notify('Nao foi possivel gerar o link.', true);
+    paLinks[id] = { url: url, at: new Date().toISOString(), comFotos: !!comFotos };
+    const p = paEnsure();
+    p[id] = Object.assign({}, p[id] || {}, { linkAt: new Date().toISOString() });
+    save();
+    notify('Link de ' + s.name + ' pronto (' + url.length + ' caracteres).');
+  }
+  function paCopiar(id){
+    const L = paLinks[id]; if (!L) return notify('Gere o link primeiro.', true);
+    finCopiar(L.url, ok => notify(ok ? 'Link copiado.' : 'Nao foi possivel copiar.', !ok));
+  }
+  function paEnviar(id){
+    const s = (state.students || []).find(x => x.id === id); if (!s) return;
+    const L = paLinks[id]; if (!L) return notify('Gere o link primeiro.', true);
+    const msg = paMsg(s, L.url);
+    finCopiar(msg, () => {});
+    const p = paEnsure();
+    p[id] = Object.assign({}, p[id] || {}, { envAt: new Date().toISOString() });
+    save();
+    const tel = paTel(id);
+    if (tel.length >= 10) window.open('https://wa.me/' + (tel.length <= 11 ? '55' + tel : tel) + '?text=' + encodeURIComponent(msg), '_blank');
+    else notify('Mensagem copiada. Cadastre o WhatsApp do aluno no Financeiro para abrir a conversa direto.', true);
+  }
+  async function paGerarTodos(){
+    const alvos = (state.students || []).filter(s => s.id !== 'usuario' && paInfo(s.id).ativo)
+      .filter(s => { const pl = plansOf(s.id); return !!(pl && pl.days && pl.days.length); });
+    if (!alvos.length) return notify('Nenhum aluno com portal ativado e ficha cadastrada.', true);
+    notify('Gerando ' + alvos.length + ' link(s)\u2026');
+    let ok = 0, falha = 0;
+    for (const s of alvos){
+      try {
+        const code = await alunoEncode(await alunoMontarPayload(s, plansOf(s.id), true, false));
+        const base = location.href.split('#')[0].split('?')[0];
+        if (code){ paLinks[s.id] = { url: base + '#a=' + code, at: new Date().toISOString(), comFotos: false }; ok++; }
+        else falha++;
+      } catch (e){ falha++; }
+      await new Promise(r => setTimeout(r, 0));
+    }
+    save();
+    notify(ok + ' link(s) gerados' + (falha ? ', ' + falha + ' falharam' : '') + '. Use "Baixar lista (.csv)".');
+  }
+  function paAtivarTodos(){
+    const p = paEnsure(); let n = 0;
+    (state.students || []).forEach(s => {
+      const pl = plansOf(s.id);
+      if (pl && pl.days && pl.days.length){ p[s.id] = Object.assign({}, p[s.id] || {}, { ativo: true, at: new Date().toISOString() }); n++; }
+    });
+    save();
+    notify(n + ' aluno(s) com ficha foram ativados. Agora gere os links.');
+  }
+  function paCsv(){
+    const linhas = (state.students || []).filter(s => s.id !== 'usuario').map(s => {
+      const L = paLinks[s.id];
+      return [s.name || '', paInfo(s.id).ativo ? 'ativado' : 'nao ativado', L ? L.url : ''];
+    });
+    if (!linhas.some(l => l[2])) return notify('Gere os links primeiro.', true);
+    const csv = '\uFEFFNome;Portal;Link\n' + linhas.map(l => l.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(';')).join('\n');
+    try {
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'portais-aluno.csv';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => { try { URL.revokeObjectURL(url); } catch (e){} }, 4000);
+      notify('Lista com ' + linhas.filter(l => l[2]).length + ' link(s) baixada.');
+    } catch (e){ notify('Falha ao gerar a lista.', true); }
+  }
 
   /* ---------- APRESENTACAO DA AVALIACAO (tela interativa: avaliacao atual + evolucao) ---------- */
   function alunoSeriePayload(s){
@@ -6526,6 +6756,7 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
         assessments:Array.isArray(data.assessments) ? data.assessments : [],
         group: data.group || state.group || null,
         finance: (data.finance && typeof data.finance === 'object') ? data.finance : state.finance,
+        portal: (data.portal && typeof data.portal === 'object') ? data.portal : state.portal,
         seedApplied: data.seedApplied !== undefined ? data.seedApplied : state.seedApplied,
         avSeedApplied: data.avSeedApplied !== undefined ? data.avSeedApplied : state.avSeedApplied};
       let restauradas = 0;
@@ -7384,7 +7615,7 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
   }
 
   /* ---------- RENDER ---------- */
-  function renderAll(){ renderPicker(); alWire(); alunoPickWire(); alRender(); renderAlunoFab(); geralRender(); renderDashboard(); renderDashAlerts(); renderPlans(); renderHistory(); renderData(); renderSessionDays(); updateSessionHint(); renderAval(); renderGrupo();
+  function renderAll(){ renderPicker(); alWire(); alunoPickWire(); alRender(); renderAlunoFab(); geralRender(); renderDashboard(); renderDashAlerts(); renderPlans(); renderHistory(); renderData(); renderSessionDays(); updateSessionHint(); renderAval(); renderGrupo(); paRender();
     if ($('#montar') && $('#montar').classList.contains('active')) mtRender();
     finRender(); }
   $('#sessionDate').value = today();
