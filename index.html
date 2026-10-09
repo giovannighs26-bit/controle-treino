@@ -631,7 +631,7 @@
 .al-top b{display:block;font-size:14px}
 .al-top small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
 .al-main{padding:18px}
-.al-nome{font-size:24px;margin:0 0 4px;letter-spacing:-.02em}
+.al-nome{display:block;font-size:24px;margin:0 0 4px;letter-spacing:-.02em}
 .al-sub{color:var(--muted);font-size:13px;margin:0 0 14px}
 .al-prog{display:flex;align-items:center;gap:10px;margin-bottom:20px}
 .al-bar{flex:1;height:7px;border-radius:99px;background:#1b2620;overflow:hidden}
@@ -639,7 +639,7 @@
 .al-prog span{font-size:11.5px;color:var(--muted);white-space:nowrap}
 .al-day{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 15px;margin-bottom:14px}
 .al-day h2{font-size:15px;margin:0 0 10px;color:var(--accent2)}
-.al-list{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.al-list{list-style:none;margin:0;padding:0;display:grid;gap:2px;max-height:none;overflow:visible}
 .al-list li{border-bottom:1px solid #1e2a23}
 .al-list li:last-child{border-bottom:0}
 .al-list label{display:flex;align-items:center;gap:11px;padding:10px 2px;cursor:pointer}
@@ -654,6 +654,35 @@
 .al-foot{text-align:center;color:var(--muted);font-size:11px;margin:8px 0 0}
 .al-link{background:none;border:0;color:var(--muted);font-size:11px;text-decoration:underline;cursor:pointer}
 .al-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:24px}
+.alv-tabs{display:flex;gap:8px;margin:0 0 16px}
+.alv-tabs button{flex:1;padding:10px 12px;border-radius:11px;border:1px solid var(--line);background:transparent;color:var(--muted);font-weight:700;font-size:13px}
+.alv-tabs button.on{background:var(--panel);color:var(--accent2);border-color:var(--accent)}
+.alv-h2{font-size:16px;margin:2px 0 12px;color:var(--accent2)}
+.alv-h3{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin:16px 0 8px}
+.alv-card{border:1px solid var(--line);border-radius:14px;padding:14px 15px;margin-bottom:14px;background:var(--panel)}
+.alv-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.alv-head b{font-size:14px}
+.alv-tag{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);border:1px solid var(--line);border-radius:99px;padding:3px 9px}
+.alv-tag.on{color:#1c1608;background:var(--accent);border-color:var(--accent)}
+.alv-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:9px;margin-bottom:12px}
+.alv-kpi{background:#0d1511;border:1px solid var(--line);border-radius:11px;padding:9px 11px}
+.alv-kpi span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.alv-kpi b{font-size:14px;display:block;margin-top:3px}
+.alv-kpi em{font-style:normal;font-size:10.5px;color:var(--muted)}
+.alv-medidas{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:6px 12px}
+.alv-medidas div{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid #1e2a23;padding:6px 0;font-size:12.5px}
+.alv-medidas span{color:var(--muted)}
+.alv-nota{margin:10px 0 0;font-size:12.5px;color:var(--muted);line-height:1.5}
+.alv-dup{display:grid;gap:6px;margin-top:12px}
+.alv-dup div{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;padding:6px 0;border-bottom:1px solid #1e2a23}
+.alv-eq{color:var(--muted);font-weight:700}
+.alv-fotos{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.alv-fotos img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:11px;border:1px solid var(--line);background:#1b2620;cursor:zoom-in}
+.alv-lb{position:fixed;inset:0;background:#000d;display:none;align-items:center;justify-content:center;z-index:99;padding:16px}
+.alv-lb.open{display:flex}
+.alv-lb img{max-width:100%;max-height:92vh;border-radius:12px}
+.alv-lb button{position:absolute;top:14px;right:16px;width:38px;height:38px;border-radius:99px;border:1px solid #fff4;background:#0008;color:#fff;font-size:20px}
+@media(max-width:520px){.alv-kpis{grid-template-columns:repeat(2,1fr)}}
 @media print{.modo-aluno #alunoView .al-actions,.modo-aluno #alunoView .al-foot{display:none}
   .modo-aluno body{background:#fff}.al-day{break-inside:avoid}.al-top{background:#fff}}
 .alerts{display:grid;gap:9px}
@@ -1267,8 +1296,12 @@
           <button class="close" type="button" data-close>&times;</button>
         </div>
         <p class="hint" style="margin-top:0">O link abaixo abre a ficha do aluno <b>sem login</b>, no celular dele.
-        Ele pode marcar os exercícios feitos e funciona offline. Nada é enviado para a internet — a ficha vai
-        inteira dentro do próprio link.</p>
+        Ele pode marcar os exercícios feitos e funciona offline. Nada é enviado para a internet — tudo vai
+        dentro do próprio link.</p>
+        <div class="actions" style="margin:0 0 12px;flex-wrap:wrap;gap:16px">
+          <label class="check"><input type="checkbox" id="alunoLinkAval" checked> Incluir avaliação física</label>
+          <label class="check"><input type="checkbox" id="alunoLinkFotos"> Incluir fotos no link</label>
+        </div>
         <div class="field span12"><label>Link da ficha</label>
           <textarea id="alunoLinkTexto" rows="3" readonly style="width:100%;background:#0d1511;border:1px solid var(--line);color:var(--text);border-radius:11px;padding:10px 12px;font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;resize:vertical"></textarea>
         </div>
@@ -1277,6 +1310,13 @@
           <button class="btn" type="button" id="alunoLinkCopiar">Copiar link</button>
           <button class="btn secondary" type="button" id="alunoLinkWhats">💬 Enviar no WhatsApp</button>
           <button class="btn ghost" type="button" data-close>Fechar</button>
+        </div>
+        <hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
+        <p class="hint" style="margin:0 0 10px">Para enviar <b>com as fotos</b> (ou quando o link ficar muito longo),
+        gere o <b>app do aluno</b>: um arquivo único que abre offline no celular dele, com o treino e a avaliação
+        completa. O aluno pode adicionar à tela inicial.</p>
+        <div class="actions">
+          <button class="btn secondary" type="button" id="alunoBaixarApp">⬇ Baixar app do aluno (.html)</button>
         </div>
       </div>
     </div>
@@ -2164,6 +2204,9 @@
   const fRec = $('#finAlunoRecibo'); if (fRec) fRec.addEventListener('click', () => finEditId && finRecibo(finEditId, finMes));
   const fRecC = $('#finAlunoReciboCopiar'); if (fRecC) fRecC.addEventListener('click', () => finEditId && finCopiarRecibo(finEditId, finMes));
   const shF = $('#shareFichaBtn'); if (shF) shF.addEventListener('click', () => alunoGerarLink());
+  const aAvalChk = $('#alunoLinkAval'), aFotChk = $('#alunoLinkFotos');
+  [aAvalChk, aFotChk].forEach(el => { if (el) el.addEventListener('change', () => alunoGerarLink()); });
+  const aAppBtn = $('#alunoBaixarApp'); if (aAppBtn) aAppBtn.addEventListener('click', () => alunoBaixarApp());
   const alCop = $('#alunoLinkCopiar');
   if (alCop) alCop.addEventListener('click', () => {
     const t = $('#alunoLinkTexto');
@@ -5205,7 +5248,7 @@ ${corpo}
   }
   function alunoFichaPayload(s, plan){
     return {
-      v: 1,
+      v: 2,
       a: s.name,
       p: ghOwner(),
       t: plan.title || 'Ficha de treino',
@@ -5217,12 +5260,222 @@ ${corpo}
       }))
     };
   }
+
+  /* ---- avaliação física (sem fotos): entra no link e no app do aluno ---- */
+  function alunoAvalPayload(s){
+    let lista = [];
+    try { lista = avFor(s.id).slice(0, 4); } catch (e){ lista = []; }
+    return lista.map(a => {
+      let c = { bf: null, src: '', fatMass: null, leanMass: null };
+      try { c = avComposition(a); } catch (e){}
+      const m = {};
+      AV_MEASURES.forEach(([k]) => { const v = avNum((a.measures || {})[k]); if (v !== null) m[k] = v; });
+      const f = {};
+      AV_FOLDS.forEach(([k]) => { const v = avNum((a.folds || {})[k]); if (v !== null) f[k] = v; });
+      let bmi = null, fs = null, age = null;
+      try { bmi = avBmi(a); } catch (e){}
+      try { fs = avFoldSum(a); } catch (e){}
+      try { age = avAgeAt(a); } catch (e){}
+      return { dt: a.date || '', w: avNum(a.weight), h: avNum(a.height), bmi: bmi,
+        bf: (c && c.bf !== undefined) ? c.bf : null, src: (c && c.src) || '',
+        fm: (c && c.fatMass !== undefined) ? c.fatMass : null,
+        lm: (c && c.leanMass !== undefined) ? c.leanMass : null,
+        sex: a.sex || '', age: age, m: m, f: f, fs: fs,
+        notes: a.notes || '', ex: a.examiner || '' };
+    });
+  }
+
+  /* ---- fotos: reduz para miniatura e devolve data URL ---- */
+  function alunoFotoThumb(blob, maxPx, q){
+    return new Promise(resolve => {
+      let url = '';
+      try { url = URL.createObjectURL(blob); } catch (e){ return resolve(null); }
+      let img;
+      try { img = new Image(); } catch (e){ try { URL.revokeObjectURL(url); } catch (_){} return resolve(null); }
+      img.onload = () => {
+        try {
+          let w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+          if (!w || !h){ try { URL.revokeObjectURL(url); } catch (e){} return resolve(null); }
+          const sc = Math.min(1, (maxPx || 560) / Math.max(w, h));
+          w = Math.max(1, Math.round(w * sc)); h = Math.max(1, Math.round(h * sc));
+          const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+          cv.getContext('2d').drawImage(img, 0, 0, w, h);
+          const d = cv.toDataURL('image/jpeg', q || 0.62);
+          try { URL.revokeObjectURL(url); } catch (e){}
+          resolve(d);
+        } catch (e){ try { URL.revokeObjectURL(url); } catch (_){} resolve(null); }
+      };
+      img.onerror = () => { try { URL.revokeObjectURL(url); } catch (e){} resolve(null); };
+      img.src = url;
+    });
+  }
+  async function alunoFotosPayload(s, maxPx, q){
+    const out = { front: [], side: [], back: [] };
+    let lista = [];
+    try { lista = avFor(s.id); } catch (e){ lista = []; }
+    /* usa a avaliacao MAIS RECENTE que tenha foto (pode nao ser a ultima cadastrada) */
+    let a = null;
+    for (const x of lista){
+      const ph = x.photos || {};
+      if ((((ph.front || []).length) + ((ph.side || []).length) + ((ph.back || []).length)) > 0){ a = x; break; }
+    }
+    if (!a) return { ph: out, date: '' };
+    for (const par of AV_ANGLES){
+      const k = par[0];
+      const refs = (((a.photos || {})[k]) || []).slice(0, 4);
+      for (const r of refs){
+        try {
+          const blob = await avPhotoGet(r.id);
+          if (!blob) continue;
+          const d = await alunoFotoThumb(blob, maxPx, q);
+          if (d) out[k].push(d);
+        } catch (e){}
+      }
+    }
+    return { ph: out, date: a.date || '' };
+  }
+  async function alunoMontarPayload(s, plan, comAval, comFotos){
+    const p = alunoFichaPayload(s, plan);
+    if (comAval){
+      const av = alunoAvalPayload(s);
+      if (av.length) p.av = av;
+    }
+    if (comFotos){
+      try {
+        const r = await alunoFotosPayload(s, 620, 0.62);
+        const ph = r && r.ph;
+        if (ph && (ph.front.length || ph.side.length || ph.back.length)){ p.ph = ph; p.phd = r.date || ''; }
+      } catch (e){}
+    }
+    return p;
+  }
+
   function alunoMeta(i){
     const partes = [`${esc(i.s)}×${esc(i.r)}`];
     if (i.l > 0) partes.push(`${fmt(i.l)} kg`);
     if (i.k > 0) partes.push(`${i.k}s`);
     return partes.join(' · ');
   }
+  function alData(iso){
+    if (!iso) return '';
+    const d = new Date(String(iso) + 'T12:00:00');
+    if (isNaN(d)) return String(iso);
+    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+  function alKpi(label, valor, extra){
+    return '<div class="alv-kpi"><span>' + esc(label) + '</span><b>' + esc(valor) + '</b>' +
+      (extra ? '<em>' + esc(extra) + '</em>' : '') + '</div>';
+  }
+  function alunoTreinoHtml(p, feitos){
+    let html = '<div data-pane="treino">';
+    p.d.forEach((d, di) => {
+      html += '<section class="al-day"><h2>' + esc(d.t) + '</h2><ul class="al-list">' +
+        d.i.map((i, ii) => {
+          const id = di + '-' + ii;
+          return '<li><label><input type="checkbox" data-al="' + id + '"' + (feitos[id] ? ' checked' : '') + '>' +
+            '<span class="al-ex"><b>' + esc(i.n) + '</b><span class="al-meta">' + alunoMeta(i) + '</span></span></label></li>';
+        }).join('') + '</ul></section>';
+    });
+    return html + '</div>';
+  }
+  function alunoEvolucaoHtml(atual, ant){
+    const itens = [
+      ['Peso', atual.w, ant.w, ' kg', 1],
+      ['IMC', atual.bmi, ant.bmi, '', 1],
+      ['% de gordura', atual.bf, ant.bf, '%', 1],
+      ['Massa magra', atual.lm, ant.lm, ' kg', 1],
+      ['Soma das dobras', atual.fs, ant.fs, ' mm', 1]
+    ].filter(x => x[1] !== null && x[1] !== undefined && x[2] !== null && x[2] !== undefined);
+    if (!itens.length) return '';
+    return '<h3 class="alv-h3">Comparado com a anterior</h3><div class="alv-dup">' + itens.map(x => {
+      const dif = x[1] - x[2];
+      const seta = Math.abs(dif) < 0.05 ? '=' : (dif > 0 ? '↑' : '↓');
+      const sinal = dif > 0 ? '+' : '';
+      return '<div><span>' + esc(x[0]) + '</span><span>' + esc(fmt(x[1], x[4]) + x[3]) +
+        ' <b class="alv-eq">' + esc(seta + ' ' + sinal + fmt(dif, x[4]) + x[3]) + ')</b></span></div>';
+    }).join('') + '</div>';
+  }
+  function alunoAvalHtml(p){
+    const av = Array.isArray(p.av) ? p.av : [];
+    const ph = p.ph || null;
+    if (!av.length && !ph) return '';
+    let html = '<div data-pane="aval" hidden><h2 class="alv-h2">Avaliação física</h2>';
+    av.forEach((a, i) => {
+      html += '<section class="alv-card"><div class="alv-head"><b>' + esc(alData(a.dt)) + '</b>' +
+        '<span class="alv-tag' + (i === 0 ? ' on' : '') + '">' + (i === 0 ? 'Atual' : 'Anterior') + '</span></div>';
+      html += '<div class="alv-kpis">';
+      if (a.w !== null && a.w !== undefined) html += alKpi('Peso', fmt(a.w) + ' kg');
+      if (a.h !== null && a.h !== undefined) html += alKpi('Altura', fmt(a.h) + ' cm');
+      if (a.bmi !== null && a.bmi !== undefined) html += alKpi('IMC', fmt(a.bmi, 1), avBmiClass(a.bmi));
+      if (a.bf !== null && a.bf !== undefined) html += alKpi('% de gordura', fmt(a.bf, 1) + '%', a.src ? 'dado ' + a.src : '');
+      if (a.fm !== null && a.fm !== undefined) html += alKpi('Massa gorda', fmt(a.fm) + ' kg');
+      if (a.lm !== null && a.lm !== undefined) html += alKpi('Massa magra', fmt(a.lm) + ' kg');
+      if (a.fs !== null && a.fs !== undefined) html += alKpi('Soma das dobras', fmt(a.fs) + ' mm');
+      html += '</div>';
+      if (i === 0 && av[1]) html += alunoEvolucaoHtml(a, av[1]);
+      const medidas = AV_MEASURES.filter(par => a.m && a.m[par[0]] !== undefined && a.m[par[0]] !== null);
+      if (medidas.length) html += '<h3 class="alv-h3">Medidas (cm)</h3><div class="alv-medidas">' +
+        medidas.map(par => '<div><span>' + esc(par[1]) + '</span><b>' + esc(fmt(a.m[par[0]])) + '</b></div>').join('') + '</div>';
+      if (a.notes) html += '<p class="alv-nota">' + esc(a.notes) + '</p>';
+      html += '</section>';
+    });
+    if (ph){
+      AV_ANGLES.forEach(par => {
+        const arr = ph[par[0]] || [];
+        if (!arr.length) return;
+        html += '<h3 class="alv-h3">Fotos · ' + esc(par[1]) + (p.phd ? ' · ' + esc(alData(p.phd)) : '') + '</h3><div class="alv-fotos">' +
+          arr.map((d, i) => '<img src="' + d + '" alt="' + esc(par[1] + ' ' + (i + 1)) + '">').join('') + '</div>';
+      });
+    }
+    return html + '</div>';
+  }
+
+  function alunoLiga(host, key, feitos, temAval){
+    const paint = () => {
+      const cbs = host.querySelectorAll('input[data-al]');
+      let n = 0;
+      cbs.forEach(cb => { if (cb.checked) n++; });
+      const bar = host.querySelector('#alBar'), cnt = host.querySelector('#alCountS');
+      if (bar) bar.style.width = (cbs.length ? Math.round(n / cbs.length * 100) : 0) + '%';
+      if (cnt) cnt.textContent = n + ' de ' + cbs.length + ' exercícios feitos';
+    };
+    host.querySelectorAll('input[data-al]').forEach(cb => {
+      cb.addEventListener('change', () => {
+        if (cb.checked) feitos[cb.dataset.al] = true; else delete feitos[cb.dataset.al];
+        try { localStorage.setItem(key, JSON.stringify(feitos)); } catch (e){}
+        paint();
+      });
+    });
+    const pt = host.querySelector('[data-pane="treino"]'), pa = host.querySelector('[data-pane="aval"]');
+    host.querySelectorAll('[data-tab]').forEach(b => {
+      b.addEventListener('click', () => {
+        const t = b.dataset.tab;
+        host.querySelectorAll('[data-tab]').forEach(x => x.classList.toggle('on', x === b));
+        if (pt) pt.hidden = (t !== 'treino');
+        if (pa) pa.hidden = (t !== 'aval');
+        const pr = host.querySelector('.al-prog'); if (pr) pr.style.display = (t === 'treino' ? '' : 'none');
+      });
+    });
+    const lb = host.querySelector('#alLb');
+    const lbImg = lb ? lb.querySelector('img') : null;
+    host.querySelectorAll('.alv-fotos img').forEach(im => {
+      im.addEventListener('click', () => { if (!lb || !lbImg) return; lbImg.src = im.src; lb.classList.add('open'); });
+    });
+    if (lb) lb.addEventListener('click', e => { if (e.target === lb || e.target.id === 'alLbX') lb.classList.remove('open'); });
+    const pb = host.querySelector('#alPrint'); if (pb) pb.addEventListener('click', () => window.print());
+    const cb2 = host.querySelector('#alClear');
+    if (cb2) cb2.addEventListener('click', () => {
+      if (!confirm('Limpar todas as marcações?')) return;
+      Object.keys(feitos).forEach(k => delete feitos[k]);
+      try { localStorage.removeItem(key); } catch (e){}
+      host.querySelectorAll('input[data-al]').forEach(c => { c.checked = false; });
+      paint();
+    });
+    const ab = host.querySelector('#alApp');
+    if (ab) ab.addEventListener('click', () => { location.href = location.href.split('#')[0]; });
+    paint();
+  }
+
   async function renderAlunoView(code){
     let p = null;
     try { p = await alunoDecode(code); } catch (e){ p = null; }
@@ -5233,18 +5486,19 @@ ${corpo}
     if (!p || !Array.isArray(p.d)){
       host.innerHTML = `<div class="al-wrap"><div class="al-card" style="text-align:center">
         <h1 style="margin:0 0 8px">Link inválido</h1>
-        <p class="al-sub">Este link de ficha está incompleto ou foi corrompido. Peça um novo ao seu treinador.</p></div></div>`;
+        <p class="al-sub">Este link está incompleto ou foi corrompido. Peça um novo ao seu treinador.</p></div></div>`;
       return;
     }
     document.title = `Treino de ${p.a || ''}`.trim();
     const key = alunoKey(code);
     let feitos = {};
     try { feitos = JSON.parse(localStorage.getItem(key) || '{}') || {}; } catch (e){ feitos = {}; }
-    const total = p.d.reduce((n, d) => n + d.i.length, 0);
+    const avalHtml = alunoAvalHtml(p);
+    const temAval = avalHtml !== '';
     let html = `<div class="al-wrap">
       <header class="al-top">
         <span class="al-lg">GH</span>
-        <div><b>${esc(p.p || 'GH Performance')}</b><small>Ficha de treino</small></div>
+        <div><b>${esc(p.p || 'GH Performance')}</b><small>${temAval ? 'Treino e avaliação' : 'Ficha de treino'}</small></div>
       </header>
       <main class="al-main">
         <h1 class="al-nome">${esc(p.a || 'Aluno')}</h1>
@@ -5253,58 +5507,191 @@ ${corpo}
           <div class="al-bar"><i id="alBar"></i></div>
           <span id="alCountS"></span>
         </div>`;
-    p.d.forEach((d, di) => {
-      html += `<section class="al-day">
-        <h2>${esc(d.t)}</h2>
-        <ul class="al-list">` + d.i.map((i, ii) => {
-          const id = di + '-' + ii;
-          return `<li><label><input type="checkbox" data-al="${id}"${feitos[id] ? ' checked' : ''}>
-            <span class="al-ex"><b>${esc(i.n)}</b><span class="al-meta">${alunoMeta(i)}</span></span></label></li>`;
-        }).join('') + `</ul></section>`;
-    });
-    html += `<div class="al-actions">
-        <button class="al-btn" id="alPrint">🖨 Salvar em PDF</button>
-        <button class="al-btn ghost" id="alClear">Limpar marcações</button>
+    if (temAval) html += `<div class="alv-tabs"><button type="button" data-tab="treino" class="on">Treino</button><button type="button" data-tab="aval">Avaliação</button></div>`;
+    html += alunoTreinoHtml(p, feitos) + avalHtml + `
+      <div class="al-actions">
+        <button class="al-btn" id="alPrint" type="button">🖨 Salvar em PDF</button>
+        <button class="al-btn ghost" id="alClear" type="button">Limpar marcações</button>
       </div>
-      <p class="al-foot">Ficha compartilhada por ${esc(p.p || 'GH Performance')} · funciona offline</p>
-      <p class="al-foot"><button class="al-link" id="alApp">Sou o treinador — abrir o app</button></p>
-      </main></div>`;
+      <p class="al-foot">Compartilhado por ${esc(p.p || 'GH Performance')} · funciona offline</p>
+      <p class="al-foot"><button class="al-link" id="alApp" type="button">Sou o treinador — abrir o app</button></p>
+      </main></div>
+      <div class="alv-lb" id="alLb"><button type="button" id="alLbX">&times;</button><img alt="Foto"></div>`;
     host.innerHTML = html;
-    const paint = () => {
-      const n = Object.keys(feitos).filter(k => feitos[k]).length;
-      const bar = document.getElementById('alBar'), cnt = document.getElementById('alCountS');
-      if (bar) bar.style.width = (total ? Math.round(n / total * 100) : 0) + '%';
-      if (cnt) cnt.textContent = `${n} de ${total} exercícios feitos`;
-    };
-    host.querySelectorAll('input[data-al]').forEach(cb => {
-      cb.addEventListener('change', () => {
-        feitos[cb.dataset.al] = cb.checked;
-        if (!cb.checked) delete feitos[cb.dataset.al];
-        try { localStorage.setItem(key, JSON.stringify(feitos)); } catch (e){}
-        paint();
-      });
-    });
-    const pb = document.getElementById('alPrint'); if (pb) pb.addEventListener('click', () => window.print());
-    const cb2 = document.getElementById('alClear'); if (cb2) cb2.addEventListener('click', () => {
-      if (!confirm('Limpar todas as marcações?')) return;
-      feitos = {};
-      try { localStorage.removeItem(key); } catch (e){}
-      host.querySelectorAll('input[data-al]').forEach(c => { c.checked = false; });
+    alunoLiga(host, key, feitos, temAval);
+  }
+
+  /* ---------- APP DO ALUNO (arquivo unico, com fotos embutidas) ---------- */
+  const ALUNO_APP_CSS = `
+:root{--bg:#0a0f0c;--panel:#131b16;--line:#2a382e;--text:#f4f7f4;--muted:#9daea3;--accent:#d8a93d;--accent2:#f2cf72;--gh-grad:linear-gradient(145deg,#f7d678,#c9971f 55%,#8f6412)}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,#0a0f0c,#0d1410 240px);color:var(--text);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+.al-wrap{max-width:720px;margin:0 auto;padding:0 0 40px}
+.al-top{display:flex;align-items:center;gap:11px;padding:16px 18px;border-bottom:1px solid var(--line);background:#0d1511}
+.al-top .al-lg{width:40px;height:40px;border-radius:11px;background:var(--gh-grad);color:#1c1608;display:grid;place-items:center;font-weight:900;font-size:14px}
+.al-top b{display:block;font-size:14px}
+.al-top small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+.al-main{padding:18px}
+.al-nome{display:block;font-size:24px;margin:0 0 4px;letter-spacing:-.02em}
+.al-sub{color:var(--muted);font-size:13px;margin:0 0 14px}
+.al-prog{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.al-bar{flex:1;height:7px;border-radius:99px;background:#1b2620;overflow:hidden}
+.al-bar i{display:block;height:100%;width:0;background:var(--gh-grad);transition:width .25s}
+.al-prog span{font-size:11.5px;color:var(--muted);white-space:nowrap}
+.alv-tabs{display:flex;gap:8px;margin:0 0 16px}
+.alv-tabs button{flex:1;padding:10px 12px;border-radius:11px;border:1px solid var(--line);background:transparent;color:var(--muted);font-weight:700;font-size:13px}
+.alv-tabs button.on{background:var(--panel);color:var(--accent2);border-color:var(--accent)}
+.al-day{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 15px;margin-bottom:14px}
+.al-day h2{font-size:15px;margin:0 0 10px;color:var(--accent2)}
+.al-list{list-style:none;margin:0;padding:0;display:grid;gap:2px;max-height:none;overflow:visible}
+.al-list li{border-bottom:1px solid #1e2a23}
+.al-list li:last-child{border-bottom:0}
+.al-list label{display:flex;align-items:center;gap:11px;padding:10px 2px;cursor:pointer}
+.al-list input{width:21px;height:21px;accent-color:#c9971f;flex:0 0 auto}
+.al-ex{display:flex;flex-direction:column;min-width:0}
+.al-ex b{font-size:13.5px;font-weight:600;line-height:1.35}
+.al-meta{font-size:11.5px;color:var(--muted);margin-top:2px}
+.al-list input:checked ~ .al-ex b{text-decoration:line-through;color:var(--muted)}
+.alv-h2{font-size:16px;margin:2px 0 12px;color:var(--accent2)}
+.alv-h3{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin:16px 0 8px}
+.alv-card{border:1px solid var(--line);border-radius:14px;padding:14px 15px;margin-bottom:14px;background:var(--panel)}
+.alv-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.alv-head b{font-size:14px}
+.alv-tag{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);border:1px solid var(--line);border-radius:99px;padding:3px 9px}
+.alv-tag.on{color:#1c1608;background:var(--accent);border-color:var(--accent)}
+.alv-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:9px;margin-bottom:12px}
+.alv-kpi{background:#0d1511;border:1px solid var(--line);border-radius:11px;padding:9px 11px}
+.alv-kpi span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.alv-kpi b{font-size:14px;display:block;margin-top:3px}
+.alv-kpi em{font-style:normal;font-size:10.5px;color:var(--muted)}
+.alv-medidas{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:6px 12px}
+.alv-medidas div{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid #1e2a23;padding:6px 0;font-size:12.5px}
+.alv-medidas span{color:var(--muted)}
+.alv-nota{margin:10px 0 0;font-size:12.5px;color:var(--muted);line-height:1.5}
+.alv-dup{display:grid;gap:6px;margin-top:12px}
+.alv-dup div{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;padding:6px 0;border-bottom:1px solid #1e2a23}
+.alv-eq{color:var(--muted);font-weight:700}
+.alv-fotos{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.alv-fotos img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:11px;border:1px solid var(--line);background:#1b2620;cursor:zoom-in}
+.al-actions{display:flex;gap:9px;flex-wrap:wrap;margin:18px 0 8px}
+.al-btn{flex:1;min-width:150px;padding:12px 16px;border-radius:12px;border:1px solid var(--accent);background:var(--accent);color:#1c1608;font-weight:800;font-size:13.5px}
+.al-btn.ghost{background:transparent;color:var(--accent2);border-color:var(--line)}
+.al-foot{text-align:center;color:var(--muted);font-size:11px;margin:8px 0 0}
+.alv-lb{position:fixed;inset:0;background:#000d;display:none;align-items:center;justify-content:center;z-index:99;padding:16px}
+.alv-lb.open{display:flex}
+.alv-lb img{max-width:100%;max-height:92vh;border-radius:12px}
+.alv-lb button{position:absolute;top:14px;right:16px;width:38px;height:38px;border-radius:99px;border:1px solid #fff4;background:#0008;color:#fff;font-size:20px}
+@media(max-width:520px){.alv-kpis{grid-template-columns:repeat(2,1fr)}}
+@media print{.al-actions,.alv-tabs,.al-foot{display:none}body{background:#fff;color:#111}.al-day,.alv-card,.alv-kpi{background:#fff;border-color:#ccc;color:#111}.al-day h2,.alv-h2{color:#333}}
+`;
+  const ALUNO_APP_JS = `
+(function(){
+  var KEY = __KEY__;
+  var feitos = {};
+  try { feitos = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch(e){ feitos = {}; }
+  var cbs = document.querySelectorAll('input[data-al]');
+  cbs.forEach(function(cb){ cb.checked = !!feitos[cb.dataset.al]; });
+  function paint(){
+    var n = 0;
+    cbs.forEach(function(cb){ if (cb.checked) n++; });
+    var bar = document.getElementById('alBar'), cnt = document.getElementById('alCountS');
+    if (bar) bar.style.width = (cbs.length ? Math.round(n/cbs.length*100) : 0) + '%';
+    if (cnt) cnt.textContent = n + ' de ' + cbs.length + ' exercícios feitos';
+  }
+  cbs.forEach(function(cb){
+    cb.addEventListener('change', function(){
+      if (cb.checked) feitos[cb.dataset.al] = true; else delete feitos[cb.dataset.al];
+      try { localStorage.setItem(KEY, JSON.stringify(feitos)); } catch(e){}
       paint();
     });
-    const ab = document.getElementById('alApp'); if (ab) ab.addEventListener('click', () => {
-      location.href = location.href.split('#')[0];
+  });
+  document.querySelectorAll('[data-tab]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var t = b.dataset.tab;
+      document.querySelectorAll('[data-tab]').forEach(function(x){ x.classList.toggle('on', x === b); });
+      var pt = document.querySelector('[data-pane="treino"]'), pa = document.querySelector('[data-pane="aval"]');
+      if (pt) pt.hidden = (t !== 'treino');
+      if (pa) pa.hidden = (t !== 'aval');
+      var pr = document.querySelector('.al-prog'); if (pr) pr.style.display = (t === 'treino' ? '' : 'none');
     });
+  });
+  var lb = document.getElementById('alLb'), lbImg = lb ? lb.querySelector('img') : null;
+  document.querySelectorAll('.alv-fotos img').forEach(function(im){
+    im.addEventListener('click', function(){ if (!lb || !lbImg) return; lbImg.src = im.src; lb.classList.add('open'); });
+  });
+  if (lb) lb.addEventListener('click', function(e){ if (e.target === lb || e.target.id === 'alLbX') lb.classList.remove('open'); });
+  var pb = document.getElementById('alPrint'); if (pb) pb.addEventListener('click', function(){ window.print(); });
+  var cl = document.getElementById('alClear'); if (cl) cl.addEventListener('click', function(){
+    if (!confirm('Limpar todas as marcações?')) return;
+    feitos = {}; try { localStorage.removeItem(KEY); } catch(e){}
+    cbs.forEach(function(c){ c.checked = false; });
     paint();
+  });
+  paint();
+})();
+`;
+  function alunoAppHtml(p){
+    const dados = JSON.stringify(p).replace(/</g, '\\u003c').replace(/[\u2028\u2029]/g, ' ');
+    const avalHtml = alunoAvalHtml(p);
+    const temAval = avalHtml !== '';
+    const key = 'ghApp.' + (p.a || 'aluno').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    const js = ALUNO_APP_JS.replace('__KEY__', JSON.stringify(key));
+    return '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">' +
+      '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">' +
+      '<meta name="theme-color" content="#0a0f0c">' +
+      '<title>' + esc(p.a || 'Aluno') + ' · GH Performance</title>' +
+      '<style>' + ALUNO_APP_CSS + '</style></head><body>' +
+      '<div class="al-wrap"><header class="al-top"><span class="al-lg">GH</span>' +
+      '<div><b>' + esc(p.p || 'GH Performance') + '</b><small>' + (temAval ? 'Treino e avaliação' : 'Ficha de treino') + '</small></div></header>' +
+      '<main class="al-main"><h1 class="al-nome">' + esc(p.a || 'Aluno') + '</h1>' +
+      '<p class="al-sub">' + esc(p.t || '') + (p.g ? ' · ' + esc(p.g) : '') + '</p>' +
+      '<div class="al-prog"><div class="al-bar"><i id="alBar"></i></div><span id="alCountS"></span></div>' +
+      (temAval ? '<div class="alv-tabs"><button type="button" data-tab="treino" class="on">Treino</button><button type="button" data-tab="aval">Avaliação</button></div>' : '') +
+      alunoTreinoHtml(p, {}) + avalHtml +
+      '<div class="al-actions"><button class="al-btn" id="alPrint" type="button">🖨 Salvar em PDF</button>' +
+      '<button class="al-btn ghost" id="alClear" type="button">Limpar marcações</button></div>' +
+      '<p class="al-foot">Compartilhado por ' + esc(p.p || 'GH Performance') + ' · funciona offline</p></main></div>' +
+      '<div class="alv-lb" id="alLb"><button type="button" id="alLbX">&times;</button><img alt="Foto"></div>' +
+      '<script>' + js + '<\/script></body></html>';
   }
+  async function alunoBaixarApp(){
+    const s = active();
+    if (!s) return notify('Selecione um aluno.', true);
+    const plan = plansOf(s.id);
+    if (!plan || !plan.days || !plan.days.length) return notify('Este aluno ainda não tem ficha cadastrada.', true);
+    notify('Montando o app do aluno…');
+    let p = null;
+    try { p = await alunoMontarPayload(s, plan, true, true); } catch (e){ p = null; }
+    if (!p) return notify('Não foi possível montar o app.', true);
+    let html = '';
+    try { html = alunoAppHtml(p); } catch (e){ return notify('Falha ao montar o arquivo.', true); }
+    const nome = 'app-' + noAccent(s.name || 'aluno').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') + '.html';
+    try {
+      const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = nome;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => { try { URL.revokeObjectURL(url); } catch (e){} }, 4000);
+      const kb = Math.max(1, Math.round(html.length / 1024));
+      const fotos = p.ph ? ((p.ph.front || []).length + (p.ph.side || []).length + (p.ph.back || []).length) : 0;
+      notify('App do aluno pronto (' + kb + ' KB' + (fotos ? ', ' + fotos + ' foto(s)' : '') + '). Envie o arquivo para ele.');
+    } catch (e){ notify('Falha ao gerar o arquivo.', true); }
+  }
+
   /* ---------- gerar o link (lado do treinador) ---------- */
   async function alunoGerarLink(){
     const s = active();
     if (!s) return notify('Selecione um aluno.', true);
     const plan = plansOf(s.id);
     if (!plan || !plan.days || !plan.days.length) return notify('Este aluno ainda não tem ficha cadastrada.', true);
+    const chkAval = $('#alunoLinkAval'), chkFot = $('#alunoLinkFotos');
+    const comAval = chkAval ? !!chkAval.checked : true;
+    const comFotos = chkFot ? !!chkFot.checked : false;
+    const info = $('#alunoLinkInfo');
+    if (comFotos && info) info.textContent = 'Preparando as fotos…';
     let code = '';
-    try { code = await alunoEncode(alunoFichaPayload(s, plan)); }
+    try { code = await alunoEncode(await alunoMontarPayload(s, plan, comAval, comFotos)); }
     catch (e){ return notify('Não foi possível montar o link.', true); }
     const base = location.href.split('#')[0].split('?')[0];
     const url = base + '#a=' + code;
@@ -5313,8 +5700,12 @@ ${corpo}
     const msg = `Olá, ${primeiro}! Aqui está a sua ficha de treino:\n\n${url}\n\nAbra no celular: dá para marcar os exercícios conforme for fazendo, e funciona sem internet.`;
     const box = $('#alunoLinkTexto');
     if (box) box.value = url;
-    const info = $('#alunoLinkInfo');
-    if (info) info.textContent = `${plan.days.length} treino(s) · ${plan.days.reduce((n,d)=>n+(d.items||[]).length,0)} exercícios · link com ${url.length} caracteres`;
+    const temAval = alunoAvalPayload(s).length;
+    const partes = [`${plan.days.length} treino(s)`, `${plan.days.reduce((n,d)=>n+(d.items||[]).length,0)} exercícios`];
+    partes.push(comAval ? (temAval ? 'com avaliação' : 'sem avaliação cadastrada') : 'sem avaliação');
+    if (comFotos) partes.push('com fotos');
+    partes.push('link com ' + url.length + ' caracteres');
+    if (info) info.textContent = partes.join(' · ') + (url.length > 6000 ? '  ⚠ link longo: o WhatsApp pode cortar — baixe o app do aluno ou desligue as fotos.' : '');
     const wa = $('#alunoLinkWhats');
     if (wa) wa.dataset.tel = tel;
     const modal = $('#alunoLinkModal');
@@ -5354,9 +5745,9 @@ ${corpo}
       const ult = ss.map(x => String(x.date || '')).sort().pop() || '';
       const on = !!(atual && atual.id === s.id);
       return `<button class="al-row${on ? ' on' : ''}" type="button" data-al="${esc(s.id)}" aria-pressed="${on}">
-        <span class="al-av">${esc(alIniciais(s.name))}</span>
+        <span class="alv-card">${esc(alIniciais(s.name))}</span>
         <span class="al-nome"><b>${esc(s.name)}</b><small>${nT ? nT + ' treino(s)' : 'sem ficha'} · ${ss.length} sessão(ões)${ult ? ' · último ' + dateFmt(ult) : ''}</small></span>
-        <span class="al-tag">${esc(s.level || '')}</span>
+        <span class="alv-tag">${esc(s.level || '')}</span>
       </button>`;
     }).join('');
   }
