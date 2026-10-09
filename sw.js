@@ -1,5 +1,5 @@
 /* Service Worker — GH Performance */
-const CACHE = 'gh-performance-v32';
+const CACHE = 'gh-performance-v33';
 const ASSETS = [
   './', './index.html', './manifest.json',
   './icons/icon.svg', './icons/icon-maskable.svg'
