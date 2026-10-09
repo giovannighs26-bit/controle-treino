@@ -35,16 +35,33 @@
     .student-picker{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;min-width:min(100%,430px)}
     .tabs{display:flex;gap:8px;overflow:auto;padding:4px 0 14px;scrollbar-width:none}
     .tabs::-webkit-scrollbar{display:none}
-    .alunos-bar{display:flex;align-items:center;gap:9px;margin:-6px 0 14px}
-    .alunos-bar[hidden]{display:none}
-    .alunos-bar-lbl{font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:var(--muted);font-weight:700;white-space:nowrap}
-    .alunos-bar-scroll{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 0;flex:1;min-width:0}
-    .alunos-bar-scroll::-webkit-scrollbar{display:none}
-    .al-chip{display:flex;align-items:center;gap:6px;white-space:nowrap;border:1px solid var(--line);background:var(--panel);color:var(--muted);padding:6px 11px;border-radius:999px;font-size:13px;cursor:pointer}
-    .al-chip b{font-size:11px;letter-spacing:.4px;opacity:.8}
-    .al-chip:hover{border-color:var(--accent)}
-    .al-chip.active{background:var(--accent);border-color:var(--accent);color:#1c1608;font-weight:800}
-    .al-chip.active b{opacity:1}
+    /* ===== BOTAO FLUTUANTE DO ALUNO + SELETOR ===== */
+    .aluno-fab{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom));z-index:88;
+      display:flex;align-items:center;gap:9px;padding:7px 15px 7px 7px;border-radius:999px;
+      border:1px solid var(--line);background:#16211b;color:var(--text);cursor:pointer;
+      box-shadow:0 14px 34px #000a;max-width:min(64vw,280px);transition:bottom .18s,border-color .15s}
+    .aluno-fab:hover{border-color:var(--accent)}
+    .aluno-fab[hidden]{display:none}
+    body.timer-on .aluno-fab{bottom:calc(96px + env(safe-area-inset-bottom))}
+    .aluno-fab-av{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;flex:none;
+      background:var(--accent);color:#1c1608;font-weight:900;font-size:12.5px;letter-spacing:.5px}
+    .aluno-fab-tx{display:flex;flex-direction:column;line-height:1.18;min-width:0;text-align:left}
+    .aluno-fab-tx b{font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .aluno-fab-tx i{font-size:9px;letter-spacing:1.1px;text-transform:uppercase;color:var(--muted);font-style:normal;font-weight:700}
+    .aluno-pick-box{width:min(100%,560px)}
+    .aluno-pick-list{display:grid;gap:6px;max-height:52vh;overflow:auto;margin-bottom:6px}
+    .ap-row{display:flex;align-items:center;gap:11px;width:100%;text-align:left;padding:9px 11px;
+      border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--text);cursor:pointer}
+    .ap-row:hover{border-color:var(--accent)}
+    .ap-row.on{border-color:var(--accent);background:#1b2a20}
+    .ap-av{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;flex:none;
+      background:#22322a;color:var(--accent2);font-weight:900;font-size:12px}
+    .ap-row.on .ap-av{background:var(--accent);color:#1c1608}
+    .ap-tx{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+    .ap-tx b{font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .ap-tx span{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .ap-tag{font-size:10px;font-weight:800;padding:3px 8px;border-radius:999px;border:1px solid currentColor;white-space:nowrap;flex:none}
+    .ap-ok{color:var(--accent);font-size:16px;font-weight:900;flex:none}
     .tab{white-space:nowrap;border:1px solid var(--line);background:var(--panel);color:var(--muted);padding:10px 15px;border-radius:999px}
     .tab.active{background:var(--accent);border-color:var(--accent);color:#1c1608;font-weight:800}
     .page{display:none}.page.active{display:block}
@@ -102,9 +119,11 @@
     .week{padding:12px;background:#101813;border:1px solid var(--line);border-radius:12px}
     .week.current{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
     .week strong{display:block;color:var(--accent2)}.week small{color:var(--muted)}
-    .toast{position:fixed;right:18px;bottom:18px;z-index:120;max-width:360px;padding:12px 16px;border-radius:12px;
+    /* o toast divide o canto com o botão flutuante de aluno: fica sempre acima dele */
+    .toast{position:fixed;right:18px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:120;max-width:360px;padding:12px 16px;border-radius:12px;
       background:#25342b;border:1px solid #486051;box-shadow:var(--shadow);transform:translateY(120px);opacity:0;transition:.25s}
     .toast.show{transform:none;opacity:1}.toast.error{background:#432724;border-color:#78423d}
+    body.timer-on .toast{bottom:calc(162px + env(safe-area-inset-bottom))}
     .modal{display:none;position:fixed;inset:0;z-index:100;background:#000c;padding:18px;place-items:center}
     .modal.open{display:grid}
     .modal-box{width:min(100%,680px);max-height:90vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:var(--shadow)}
@@ -299,7 +318,7 @@
       .login-box{padding:18px 20px}.gh-mark{width:44px;height:44px}
     }
     @media print{
-      body{background:white;color:#111}.tabs,.alunos-bar,.top .btn,.actions,.remove{display:none!important}
+      body{background:white;color:#111}.tabs,.aluno-fab,.top .btn,.actions,.remove{display:none!important}
       .card{box-shadow:none;border:1px solid #bbb;background:white}
       .page{display:block!important}.page:not(#history):not(#fichas){display:none!important}
       .day-body{display:block!important}.muted,.item-meta,label{color:#555}
@@ -520,7 +539,7 @@
 
     /* ---------- ALERTAS DA VISÃO GERAL ---------- */
 /* ---------- MODO ALUNO ---------- */
-.modo-aluno #app,.modo-aluno #loginScreen,.modo-aluno .timer-bar,.modo-aluno .toast{display:none!important}
+.modo-aluno #app,.modo-aluno #loginScreen,.modo-aluno .timer-bar,.modo-aluno .toast,.modo-aluno .aluno-fab,.modo-aluno #alunoPickModal{display:none!important}
 .modo-aluno body{background:#0a0f0c}
 #alunoView{min-height:100vh;background:linear-gradient(180deg,#0a0f0c,#0d1410 240px)}
 .al-wrap{max-width:720px;margin:0 auto;padding:0 0 40px}
@@ -686,11 +705,6 @@
     <button class="tab" data-page="data">Dados e backup</button>
     <button class="tab" data-page="geral">Geral</button>
   </nav>
-
-  <div class="alunos-bar" id="alunosBar" hidden>
-    <span class="alunos-bar-lbl">Aluno</span>
-    <div class="alunos-bar-scroll" id="alunosBarList" role="group" aria-label="Selecionar aluno"></div>
-  </div>
 
   <section class="page" id="alunos"><div class="grid">
     <article class="card">
@@ -1354,6 +1368,11 @@
       <p class="hint" style="margin:0">GH Performance — app de página única, instalável e offline. Telas de alto contraste e alvos de toque grandes, pensados para usar em pé, entre as séries.</p>
     </article>
   </div></section>
+
+  <button type="button" class="aluno-fab" id="alunoFab" aria-haspopup="dialog" aria-label="Trocar de aluno" title="Trocar de aluno">
+    <span class="aluno-fab-av" id="alunoFabAv">--</span>
+    <span class="aluno-fab-tx"><b id="alunoFabNome">Nenhum aluno</b><i>Trocar de aluno</i></span>
+  </button>
 </main>
 
 <!-- ================= MODAIS ================= -->
@@ -1377,6 +1396,13 @@
   <p class="hint" id="mtCopyHint"></p>
   <div class="actions"><button class="btn" type="button" id="mtCopyGo">Copiar treino</button>
     <button class="btn ghost" type="button" data-close>Cancelar</button></div>
+</div></div>
+
+<div class="modal" id="alunoPickModal"><div class="modal-box aluno-pick-box">
+  <div class="modal-head"><h2>Trocar de aluno</h2><button class="close" type="button" id="alunoPickClose" aria-label="Fechar">&times;</button></div>
+  <div class="field" style="margin-bottom:10px"><input id="alunoPickBusca" type="search" placeholder="Buscar por nome, objetivo ou nivel..." autocomplete="off"></div>
+  <div class="aluno-pick-list" id="alunoPickLista"></div>
+  <div class="actions"><button class="btn" type="button" id="alunoPickNovo">+ Novo aluno</button></div>
 </div></div>
 
 <div class="timer-bar" id="timerBar" hidden>
@@ -2862,7 +2888,7 @@
   function timerStart(sec){
     timer.total = Math.max(5, num(sec) || 60);
     timer.left = timer.total; timer.running = true; timer.alarm = false;
-    $('#timerBar').hidden = false;
+    $('#timerBar').hidden = false; document.body.classList.add('timer-on');
     clearInterval(timer.handle);
     timer.handle = setInterval(() => {
       if (!timer.running) return;
@@ -2889,7 +2915,7 @@
   });
   $('#timerStop').addEventListener('click', () => {
     clearInterval(timer.handle); timer.running = false; timer.alarm = false;
-    $('#timerBar').hidden = true;
+    $('#timerBar').hidden = true; document.body.classList.remove('timer-on');
   });
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && !$('#timerBar').hidden) $('#timerStop').click();
@@ -4742,15 +4768,6 @@ ${corpo}
         <div class="item-meta">${ult ? finBR(ult.valor) + ' · ' + finDataBR(ult.data) + ' · ' + esc(FIN_FORMAS[ult.forma] || 'Outro') : 'Nenhum lançamento'}</div></div>
         <button class="btn secondary small" type="button" id="alFinAbrir">Abrir financeiro</button></div>`;
     const b = $('#alFinAbrir'); if (b) b.addEventListener('click', () => showPage('financeiro'));
-    const barBox = $('#alunosBarList');
-    if (barBox && !barBox.dataset.wired){ barBox.dataset.wired = '1';
-      barBox.addEventListener('click', e => {
-        const c = e.target.closest('[data-chip]'); if (!c) return;
-        const sel = $('#activeStudent');
-        if (sel && [...sel.options].some(o => o.value === c.dataset.chip)){ sel.value = c.dataset.chip; sel.dispatchEvent(new Event('change')); }
-        else { state.activeStudentId = c.dataset.chip; save(); }
-      });
-    }
   }
   function alRenderRecentes(){
     const box = $('#alRecentes'); if (!box) return;
@@ -4764,21 +4781,86 @@ ${corpo}
       : '<div class="empty">Nenhum treino registrado para este aluno.</div>';
   }
   function alRender(){ alRenderLista(); alRenderFinanceiro(); alRenderRecentes(); }
-  /* Faixa de alunos junto das abas: troca rapida do aluno ativo em qualquer aba. */
-  function renderAlunosBar(){
-    const box = $('#alunosBarList'), bar = $('#alunosBar');
-    if (!box) return;
-    const lista = state.students
+  /* ---------- ALUNO ATIVO: BOTAO FLUTUANTE + SELETOR ----------
+     O botao fica suspenso no canto, visivel em todas as abas; abre um seletor com busca,
+     a ficha de cada aluno e a situacao do mes no financeiro. */
+  function alunoLista(){
+    return state.students
       .filter(s => (s.name || '').trim() && s.id !== 'usuario')
       .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'pt-BR'));
-    if (bar) bar.hidden = !lista.length;
+  }
+  /* troca o aluno ativo por qualquer um dos caminhos (seletor, lista, avaliacao) */
+  function setAlunoAtivo(id){
+    const sel = $('#activeStudent');
+    if (sel && [].some.call(sel.options, o => o.value === id)){ sel.value = id; sel.dispatchEvent(new Event('change')); }
+    else { state.activeStudentId = id; save(); }
+  }
+  function renderAlunoFab(){
+    const btn = $('#alunoFab'); if (!btn) return;
+    const s = active();
+    btn.hidden = !s;
+    if (!s) return;
+    const av = $('#alunoFabAv'), nm = $('#alunoFabNome');
+    if (av) av.textContent = alIniciais(s.name);
+    if (nm) nm.textContent = String(s.name).split(' ')[0];
+    btn.title = 'Aluno ativo: ' + s.name + ' — toque para trocar';
+  }
+  /* Rótulos e cores do financeiro — locais de propósito: ROT/FIN_COR vivem dentro
+     da aba Financeiro e não existem neste escopo (usá-los aqui quebrava o seletor
+     justamente para quem tem mensalidade configurada). */
+  const AP_FIN = { pago: ['Pago', '#63c58b'], atrasado: ['Atrasado', '#df6a67'],
+                   pendente: ['Em aberto', '#d8a93d'], parcial: ['Parcial', '#6fa8d6'] };
+  function alunoPickRender(){
+    const box = $('#alunoPickLista'); if (!box) return;
+    const inp = $('#alunoPickBusca');
+    const q = String(inp ? inp.value : '').trim().toLowerCase();
+    const mes = today().slice(0, 7);
+    const lista = alunoLista().filter(s => !q || [s.name, s.goal, s.level].join(' ').toLowerCase().includes(q));
+    if (!lista.length){ box.innerHTML = '<div class="empty">Nenhum aluno encontrado.</div>'; return; }
     box.innerHTML = lista.map(s => {
       const on = s.id === state.activeStudentId;
-      return `<button type="button" class="al-chip${on ? ' active' : ''}" data-chip="${esc(s.id)}" title="${esc(s.name)}">`
-        + `<b>${esc(alIniciais(s.name))}</b><span>${esc(String(s.name).split(' ')[0])}</span></button>`;
+      const plan = plansOf(s.id);
+      const nTre = plan && plan.days ? plan.days.length : 0;
+      const nSes = state.sessions.filter(x => x.studentId === s.id).length;
+      const info = finInfo(s.id, mes);
+      const fin = AP_FIN[info.st] || null;
+      const sub = [s.goal || 'Sem objetivo definido', nTre + (nTre === 1 ? ' treino' : ' treinos'),
+                   nSes + (nSes === 1 ? ' sessão' : ' sessões')].join(' · ');
+      return `<button type="button" class="ap-row${on ? ' on' : ''}" data-pick="${esc(s.id)}">`
+        + `<span class="ap-av">${esc(alIniciais(s.name))}</span>`
+        + `<span class="ap-tx"><b>${esc(s.name)}</b><span>${esc(sub)}</span></span>`
+        + (fin ? `<span class="ap-tag" style="color:${fin[1]}">${esc(fin[0])}</span>` : '')
+        + (on ? '<span class="ap-ok">✓</span>' : '') + '</button>';
     }).join('');
-    const ativo = box.querySelector('.al-chip.active');
-    if (ativo) box.scrollLeft = Math.max(0, ativo.offsetLeft - box.clientWidth / 2 + ativo.offsetWidth / 2);
+  }
+  function alunoPickOpen(){
+    const m = $('#alunoPickModal'); if (!m) return;
+    const inp = $('#alunoPickBusca'); if (inp) inp.value = '';
+    alunoPickRender();
+    m.classList.add('open');
+    setTimeout(() => {
+      const i = $('#alunoPickBusca'); if (i) i.focus();
+      /* abre já mostrando o aluno ativo */
+      const box = $('#alunoPickLista'), on = box ? box.querySelector('.ap-row.on') : null;
+      if (box && on) box.scrollTop = Math.max(0, on.offsetTop - box.clientHeight / 2 + on.offsetHeight / 2);
+    }, 60);
+  }
+  function alunoPickClose(){ const m = $('#alunoPickModal'); if (m) m.classList.remove('open'); }
+  function alunoPickWire(){
+    const fab = $('#alunoFab');
+    if (fab && !fab.dataset.wired){ fab.dataset.wired = '1'; fab.addEventListener('click', alunoPickOpen); }
+    const box = $('#alunoPickLista');
+    if (box && !box.dataset.wired){ box.dataset.wired = '1';
+      box.addEventListener('click', e => { const r = e.target.closest('[data-pick]'); if (r) { setAlunoAtivo(r.dataset.pick); alunoPickClose(); } });
+    }
+    const inp = $('#alunoPickBusca');
+    if (inp && !inp.dataset.wired){ inp.dataset.wired = '1'; inp.addEventListener('input', alunoPickRender); }
+    const novo = $('#alunoPickNovo');
+    if (novo && !novo.dataset.wired){ novo.dataset.wired = '1'; novo.addEventListener('click', () => { alunoPickClose(); openStudent(null); }); }
+    const fechar = $('#alunoPickClose');
+    if (fechar && !fechar.dataset.wired){ fechar.dataset.wired = '1'; fechar.addEventListener('click', alunoPickClose); }
+    const m = $('#alunoPickModal');
+    if (m && !m.dataset.wired){ m.dataset.wired = '1'; m.addEventListener('click', e => { if (e.target === m) alunoPickClose(); }); }
   }
   function alWire(){
     const busca = $('#alBusca');
@@ -5818,7 +5900,7 @@ ${corpo}
   }
 
   /* ---------- RENDER ---------- */
-  function renderAll(){ renderPicker(); alWire(); alRender(); renderAlunosBar(); geralRender(); renderDashboard(); renderDashAlerts(); renderPlans(); renderHistory(); renderData(); renderSessionDays(); updateSessionHint(); renderAval(); renderGrupo();
+  function renderAll(){ renderPicker(); alWire(); alunoPickWire(); alRender(); renderAlunoFab(); geralRender(); renderDashboard(); renderDashAlerts(); renderPlans(); renderHistory(); renderData(); renderSessionDays(); updateSessionHint(); renderAval(); renderGrupo();
     if ($('#montar') && $('#montar').classList.contains('active')) mtRender();
     finRender(); }
   $('#sessionDate').value = today();
