@@ -125,6 +125,67 @@ inteira comprimida dentro dele mesmo.
 - O link tem cerca de 1,3 KB (6 treinos / 43 exercícios) e pode ser enviado pelo WhatsApp direto do
   próprio modal.
 
+### Avaliação física no app do aluno
+O modal de compartilhar tem duas opções:
+
+- **Incluir avaliação física** (ligada por padrão) — acrescenta ao link a avaliação mais recente e as
+  anteriores, com peso, altura, IMC, % de gordura, massas gorda e magra, soma das dobras, todas as
+  medidas, a comparação com a avaliação anterior e as observações. Custa poucos KB.
+- **Incluir fotos no link** (desligada por padrão) — embute as fotos da avaliação como miniaturas
+  (620 px, JPEG 62%). O link cresce rápido: o próprio modal mostra o tamanho e avisa quando fica longo
+  demais, porque **o WhatsApp corta mensagens acima de ~65 mil caracteres**.
+
+### App do aluno (arquivo único, com fotos)
+O botão **⬇ Baixar app do aluno (.html)**, no mesmo modal, gera um arquivo único com **tudo embutido**:
+ficha, avaliação completa e **as fotos**. O aluno abre no celular, funciona offline e pode adicionar à
+tela inicial.
+
+- O arquivo tem duas abas: **Treino** (marcável, com progresso) e **Avaliação** (com as fotos e
+  ampliação em tela cheia ao tocar).
+- As fotos usadas são as da **avaliação mais recente que tenha foto**, e a data aparece no título da
+  galeria.
+- É a forma recomendada de enviar as fotos: o arquivo vai por WhatsApp, e-mail ou Drive.
+
+### Área do aluno (portal: ativar e enviar o link)
+Aba **Área do aluno** — o painel de gestão do acesso do aluno. Cada aluno tem uma linha com:
+
+- **Ativar portal** (interruptor) — ao ligar, o link daquele aluno é **gerado na hora**.
+- **🔗 Gerar link** / **🖼 Com fotos** — gera (ou regera) o link. "Com fotos" embute as fotos da
+  avaliação e deixa o link bem maior (o WhatsApp corta acima de ~65 mil caracteres).
+- **💬 WhatsApp** — copia a mensagem pronta e abre a conversa do aluno (usa o telefone cadastrado no
+  **Financeiro**; sem telefone, só copia e avisa).
+- **▶ Apresentar** — abre a tela de apresentação da avaliação em tela cheia.
+- **⬇ App (.html)** — baixa o app do aluno em arquivo único, com ficha, avaliação e fotos.
+
+No topo: o resumo **"X de Y com portal ativado"**, o filtro (Todos / Com portal / Sem portal) e as
+ações em massa **🔗 Gerar links dos ativados**, **⬇ Baixar lista (.csv)** (nome + status + link de
+cada aluno) e **Ativar todos com ficha**.
+
+- Aluno **sem ficha** fica com os botões de link/app desabilitados, mas ainda pode ser apresentado.
+- O status de cada portal fica salvo no aparelho (`state.portal`) e entra no backup em JSON.
+- O link é o mesmo do Modo Aluno (`#a=...`): abre **sem login**, offline, e o aluno acompanha a
+  avaliação, a evolução e a ficha. Como tudo vai dentro do link, **regenere e reenvie** depois de uma
+  avaliação nova.
+
+### Tela de apresentação da avaliação (só avaliação atual + evolução)
+Pensada para **apresentar ao aluno**, no seu celular ou no tablet, sem abrir o app inteiro. O botão
+**▶ Apresentar ao aluno** fica na aba **Avaliação física** (e também no modal de compartilhar).
+
+- Abre em **tela cheia** dentro do próprio app (nada de download) e fecha no botão **✕ Fechar
+  apresentação** ou com **Esc**.
+- Mostra **somente** o resultado da avaliação atual e a evolução — **não** lista as avaliações
+  anteriores nem a ficha de treino.
+- **Números animados** (peso, IMC com classificação, % de gordura, massa gorda, massa magra, soma das
+  dobras, altura).
+- **Gráfico de evolução interativo**: escolha a métrica (Peso / % de gordura / Massa magra / IMC /
+  Dobras) e veja a linha, o intervalo de datas e o **total da mudança**.
+- **Desde a primeira avaliação**: quanto mudou em cada indicador.
+- **Medidas** atuais com a variação em relação à avaliação anterior.
+- **Antes e depois**: comparador de fotos com **linha arrastável** (mais antiga × mais recente com
+  foto) e galeria com ampliação em tela cheia.
+- O botão **⬇ Baixar tela (.html)** gera o mesmo conteúdo em **arquivo único, offline**, para enviar
+  ao aluno.
+
 ## Alertas na Visão geral
 O card de alertas avisa quando há algo pedindo ação:
 
