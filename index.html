@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0d1410">
+  <script>try{var __t=localStorage.getItem('ghPerformance.theme');if(__t==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}</script>
   <title>GH Performance</title>
   <meta name="description" content="GH Performance — engenharia do estímulo real. Fichas de treino, séries de aquecimento/reconhecimento/trabalho, técnicas (rest pause, cluster), sensor de progressão de carga e histórico, offline.">
   <link rel="manifest" href="manifest.json">
@@ -20,6 +21,48 @@
       --accent:#d8a93d;--accent2:#f2cf72;--danger:#df6a67;--ok:#63c58b;--shadow:0 18px 48px #0006;--radius:18px;
       --gh-grad:linear-gradient(145deg,#f7d678,#c9971f 55%,#8f6412);
     }
+    /* ===== TEMA CLARO ===== */
+    html[data-theme="light"]{
+      --bg:#eef2ee;--panel:#ffffff;--panel2:#f6faf6;--line:#d3ddd4;--text:#15221a;--muted:#5d7064;
+      --accent:#a9780f;--accent2:#8a6410;--danger:#c0392b;--ok:#2e8b57;--shadow:0 14px 34px #0f201810;
+    }
+    html[data-theme="light"] body{background:radial-gradient(circle at 85% 0,#dfe9df 0,transparent 40%),var(--bg)}
+    html[data-theme="light"] input,html[data-theme="light"] select,html[data-theme="light"] textarea{background:#fff;color:var(--text)}
+    html[data-theme="light"] .metric,html[data-theme="light"] .chart-box,html[data-theme="light"] .seg,
+    html[data-theme="light"] .bar-track,html[data-theme="light"] .qa-tile,html[data-theme="light"] .photo-compare,
+    html[data-theme="light"] .photo-thumbs img,html[data-theme="light"] .fin-input,html[data-theme="light"] .fin-kpi,
+    html[data-theme="light"] .fin-month input[type=month],html[data-theme="light"] .alert-row,
+    html[data-theme="light"] .fin-hist-row,html[data-theme="light"] .fin-tot div,html[data-theme="light"] .fin-msg{background:#f7faf7}
+    html[data-theme="light"] .item,html[data-theme="light"] .al-row,html[data-theme="light"] .week,
+    html[data-theme="light"] .ficha,html[data-theme="light"] #mtFicha .mt-day,html[data-theme="light"] .ex-card,
+    html[data-theme="light"] .av-row,html[data-theme="light"] .av-cmp th,html[data-theme="light"] .av-imp-row,
+    html[data-theme="light"] #alunoView .al-list li{background:#fff}
+    html[data-theme="light"] .ficha-head,html[data-theme="light"] #mtFicha .mt-day-head{background:#eef4ee}
+    html[data-theme="light"] .ex,html[data-theme="light"] .av-arrow.flat,html[data-theme="light"] .ap-av{background:#e8efe8;color:var(--accent2)}
+    html[data-theme="light"] .set-row{background:#f7faf7}
+    html[data-theme="light"] .set-row.done,html[data-theme="light"] .ex-sensor.s-progress{background:#eaf7ef}
+    html[data-theme="light"] .news-thumb,html[data-theme="light"] .news-skel,html[data-theme="light"] .fin-kpi .bar,
+    html[data-theme="light"] .al-bar{background-color:#e3ebe3}
+    html[data-theme="light"] .hero{background:linear-gradient(150deg,#eaf2ea,#fff 60%,#f2f7f2)}
+    html[data-theme="light"] .hero-streak{background:#fff}
+    html[data-theme="light"] .badge{background:#e7efe7;color:var(--accent2)}
+    html[data-theme="light"] .badge.off{background:#f7e6e2;color:#a5462f}
+    html[data-theme="light"] .toast{background:#15221a;color:#fff}
+    html[data-theme="light"] .tip-btn{background:#fff;color:var(--muted)}
+    html[data-theme="light"] .news-card{background:#fff}
+    html[data-theme="light"] .card{box-shadow:0 1px 3px #0f201810}
+    html[data-theme="light"] .al-top,html[data-theme="light"] #alunoView{background:#eef2ee}
+    html[data-theme="light"] .fin-alert{background:#fdf3e3;border-color:#e8d6a8;color:#8a6410}
+    html[data-theme="light"] .fin-alert b{color:#7a5a10}
+    html[data-theme="light"] .fin-alert.info{background:#eaf2fb;border-color:#cfe0f2;color:#2b5d8a}
+    html[data-theme="light"] .fin-alert.info b{color:#1f4d78}
+    html[data-theme="light"] .fin-st.pago{background:#e4f6ea;color:#1f7a4d;border-color:#bfe6cd}
+    html[data-theme="light"] .fin-st.pendente{background:#fdf3d9;color:#8a6410;border-color:#ecdca6}
+    html[data-theme="light"] .fin-st.atrasado{background:#fbe7e4;color:#b23a2c;border-color:#f0c6bf}
+    html[data-theme="light"] .fin-st.parcial{background:#e7f0fa;color:#2b5d8a;border-color:#c9ddf0}
+    html[data-theme="light"] .fin-st.semvalor,html[data-theme="light"] .fin-st.inativo,html[data-theme="light"] .fin-st.previsto{background:#eef2ee;color:#5d7064;border-color:#d3ddd4}
+    html[data-theme="light"] .news-sem-foto{background:linear-gradient(135deg,#e8efe8,#dbe7dc)}
+    html[data-theme="light"] .news-sem-foto span{color:#8a6410;opacity:.9}
     *{box-sizing:border-box}html{scroll-behavior:smooth}
     body{margin:0;font:15px/1.45 Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:var(--text);
       background:radial-gradient(circle at 85% 0,#253120 0,transparent 38%),var(--bg)}
@@ -49,6 +92,8 @@
     .aluno-fab-tx b{font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .aluno-fab-tx i{font-size:9px;letter-spacing:1.1px;text-transform:uppercase;color:var(--muted);font-style:normal;font-weight:700}
     .aluno-pick-box{width:min(100%,560px)}
+    .ap-sec{font-size:10px;font-weight:800;letter-spacing:.9px;text-transform:uppercase;color:var(--muted);padding:8px 2px 2px}
+    .ap-row small{color:var(--muted);font-size:11px;margin-left:auto;max-width:45%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .aluno-pick-list{display:grid;gap:6px;max-height:52vh;overflow:auto;margin-bottom:6px}
     .ap-row{display:flex;align-items:center;gap:11px;width:100%;text-align:left;padding:9px 11px;
       border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--text);cursor:pointer}
@@ -708,6 +753,8 @@
       <div><h1>GH Performance</h1><p>Engenharia do Estímulo Real</p></div>
     </div>
     <div class="student-picker">
+      <button class="btn ghost" id="themeBtn" title="Tema claro">☀️</button>
+      <button class="btn ghost" id="searchBtn" title="Buscar (Ctrl+K)">🔍 Buscar</button>
       <button class="btn ghost hidden" id="installBtn" title="Adicionar à tela de início">⤓ Instalar</button>
       <button class="btn ghost" id="fsBtn" title="Tela cheia">⤢ Tela cheia</button>
       <button class="btn ghost" id="logoutBtn" title="Sair do app">Sair</button>
@@ -835,6 +882,12 @@
     </article>
 
     <article class="card half"><h2>Sensor de progressão</h2><div id="progressCard" class="empty">Registre um treino para ver a sugestão de progressão.</div></article>
+
+    <article class="card half">
+      <div class="card-head"><h2>🏆 Recordes pessoais</h2>
+        <button class="btn ghost small" id="prReportBtn" type="button">📄 Relatório de evolução</button></div>
+      <div id="prCard" class="empty">Registre um treino para ver seus recordes.</div>
+    </article>
     <article class="card tip-card">
         <div class="card-head">
           <h2>💡 Dicas do dia</h2>
@@ -865,6 +918,15 @@
       <div class="news-progress" id="newsProgress" hidden><i></i></div>
       <div class="news-strip" id="newsStrip"></div>
       <p class="hint" id="newsHint" style="margin-top:4px"></p>
+    </article>
+
+    <article class="card" id="backupCard" hidden>
+      <div class="card-head"><h2>💾 Backup</h2><span class="badge" id="bkBadge"></span></div>
+      <p class="hint" id="bkText" style="margin:0 0 12px"></p>
+      <div class="actions">
+        <button class="btn" id="bkExport" type="button">Exportar backup agora</button>
+        <button class="btn secondary" id="bkRestore" type="button">Restaurar último snapshot</button>
+      </div>
     </article>
 
     <article class="card" id="dashAlertsCard" hidden>
@@ -1004,7 +1066,9 @@
       <div class="field span6"><label>Exercício</label><select id="historyExercise"></select></div>
       <div class="field span3"><label>Indicador</label><select id="historyMetric">
         <option value="load">Maior carga</option><option value="volume">Volume total</option><option value="rir">RIR médio</option></select></div>
-      <div class="field span3"><label>&nbsp;</label><button class="btn secondary" onclick="window.print()" type="button">Imprimir</button></div>
+      <div class="field span3"><label>&nbsp;</label><div class="actions">
+        <button class="btn secondary" id="histCsv" type="button">Exportar CSV</button>
+        <button class="btn secondary" onclick="window.print()" type="button">Imprimir</button></div></div>
     </div></article>
     <article class="card"><h2>Evolução</h2><div class="chart-box"><canvas id="chart"></canvas></div></article>
     <article class="card"><h2>Registros</h2><div class="table-wrap"><table>
@@ -1469,6 +1533,12 @@
   <div class="actions"><button class="btn" type="button" id="alunoPickNovo">+ Novo aluno</button></div>
 </div></div>
 
+<div class="modal" id="gsModal"><div class="modal-box aluno-pick-box">
+  <div class="modal-head"><h2>Buscar</h2><button class="close" type="button" id="gsClose" aria-label="Fechar">&times;</button></div>
+  <div class="field" style="margin-bottom:10px"><input id="gsInput" type="search" placeholder="Aluno, exercício ou página…" autocomplete="off"></div>
+  <div class="aluno-pick-list" id="gsResults"></div>
+</div></div>
+
 <div class="timer-bar" id="timerBar" hidden>
   <div class="timer-grip" id="timerGrip" title="Arraste para mover">
     <div class="timer-label" id="timerLabel">Descanso</div>
@@ -1861,7 +1931,7 @@
     const cx = W / 2, cy = H / 2, R = Math.min(W, H) / 2 - 6, r0 = R * 0.63;
     if (total <= 0){
       c.beginPath(); c.arc(cx, cy, R, 0, Math.PI * 2); c.arc(cx, cy, r0, 0, Math.PI * 2, true);
-      c.fillStyle = '#1b2620'; c.fill();
+      c.fillStyle = (getComputedStyle(document.documentElement).getPropertyValue('--line').trim()) || '#1b2620'; c.fill();
     } else {
       let ang = -Math.PI / 2;
       ordem.forEach(k => {
@@ -2250,6 +2320,43 @@
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(txt));
     return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join('');
   }
+  /* Senha com sal via PBKDF2-SHA256 (100k iteracoes). O formato antigo (sha256 puro)
+     continua aceito e e atualizado no primeiro login bem-sucedido. */
+  const PBKDF2_ITER = 100000;
+  function b64FromBytes(bytes){
+    const arr = new Uint8Array(bytes); let s = '';
+    for (let i = 0; i < arr.length; i++) s += String.fromCharCode(arr[i]);
+    return btoa(s);
+  }
+  function bytesFromB64(b64){
+    const bin = atob(b64), out = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+  async function pbkdf2(pass, saltB64){
+    if (!(window.crypto && crypto.subtle)) return null;
+    const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(pass), 'PBKDF2', false, ['deriveBits']);
+    const bits = await crypto.subtle.deriveBits(
+      { name:'PBKDF2', salt: bytesFromB64(saltB64), iterations: PBKDF2_ITER, hash:'SHA-256' }, key, 256);
+    return b64FromBytes(bits);
+  }
+  async function hashPass(pass){
+    if (window.crypto && crypto.subtle && crypto.getRandomValues){
+      const salt = b64FromBytes(crypto.getRandomValues(new Uint8Array(16)));
+      const h = await pbkdf2(pass, salt);
+      if (h) return `pbkdf2$${PBKDF2_ITER}$${salt}$${h}`;
+    }
+    return await sha256(pass);
+  }
+  async function verifyPass(pass, stored){
+    stored = String(stored || '');
+    if (stored.indexOf('pbkdf2$') === 0){
+      const p = stored.split('$');
+      const h = await pbkdf2(pass, p[2]);
+      return !!h && h === p[3];
+    }
+    return (await sha256(pass)) === stored;   /* formato antigo */
+  }
   function authMsg(text, kind){
     const el = $('#authMsg'); el.className = 'auth-msg' + (kind ? ' ' + kind : ''); el.textContent = text || '';
   }
@@ -2275,6 +2382,9 @@
     finEnsure();
     seedAssessments();
     renderAll();
+    snapshotSave();
+    clearInterval(snapTimer);
+    snapTimer = setInterval(snapshotSave, SNAP_EVERY);
     newsWarm();                                  /* ja deixa as noticias quentes antes de abrir a tela */
     clearInterval(NEWS_TIMER);
     NEWS_TIMER = setInterval(() => { if (navigator.onLine !== false) newsWarm(); }, 10*60*1000);
@@ -2291,14 +2401,18 @@
       if (!name) return authMsg('Informe seu nome.', 'err');
       if (pass.length < 4) return authMsg('Use uma senha com pelo menos 4 caracteres.', 'err');
       if (pass !== $('#authPass2').value) return authMsg('As senhas não conferem.', 'err');
-      state.auth = {name, email, hash: await sha256(pass), createdAt: new Date().toISOString()};
+      state.auth = {name, email, hash: await hashPass(pass), createdAt: new Date().toISOString()};
       localStorage.setItem(KEY, JSON.stringify(state));
       if ($('#authRemember').checked) localStorage.setItem(AUTHED, '1');
       authMsg('', ''); enterApp(); notify(`Bem-vindo, ${name.split(' ')[0]}!`);
       return;
     }
-    if (email !== state.auth.email || (await sha256(pass)) !== state.auth.hash)
+    if (email !== state.auth.email || !(await verifyPass(pass, state.auth.hash)))
       return authMsg('E-mail ou senha incorretos.', 'err');
+    if (String(state.auth.hash).indexOf('pbkdf2$') !== 0){
+      state.auth.hash = await hashPass(pass);
+      localStorage.setItem(KEY, JSON.stringify(state));
+    }
     if ($('#authRemember').checked) localStorage.setItem(AUTHED, '1'); else localStorage.removeItem(AUTHED);
     authMsg('', ''); $('#authPass').value = ''; enterApp(); notify('Acesso liberado.');
   });
@@ -2566,6 +2680,23 @@
     return {free, name: free ? raw : mtSplitItem(raw).name, sets: p.sets || 3,
       reps: mtRepsText(p), load: p.load || '', rir: p.rir, note: free ? '' : mtNoteOf(raw)};
   }
+  /* Catalogo base: sugestoes para quem ainda nao tem historico. */
+  const EX_LIBRARY = [
+    'Supino reto com barra','Supino reto com halteres','Supino inclinado com halteres','Supino declinado',
+    'Crucifixo reto','Crucifixo inclinado','Crossover na polia alta','Crossover na polia baixa','Peck deck','Supino máquina',
+    'Puxada frontal na barra','Puxada pegada supinada','Remada curvada com barra','Remada unilateral com halter','Remada baixa na polia',
+    'Remada cavalinho','Pulldown na polia','Pull-up (barra fixa)','Chin-up (barra supinada)','Crucifixo inverso na máquina',
+    'Desenvolvimento com barra','Desenvolvimento com halteres','Desenvolvimento Arnold','Elevação lateral com halteres','Elevação frontal',
+    'Elevação lateral na polia','Remada alta na barra','Face pull','Encolhimento de ombros com halteres',
+    'Rosca direta com barra','Rosca direta com halteres','Rosca alternada','Rosca martelo','Rosca Scott','Rosca concentrada','Rosca inversa',
+    'Tríceps testa','Tríceps pulley','Tríceps corda','Tríceps francês','Tríceps coice','Mergulho nas paralelas','Supino fechado',
+    'Agachamento livre','Agachamento no Smith','Agachamento hack','Leg press 45°','Leg press horizontal','Cadeira extensora','Cadeira flexora',
+    'Mesa flexora','Stiff com barra','Levantamento terra','Levantamento terra romeno','Afundo com halteres','Passada (walking lunge)','Agachamento búlgaro',
+    'Elevação pélvica com barra','Hip thrust','Glúteo na polia','Coice na máquina','Abdução de quadril','Adução de quadril','Cadeira abdutora',
+    'Panturrilha em pé','Panturrilha sentado','Panturrilha no leg press','Panturrilha no degrau',
+    'Prancha isométrica','Prancha lateral','Abdominal crunch','Abdominal na polia','Elevação de pernas suspenso','Abdominal bicicleta','Russian twist',
+    'Bike ergométrica','Esteira','Elíptico','Remo ergômetro','Escada (stair)','Pular corda','Caminhada inclinada'
+  ];
   function mtCatalog(){
     const set = new Set();
     state.sessions.forEach(s => (s.exercises || []).forEach(e => { const n = String(e.name || '').trim(); if (n) set.add(n); }));
@@ -2575,6 +2706,7 @@
         if (mtHasRx(it)){ const n = mtSplitItem(it).name; if (n) set.add(n); }
       }));
     });
+    EX_LIBRARY.forEach(n => set.add(n));
     return [...set].sort((a, b) => a.localeCompare(b, 'pt-BR'));
   }
   function mtFillCatalog(){
@@ -3430,10 +3562,18 @@
     const exercises = $$('#exerciseCards .ex-card').map(readExerciseCard).filter(Boolean);
     if (!exercises.length) return notify('Adicione um exercício.', true);
     const done = exercises.reduce((n,e) => n + e.sets.filter(s => s.done).length, 0);
+    const prior = prMapFor(state.activeStudentId);
     state.sessions.push({id: uid(), studentId: state.activeStudentId, date: $('#sessionDate').value,
       name: $('#sessionName').value.trim(), week: num($('#sessionWeek').value),
       duration: num($('#sessionDuration').value), exercises, createdAt: new Date().toISOString()});
-    save(); clearSession(); notify(`Sessão salva — ${done} série(s) registrada(s).`); showPage('dashboard');
+    const after = prMapFor(state.activeStudentId);
+    const novos = [];
+    after.forEach((v, k) => { const p = prior.get(k); if (!p || v.e1rm > p.e1rm + 0.01) novos.push(k); });
+    save(); snapshotSave(); clearSession();
+    notify(novos.length
+      ? `Sessão salva — ${done} série(s) · 🏆 ${novos.length} novo(s) recorde(s): ${novos.slice(0,3).join(', ')}${novos.length > 3 ? '…' : ''}`
+      : `Sessão salva — ${done} série(s) registrada(s).`);
+    showPage('dashboard');
   });
 
   /* ---------- TREINO EM GRUPO ---------- */
@@ -3763,6 +3903,8 @@
       : '<div class="empty">Nenhum treino registrado.</div>';
 
     renderSensorCard();
+    renderPrCard();
+    renderBackupCard();
     renderTips();
     renderTopExercises();
     renderKindLegend();
@@ -3821,6 +3963,196 @@
       const k = kindOf(x); t[k] = (t[k] || 0) + 1;
     })));
     return t;
+  }
+
+  /* ---------- RECORDES PESSOAIS (1RM estimado por Epley) ---------- */
+  function e1rm(load, reps){
+    const l = num(load), r = num(reps);
+    if (l <= 0 || r <= 0) return 0;
+    return l * (1 + r / 30);
+  }
+  function prMapFor(studentId){
+    const map = new Map();
+    (state.sessions || []).filter(s => s.studentId === studentId).forEach(s => {
+      (s.exercises || []).forEach(e => {
+        const k = shortName(e.name); if (!k) return;
+        workSets(e).forEach(st => {
+          const v = e1rm(st.load, st.reps); if (!v) return;
+          const cur = map.get(k);
+          if (!cur || v > cur.e1rm) map.set(k, { name: k, e1rm: v, load: num(st.load), reps: num(st.reps), date: s.date });
+        });
+      });
+    });
+    return map;
+  }
+  function renderPrCard(){
+    const box = $('#prCard'); if (!box) return;
+    const s = active();
+    if (!s){ box.className = 'empty'; box.textContent = 'Selecione um aluno.'; return; }
+    const list = [...prMapFor(s.id).values()].sort((a,b) => b.e1rm - a.e1rm).slice(0, 6);
+    if (!list.length){ box.className = 'empty'; box.textContent = 'Registre um treino com séries de trabalho para ver os recordes.'; return; }
+    box.className = '';
+    box.innerHTML = `<div class="list">${list.map(r => `
+      <div class="item"><div><div class="item-title">${esc(r.name)}</div>
+        <div class="item-meta">${fmt(r.load)} kg × ${r.reps} · ${dateFmt(r.date)}</div></div>
+        <span class="badge">1RM ~${fmt(Math.round(r.e1rm))} kg</span></div>`).join('')}</div>`;
+  }
+  function reportEvolucao(){
+    const s = active();
+    if (!s) return notify('Selecione um aluno.', true);
+    const sessions = sessionsFor();
+    if (!sessions.length) return notify('Sem treinos registrados para este aluno.', true);
+    const totalVol = sessions.reduce((n,x) => n + sessionVolume(x), 0);
+    const totalSets = sessions.reduce((n,x) => n + (x.exercises||[]).reduce((m,e) => m + workSets(e).length, 0), 0);
+    const prs = [...prMapFor(s.id).values()].sort((a,b) => b.e1rm - a.e1rm).slice(0, 10);
+    const semanas = weeklySeries(12).slice(-12);
+    const maxSem = Math.max(...semanas.map(w => w.value), 1);
+    const hist = sessions.slice(0, 25).map(x => `<tr><td>${dateFmt(x.date)}</td><td>${esc(x.name || 'Treino')}</td>
+        <td class="n">${(x.exercises||[]).length}</td><td class="n">${fmt(sessionVolume(x))} kg</td></tr>`).join('');
+    const prRows = prs.map(r => `<tr><td>${esc(r.name)}</td><td class="n">${fmt(r.load)} kg × ${r.reps}</td>
+        <td class="n">${fmt(Math.round(r.e1rm))} kg</td><td>${dateFmt(r.date)}</td></tr>`).join('');
+    const semRows = semanas.map(w => `<tr><td>${esc(w.label || w.key)}</td><td class="n">${fmt(w.value)} kg</td>
+        <td><div style="background:#eee;border-radius:6px;height:8px"><div style="width:${Math.round(w.value/maxSem*100)}%;background:#c9971f;height:8px;border-radius:6px"></div></div></td></tr>`).join('');
+    const corpo = `
+      <div class="meta">
+        <div><span>Aluno</span><b>${esc(s.name)}</b></div>
+        <div><span>Objetivo</span><b>${esc(s.goal || '—')}</b></div>
+        <div><span>Nível</span><b>${esc(s.level || '—')}</b></div>
+        <div><span>Treinos registrados</span><b>${sessions.length}</b></div>
+        <div><span>Séries de trabalho</span><b>${totalSets}</b></div>
+        <div><span>Volume acumulado</span><b>${fmt(totalVol)} kg</b></div>
+        <div><span>Último treino</span><b>${dateFmt(sessions[0].date)}</b></div>
+        <div><span>Emitido em</span><b>${new Date().toLocaleDateString('pt-BR')}</b></div>
+      </div>
+      ${semRows ? `<h2>Evolução semanal (volume)</h2><table><thead><tr><th>Semana</th><th class="n">Volume</th><th>Progresso</th></tr></thead><tbody>${semRows}</tbody></table>` : ''}
+      ${prRows ? `<h2>Recordes pessoais (1RM estimado)</h2><table><thead><tr><th>Exercício</th><th class="n">Melhor série</th><th class="n">1RM est.</th><th>Data</th></tr></thead><tbody>${prRows}</tbody></table>` : ''}
+      <h2>Últimos treinos</h2><table><thead><tr><th>Data</th><th>Sessão</th><th class="n">Exercícios</th><th class="n">Volume</th></tr></thead><tbody>${hist}</tbody></table>
+      <p style="margin-top:22px;font-size:11px;color:#777">1RM estimado pela fórmula de Epley (carga × (1 + reps/30)). Valores de referência, não substituem um teste máximo real.</p>`;
+    printDoc('Relatório de evolução — ' + s.name, corpo);
+  }
+  function exportHistoryCsv(){
+    const s = active();
+    const sessions = sessionsFor();
+    if (!s || !sessions.length) return notify('Sem treinos para exportar.', true);
+    const linhas = [['Data','Sessao','Exercicio','Serie','Tipo','Reps','Carga','RIR','Volume'].join(';')];
+    sessions.forEach(x => (x.exercises||[]).forEach(e => (e.sets||[]).forEach((st, i) => {
+      const vol = num(st.reps) * num(st.load);
+      linhas.push([x.date, x.name || 'Treino', shortName(e.name), i+1, kindOf(st), num(st.reps), String(num(st.load)).replace('.',','), num(st.rir), String(Math.round(vol)).replace('.',',')].join(';'));
+    })));
+    const blob = new Blob(['\uFEFF' + linhas.join('\n')], { type:'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'gh-performance-treinos-' + noAccent(shortName(s.name)).replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') + '-' + today() + '.csv';
+    a.rel = 'noopener';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); try { a.remove(); } catch(e){} }, 1000);
+    notify('CSV do histórico exportado.');
+  }
+
+  /* ---------- BUSCA GLOBAL ---------- */
+  const GS_PAGES = [['dashboard','Visão geral'],['session','Registrar treino'],['montar','Montar treino'],['fichas','Fichas de treino'],
+    ['alunos','Alunos'],['aval','Avaliação física'],['financeiro','Financeiro'],['history','Histórico'],['grupo','Treino em grupo'],['data','Dados e backup'],['geral','Sobre o app']];
+  function gsOpen(){
+    const m = $('#gsModal'); if (!m) return;
+    m.classList.add('open');
+    const i = $('#gsInput'); if (i) i.value = '';
+    gsRender('');
+    setTimeout(() => { try { i.focus(); } catch(e){} }, 30);
+  }
+  function gsClose(){ const m = $('#gsModal'); if (m) m.classList.remove('open'); }
+  function gsRender(q){
+    const box = $('#gsResults'); if (!box) return;
+    const t = noAccent(q);
+    const out = [];
+    const alunos = state.students.filter(s => s.id !== 'usuario');
+    if (!t){
+      out.push('<div class="ap-sec">Alunos</div>');
+      alunos.slice(0, 5).forEach(s => out.push(`<button class="ap-row" data-gs-aluno="${esc(s.id)}"><span>${esc(s.name)}</span><small>${esc(s.goal || '')}</small></button>`));
+      out.push('<div class="ap-sec">Páginas</div>');
+      GS_PAGES.forEach(([id, l]) => out.push(`<button class="ap-row" data-gs-page="${id}"><span>${esc(l)}</span></button>`));
+    } else {
+      const al = alunos.filter(s => noAccent(s.name).includes(t) || noAccent(s.goal).includes(t) || noAccent(s.level).includes(t));
+      if (al.length){ out.push('<div class="ap-sec">Alunos</div>'); al.slice(0, 6).forEach(s => out.push(`<button class="ap-row" data-gs-aluno="${esc(s.id)}"><span>${esc(s.name)}</span><small>${esc(s.goal || '')}</small></button>`)); }
+      const pg = GS_PAGES.filter(p => noAccent(p[1]).includes(t));
+      if (pg.length){ out.push('<div class="ap-sec">Páginas</div>'); pg.forEach(([id, l]) => out.push(`<button class="ap-row" data-gs-page="${id}"><span>${esc(l)}</span></button>`)); }
+      const ex = new Set();
+      Object.keys(state.plans || {}).forEach(pid => ((state.plans[pid] || {}).days || []).forEach(d => (d.items || []).forEach(it => { const n = shortName(it); if (n) ex.add(n); })));
+      EX_LIBRARY.forEach(n => ex.add(n));
+      const exs = [...ex].filter(n => noAccent(n).includes(t)).sort((a,b) => a.localeCompare(b,'pt-BR')).slice(0, 8);
+      if (exs.length){ out.push('<div class="ap-sec">Exercícios</div>'); exs.forEach(n => out.push(`<button class="ap-row" data-gs-ex="${esc(n)}"><span>${esc(n)}</span></button>`)); }
+      if (!out.length) out.push('<div class="empty">Nada encontrado.</div>');
+    }
+    box.innerHTML = out.join('');
+  }
+  /* ---------- TEMA CLARO/ESCURO ---------- */
+  const THEME_KEY = 'ghPerformance.theme';
+  function themeAtual(){ try { return localStorage.getItem(THEME_KEY) === 'light' ? 'light' : 'dark'; } catch(e){ return 'dark'; } }
+  function applyTheme(t){
+    const light = t === 'light';
+    document.documentElement.setAttribute('data-theme', light ? 'light' : 'dark');
+    const b = $('#themeBtn');
+    if (b){ b.textContent = light ? '🌙' : '☀️'; b.title = light ? 'Tema escuro' : 'Tema claro'; }
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', light ? '#eef2ee' : '#0d1410');
+  }
+  applyTheme(themeAtual());
+  const themeBtn = $('#themeBtn');
+  if (themeBtn) themeBtn.addEventListener('click', () => {
+    const t = themeAtual() === 'light' ? 'dark' : 'light';
+    try { localStorage.setItem(THEME_KEY, t); } catch(e){}
+    applyTheme(t);
+  });
+
+  const searchBtn = $('#searchBtn'); if (searchBtn) searchBtn.addEventListener('click', gsOpen);
+  const gsCloseBtn = $('#gsClose'); if (gsCloseBtn) gsCloseBtn.addEventListener('click', gsClose);
+  const gsIn = $('#gsInput'); if (gsIn) gsIn.addEventListener('input', () => gsRender(gsIn.value));
+  const gsBox = $('#gsResults');
+  if (gsBox) gsBox.addEventListener('click', e => {
+    const a = e.target.closest('[data-gs-aluno]'), p = e.target.closest('[data-gs-page]'), x = e.target.closest('[data-gs-ex]');
+    if (a){ gsClose(); setAlunoAtivo(a.dataset.gsAluno); showPage('dashboard'); }
+    else if (p){ gsClose(); showPage(p.dataset.gsPage); }
+    else if (x){ gsClose(); showPage('montar'); notify('Exercício na biblioteca: ' + x.dataset.gsEx); }
+  });
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && String(e.key).toLowerCase() === 'k'){ e.preventDefault(); gsOpen(); }
+    else if (e.key === 'Escape'){ gsClose(); }
+  });
+
+  /* ---------- SNAPSHOT AUTOMATICO + LEMBRETE DE BACKUP ---------- */
+  const SNAP_KEY = 'ghPerformance.snapshot.v1';
+  const SNAP_EVERY = 5*60*1000;
+  var snapAt = 0, snapTimer = null;
+  function snapshotSave(){
+    const agora = Date.now();
+    if (agora - snapAt < SNAP_EVERY) return;
+    snapAt = agora;
+    try { localStorage.setItem(SNAP_KEY, JSON.stringify({ v:1, at: agora, state: state })); } catch(e){}
+  }
+  function snapshotRead(){ try { return JSON.parse(localStorage.getItem(SNAP_KEY)) || null; } catch(e){ return null; } }
+  function snapshotRestore(){
+    const s = snapshotRead();
+    if (!s || !s.state) return notify('Nenhum snapshot automático disponível ainda.', true);
+    if (!confirm('Restaurar os dados do snapshot de ' + new Date(s.at).toLocaleString('pt-BR') + '? Os dados atuais serão substituídos.')) return;
+    state = Object.assign(blank(), s.state);
+    save();
+    notify('Dados restaurados do snapshot.');
+  }
+  function renderBackupCard(){
+    const card = $('#backupCard'); if (!card) return;
+    const s = snapshotRead();
+    const last = state.lastExportAt ? new Date(state.lastExportAt).getTime() : 0;
+    const dias = last ? Math.floor((Date.now() - last)/86400000) : null;
+    card.hidden = false;
+    const badge = $('#bkBadge'), txt = $('#bkText');
+    const snapTxt = s ? ('Snapshot automático de ' + new Date(s.at).toLocaleString('pt-BR')) : 'Nenhum snapshot automático ainda';
+    const expTxt = last ? (dias <= 0 ? 'backup exportado hoje' : 'último backup exportado há ' + dias + ' dia(s)') : 'você ainda não exportou um backup';
+    if (txt) txt.textContent = snapTxt + ' · ' + expTxt + '.';
+    if (badge){
+      const alerta = !last || dias >= 14;
+      badge.textContent = alerta ? 'faça um backup' : 'em dia';
+      badge.className = 'badge' + (alerta ? ' off' : '');
+    }
   }
 
   function topExercises(n){
@@ -4286,16 +4618,6 @@
     ).join('');
   }
 
-  function newsAgo(iso){
-    if (!iso) return '';
-    const t = new Date(String(iso).replace(' ', 'T')).getTime();
-    if (isNaN(t)) return '';
-    const s = Math.max(0, (Date.now() - t)/1000);
-    if (s < 3600) return `${Math.max(1, Math.round(s/60))} min atrás`;
-    if (s < 86400) return `${Math.round(s/3600)} h atrás`;
-    if (s < 604800) return `${Math.round(s/86400)} d atrás`;
-    return new Date(t).toLocaleDateString('pt-BR');
-  }
   function renderNews(){
     const box = $('#newsStrip'), hint = $('#newsHint');
     if (!box) return;
@@ -4929,7 +5251,7 @@ ${corpo}
         <p class="al-sub">${esc(p.t || '')}${p.g ? ' · ' + esc(p.g) : ''}</p>
         <div class="al-prog">
           <div class="al-bar"><i id="alBar"></i></div>
-          <span id="alCount"></span>
+          <span id="alCountS"></span>
         </div>`;
     p.d.forEach((d, di) => {
       html += `<section class="al-day">
@@ -4950,7 +5272,7 @@ ${corpo}
     host.innerHTML = html;
     const paint = () => {
       const n = Object.keys(feitos).filter(k => feitos[k]).length;
-      const bar = document.getElementById('alBar'), cnt = document.getElementById('alCount');
+      const bar = document.getElementById('alBar'), cnt = document.getElementById('alCountS');
       if (bar) bar.style.width = (total ? Math.round(n / total * 100) : 0) + '%';
       if (cnt) cnt.textContent = `${n} de ${total} exercícios feitos`;
     };
@@ -5294,8 +5616,14 @@ ${corpo}
     const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob); a.download = `gh-performance-backup-${today()}.json`; a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000); notify('Backup exportado.');
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    state.lastExportAt = Date.now(); try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){}
+    notify('Backup exportado.');
   });
+  const bkExport = $('#bkExport'); if (bkExport) bkExport.addEventListener('click', () => $('#exportBtn').click());
+  const bkRestore = $('#bkRestore'); if (bkRestore) bkRestore.addEventListener('click', snapshotRestore);
+  const prReportBtn = $('#prReportBtn'); if (prReportBtn) prReportBtn.addEventListener('click', reportEvolucao);
+  const histCsv = $('#histCsv'); if (histCsv) histCsv.addEventListener('click', exportHistoryCsv);
   /* Backup completo: acrescenta as fotos (IndexedDB) ao JSON. */
   async function exportFull(){
     const btn = $('#exportFullBtn');
@@ -5315,6 +5643,7 @@ ${corpo}
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob); a.download = `gh-performance-completo-${today()}.json`; a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      state.lastExportAt = Date.now(); try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){}
       notify(`Backup completo exportado: ${n} foto(s), ${Math.round(blob.size/1024/1024*10)/10} MB.`);
     } catch (err){
       notify('Não foi possível montar o backup completo.', true);
@@ -6055,9 +6384,7 @@ ${corpo}
       `Conflitos: ${R.conflitos.length}`
     ].join('\n');
     if (!silent){
-      console.log('[importação de avaliações]', R);
       notify(`Importação concluída — ${R.avNovas} avaliação(ões), ${R.novos} aluno(s) novo(s), ${R.conflitos.length} conflito(s).`);
-      if (backupKey) console.log('[importação] backup dos dados anteriores em localStorage:', backupKey);
     }
     return { R, linhas, backupKey };
   }
