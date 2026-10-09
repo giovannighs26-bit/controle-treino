@@ -2203,9 +2203,9 @@
   const prAval = $('#avPrintBtn'); if (prAval) prAval.addEventListener('click', () => printAvaliacao());
   const fRec = $('#finAlunoRecibo'); if (fRec) fRec.addEventListener('click', () => finEditId && finRecibo(finEditId, finMes));
   const fRecC = $('#finAlunoReciboCopiar'); if (fRecC) fRecC.addEventListener('click', () => finEditId && finCopiarRecibo(finEditId, finMes));
-  const shF = $('#shareFichaBtn'); if (shF) shF.addEventListener('click', () => alunoGerarLink());
+  const shF = $('#shareFichaBtn'); if (shF) shF.addEventListener('click', () => alunoGerarLink(true));
   const aAvalChk = $('#alunoLinkAval'), aFotChk = $('#alunoLinkFotos');
-  [aAvalChk, aFotChk].forEach(el => { if (el) el.addEventListener('change', () => alunoGerarLink()); });
+  [aAvalChk, aFotChk].forEach(el => { if (el) el.addEventListener('change', () => alunoGerarLink(false)); });
   const aAppBtn = $('#alunoBaixarApp'); if (aAppBtn) aAppBtn.addEventListener('click', () => alunoBaixarApp());
   const alCop = $('#alunoLinkCopiar');
   if (alCop) alCop.addEventListener('click', () => {
@@ -2521,6 +2521,12 @@
     ['#finPayModal','#finAlunoModal','#finAjustesModal'].forEach(x => { const el = $(x); if (el) el.classList.remove('open'); });
   }));
   [$('#studentModal'), $('#mtCopyModal'), $('#finPayModal'), $('#finAlunoModal'), $('#finAjustesModal')].filter(Boolean).forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
+  /* Fecha QUALQUER modal: botao X, botao Fechar/Cancelar e clique no fundo.
+     Sem isso o #alunoLinkModal ficava preso aberto. */
+  $$('.modal').forEach(m => {
+    m.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => m.classList.remove('open')));
+    m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+  });
   $('#studentForm').addEventListener('submit', e => {
     e.preventDefault();
     const id = $('#studentId').value;
@@ -4159,7 +4165,7 @@
   });
   document.addEventListener('keydown', e => {
     if ((e.ctrlKey || e.metaKey) && String(e.key).toLowerCase() === 'k'){ e.preventDefault(); gsOpen(); }
-    else if (e.key === 'Escape'){ gsClose(); }
+    else if (e.key === 'Escape'){ gsClose(); $$('.modal.open').forEach(m => m.classList.remove('open')); }
   });
 
   /* ---------- SNAPSHOT AUTOMATICO + LEMBRETE DE BACKUP ---------- */
@@ -5320,21 +5326,27 @@ ${corpo}
       if ((((ph.front || []).length) + ((ph.side || []).length) + ((ph.back || []).length)) > 0){ a = x; break; }
     }
     if (!a) return { ph: out, date: '' };
+    let total = 0;
+    const LIMITE = 6;   /* no máximo 6 fotos: mantém o link e o arquivo leves */
     for (const par of AV_ANGLES){
       const k = par[0];
-      const refs = (((a.photos || {})[k]) || []).slice(0, 4);
+      const refs = (((a.photos || {})[k]) || []).slice(0, 3);
       for (const r of refs){
+        if (total >= LIMITE) break;
         try {
           const blob = await avPhotoGet(r.id);
           if (!blob) continue;
           const d = await alunoFotoThumb(blob, maxPx, q);
-          if (d) out[k].push(d);
+          if (d){ out[k].push(d); total++; }
         } catch (e){}
+        /* devolve a thread para a interface não travar durante o redimensionamento */
+        await new Promise(res => setTimeout(res, 0));
       }
+      if (total >= LIMITE) break;
     }
     return { ph: out, date: a.date || '' };
   }
-  async function alunoMontarPayload(s, plan, comAval, comFotos){
+  async function alunoMontarPayload(s, plan, comAval, comFotos, maxPx, q){
     const p = alunoFichaPayload(s, plan);
     if (comAval){
       const av = alunoAvalPayload(s);
@@ -5342,7 +5354,7 @@ ${corpo}
     }
     if (comFotos){
       try {
-        const r = await alunoFotosPayload(s, 620, 0.62);
+        const r = await alunoFotosPayload(s, maxPx || 480, q || 0.55);
         const ph = r && r.ph;
         if (ph && (ph.front.length || ph.side.length || ph.back.length)){ p.ph = ph; p.phd = r.date || ''; }
       } catch (e){}
@@ -5661,7 +5673,7 @@ body{margin:0;background:linear-gradient(180deg,#0a0f0c,#0d1410 240px);color:var
     if (!plan || !plan.days || !plan.days.length) return notify('Este aluno ainda não tem ficha cadastrada.', true);
     notify('Montando o app do aluno…');
     let p = null;
-    try { p = await alunoMontarPayload(s, plan, true, true); } catch (e){ p = null; }
+    try { p = await alunoMontarPayload(s, plan, true, true, 640, 0.62); } catch (e){ p = null; }
     if (!p) return notify('Não foi possível montar o app.', true);
     let html = '';
     try { html = alunoAppHtml(p); } catch (e){ return notify('Falha ao montar o arquivo.', true); }
@@ -5680,37 +5692,52 @@ body{margin:0;background:linear-gradient(180deg,#0a0f0c,#0d1410 240px);color:var
   }
 
   /* ---------- gerar o link (lado do treinador) ---------- */
-  async function alunoGerarLink(){
+  /* estado do gerador de link: evita rodadas empilhadas e reabertura fantasma */
+  var alunoLinkRun = 0, alunoLinkBusy = false, alunoLinkPendente = false;
+  async function alunoGerarLink(abrir){
     const s = active();
     if (!s) return notify('Selecione um aluno.', true);
     const plan = plansOf(s.id);
     if (!plan || !plan.days || !plan.days.length) return notify('Este aluno ainda não tem ficha cadastrada.', true);
+    const modal = $('#alunoLinkModal');
+    if (abrir && modal) modal.classList.add('open');
+    if (alunoLinkBusy){ alunoLinkPendente = true; return; }  /* enfileira em vez de perder */
+    alunoLinkBusy = true;
+    const meu = ++alunoLinkRun;
     const chkAval = $('#alunoLinkAval'), chkFot = $('#alunoLinkFotos');
     const comAval = chkAval ? !!chkAval.checked : true;
     const comFotos = chkFot ? !!chkFot.checked : false;
     const info = $('#alunoLinkInfo');
-    if (comFotos && info) info.textContent = 'Preparando as fotos…';
+    const box = $('#alunoLinkTexto');
+    /* trava os checkboxes enquanto processa (senão dá para empilhar rodadas pesadas) */
+    if (chkAval) chkAval.disabled = true;
+    if (chkFot) chkFot.disabled = true;
+    if (info) info.textContent = comFotos ? 'Preparando as fotos…' : 'Montando o link…';
     let code = '';
     try { code = await alunoEncode(await alunoMontarPayload(s, plan, comAval, comFotos)); }
-    catch (e){ return notify('Não foi possível montar o link.', true); }
+    catch (e){ code = ''; }
+    finally {
+      alunoLinkBusy = false;
+      if (chkAval) chkAval.disabled = false;
+      if (chkFot) chkFot.disabled = false;
+      /* se o usuário mexeu nos checkboxes durante o processamento, roda de novo */
+      if (alunoLinkPendente){ alunoLinkPendente = false; setTimeout(() => alunoGerarLink(false), 0); }
+    }
+    if (meu !== alunoLinkRun) return;          /* uma rodada mais nova assumiu */
+    if (!code) return notify('Não foi possível montar o link.', true);
     const base = location.href.split('#')[0].split('?')[0];
     const url = base + '#a=' + code;
     const tel = String(finCfg(s.id).tel || '').replace(/\D/g, '');
-    const primeiro = (s.name || '').split(' ')[0];
-    const msg = `Olá, ${primeiro}! Aqui está a sua ficha de treino:\n\n${url}\n\nAbra no celular: dá para marcar os exercícios conforme for fazendo, e funciona sem internet.`;
-    const box = $('#alunoLinkTexto');
     if (box) box.value = url;
     const temAval = alunoAvalPayload(s).length;
-    const partes = [`${plan.days.length} treino(s)`, `${plan.days.reduce((n,d)=>n+(d.items||[]).length,0)} exercícios`];
+    const partes = [plan.days.length + ' treino(s)', plan.days.reduce((n,d)=>n+(d.items||[]).length,0) + ' exercícios'];
     partes.push(comAval ? (temAval ? 'com avaliação' : 'sem avaliação cadastrada') : 'sem avaliação');
     if (comFotos) partes.push('com fotos');
     partes.push('link com ' + url.length + ' caracteres');
     if (info) info.textContent = partes.join(' · ') + (url.length > 6000 ? '  ⚠ link longo: o WhatsApp pode cortar — baixe o app do aluno ou desligue as fotos.' : '');
     const wa = $('#alunoLinkWhats');
     if (wa) wa.dataset.tel = tel;
-    const modal = $('#alunoLinkModal');
-    if (modal) modal.classList.add('open');
-    return msg;
+    return url;
   }
 
   /* ---------- ABA ALUNOS (lista + perfil + ficha + treinos + financeiro) ----------
