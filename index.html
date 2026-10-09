@@ -1662,7 +1662,8 @@
   // Modo aluno: quando a URL traz #a=<ficha>, o app abre direto na visão do
   // aluno, sem login e sem nunca mostrar os dados do treinador.
   const ALUNO_HASH = (location.hash || '').indexOf('#a=') === 0 ? (location.hash || '').slice(3) : '';
-  const ALUNO_APRES_HASH = (location.hash || '').indexOf('#av=') === 0 ? (location.hash || '').slice(4) : '';
+  const ALUNO_APRES_HASH = (location.hash || '').indexOf('#av=') === 0 ? (location.hash || '').slice(4)
+    : ((function(){ try { return new URLSearchParams(location.search).get('av') || ''; } catch (e){ return ''; } })());
   const KEY = 'ghPerformance.v1';
   const AUTHED = 'ghPerformance.authed';
   const $ = s => document.querySelector(s);
@@ -1670,7 +1671,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '34';
+  const APP_V = '35';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -6292,6 +6293,13 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
           .map((par, i) => '<button type="button" data-m="' + par[0] + '"' + (i === 0 ? ' class="on"' : '') + '>' + par[1] + '</button>').join('') +
         '</div><div class="ap-chart"><svg id="apChart" viewBox="0 0 320 210"></svg></div>' +
         '<div class="ap-leg" id="apLeg"></div><p class="ap-resumo" id="apResumo"></p></section>';
+    } else {
+      /* Com uma unica avaliacao nao ha o que comparar. Antes a secao sumia e o aluno
+         achava que a evolucao estava quebrada; agora explicamos o porque. */
+      h += '<section class="ap-sec"><h2>Evolu\u00e7\u00e3o</h2>' +
+        '<div class="ap-vazio">Esta \u00e9 a sua <b>primeira avalia\u00e7\u00e3o</b> registrada \u2014 ela \u00e9 o seu ponto de partida.<br>' +
+        'O gr\u00e1fico de evolu\u00e7\u00e3o aparece aqui a partir da <b>2\u00aa avalia\u00e7\u00e3o</b>: ' +
+        'na pr\u00f3xima vez voc\u00ea vai ver exatamente o quanto mudou.</div></section>';
     }
 
     if (S.length > 1){
