@@ -155,6 +155,37 @@ Lê as séries de trabalho contra a faixa de repetições do exercício e sugere
 - **Segure a carga** — topo atingido com RIR baixo, ou séries no limite
 - **Atenção** — alguma série abaixo do mínimo → sugere reduzir ~5%
 
+## Recordes pessoais e relatório de evolução
+Cada série de trabalho alimenta o **1RM estimado** (fórmula de Epley: carga × (1 + reps/30)).
+
+- O card **Recordes pessoais** lista os melhores resultados por exercício (carga, reps, data e 1RM).
+- Ao salvar um treino que bate um recorde, o app avisa: “🏆 N novo(s) recorde(s)”.
+- O botão **Relatório de evolução** gera um PDF com os KPIs do aluno, evolução semanal, recordes e os
+  últimos treinos.
+
+## Backup automático
+- O app guarda um **snapshot automático** do estado a cada 5 minutos, no próprio aparelho.
+- O card **Backup** na Visão geral mostra o último snapshot e a última exportação, e sinaliza quando
+  passam 14 dias sem exportar.
+- **Exportar backup agora** baixa o JSON completo; **Restaurar último snapshot** volta o estado ao
+  último ponto automático.
+
+## Busca global e biblioteca de exercícios
+- **Buscar** (ou **Ctrl/Cmd + K**) procura alunos, páginas e exercícios de uma vez.
+- Ao montar a ficha, o campo de exercício sugere uma **biblioteca base** com cerca de 75 exercícios
+  comuns, além de tudo o que já apareceu no seu histórico.
+
+## Tema claro
+- O botão ☀️/🌙 no topo alterna entre o tema escuro (padrão) e o claro; a escolha fica salva no aparelho.
+
+## Exportar CSV do histórico
+- Na aba **Histórico**, o botão **Exportar CSV** baixa todas as séries do aluno ativo, prontas para o
+  Excel (separador `;` e BOM).
+
+## Segurança do acesso
+- A senha do painel é guardada com **PBKDF2-SHA256 (100 mil iterações, com sal)**. Acessos antigos,
+  criados com o formato anterior, são atualizados automaticamente no primeiro login.
+
 ## Alunos — a primeira aba
 Tudo o que é do aluno mora aqui; a Visão geral ficou só com os indicadores do treino.
 
