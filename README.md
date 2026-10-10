@@ -28,11 +28,28 @@ Aba dedicada a montar e ajustar a ficha sem sair da tela (sem modal):
 - **Salvar treino** — grava na hora e confirma (“Salvo ✓”), sem esperar o salvamento automático.
   O botão fica na barra de cima e no rodapé da ficha
 - **Registrar** — em cada treino: salva e abre a aba *Registrar treino* com aquele treino já carregado
+- **Carregar treino** — modo guiado: escolhe o aluno e o treino do dia, a tela fica cheia e o app
+  conduz **exercício por exercício**, com **descanso em cada série** e um play para o cronômetro;
+  ao concluir, o treino é gravado no histórico e entra na evolução do aluno
 - A ficha também **salva sozinha** enquanto você digita; o rodapé mostra
   “alterações não salvas” / “salvo ✓”
 - **Nada que você não tocou é reescrito**
 
 O botão **Editar** da aba *Fichas de treino* leva direto para esta aba.
+
+### Carregar treino (modo guiado)
+A aba **Carregar treino** conduz a sessão do começo ao fim:
+
+- Escolha o **aluno** e o **treino do dia** e toque em **▶ Iniciar** — a tela fica cheia e o
+  cronômetro do topo começa a contar a duração da sessão
+- Um **exercício por vez**, com as séries da ficha já preenchidas (reps, carga, RIR e o tipo de
+  cada série). Cada série tem o **play do descanso** com o tempo prescrito; ao marcar **Feita**,
+  o descanso começa sozinho, com pausa e **+30s** dentro da própria tela
+- **Próximo exercício →** libera quando você marca pelo menos uma série daquele exercício;
+  **Pular** avança sem marcar e **←** volta
+- No fim, **Concluir treino ✓** grava a sessão no **mesmo formato da aba *Registrar treino*** —
+  ou seja, aparece no **Histórico**, conta na **evolução**, nos **recordes** e no painel
+- Sair no meio do treino oferece salvar as séries marcadas como **sessão parcial**
 
 ### As abas ficam sincronizadas
 A aba *Registrar treino* guarda uma cópia do dia da ficha. Se você editar a ficha depois, ela se
@@ -150,8 +167,10 @@ tela inicial.
 Aba **Área do aluno** — o painel de gestão do acesso do aluno. Cada aluno tem uma linha com:
 
 - **Ativar portal** (interruptor) — ao ligar, o link daquele aluno é **gerado na hora**.
-- **🔗 Gerar link** / **🖼 Com fotos** — gera (ou regera) o link. "Com fotos" embute as fotos da
-  avaliação e deixa o link bem maior (o WhatsApp corta acima de ~65 mil caracteres).
+- **🔗 Gerar link** / **🖼 Com fotos** — gera (ou regera) o link da **área de evolução** do aluno.
+  "Com fotos" embute as fotos e deixa o link bem maior (o WhatsApp corta acima de ~65 mil caracteres).
+  O link abre em `#av=...` e cai **direto na tela de evolução** — não abre o app do treinador nem a
+  ficha de treino.
 - **💬 WhatsApp** — copia a mensagem pronta e abre a conversa do aluno (usa o telefone cadastrado no
   **Financeiro**; sem telefone, só copia e avisa).
 - **▶ Apresentar** — abre a tela de apresentação da avaliação em tela cheia.
@@ -161,11 +180,27 @@ No topo: o resumo **"X de Y com portal ativado"**, o filtro (Todos / Com portal 
 ações em massa **🔗 Gerar links dos ativados**, **⬇ Baixar lista (.csv)** (nome + status + link de
 cada aluno) e **Ativar todos com ficha**.
 
-- Aluno **sem ficha** fica com os botões de link/app desabilitados, mas ainda pode ser apresentado.
+- Aluno **sem avaliação** fica com os botões de link desabilitados (o portal precisa de pelo menos
+  uma avaliação); o botão **▶ Apresentar** continua funcionando. O **⬇ App (.html)** só é habilitado
+  com ficha cadastrada.
 - O status de cada portal fica salvo no aparelho (`state.portal`) e entra no backup em JSON.
-- O link é o mesmo do Modo Aluno (`#a=...`): abre **sem login**, offline, e o aluno acompanha a
-  avaliação, a evolução e a ficha. Como tudo vai dentro do link, **regenere e reenvie** depois de uma
-  avaliação nova.
+- O link (`#av=...`) abre **sem login** e **offline**, direto na **área de evolução**: resultado atual,
+  gráfico de evolução, comparativo com a primeira avaliação, medidas e fotos antes/depois. A ficha de
+  treino **não** é exposta ali — para isso existe o **⬇ App (.html)**.
+- Como tudo vai dentro do link, **regenere e reenvie** depois de uma avaliação nova.
+
+#### O link tem `?v=` — não remova
+Os links saem como `.../controle-treino/?v=34#av=...`. Esse `?v=` é obrigatório: ele muda a URL e
+**fura o cache do service worker**. Sem ele, quem já tem o app instalado continuava recebendo o
+`index.html` velho do cache (que não conhece `#av=`) e o link abria o app do treinador em vez da área
+de evolução — foi exatamente esse o bug relatado.
+
+- O número do `?v=` é o `APP_V` no `index.html` e tem de ser bumpado **junto** com o
+  `gh-performance-vN` do `sw.js`.
+- Além disso, o `sw.js` passou a servir o **HTML em rede-primeiro** (cache só como reserva offline),
+  então esse tipo de problema não volta a acontecer depois que o app se atualiza.
+- Links antigos (sem `?v=`) podem abrir a versão velha na primeira vez em aparelhos que já tinham o
+  app instalado — **regenere e reenvie** os links do portal.
 
 ### Tela de apresentação da avaliação (só avaliação atual + evolução)
 Pensada para **apresentar ao aluno**, no seu celular ou no tablet, sem abrir o app inteiro. O botão
@@ -290,7 +325,8 @@ Aba final, informativa: o que o app é e como ele se comporta.
 ## Estrutura
 - `index.html` — o app inteiro (HTML + CSS + JS, sem dependências externas)
 - Abas: **Alunos** · Visão geral · Fichas de treino · **Montar treino** · Registrar treino ·
-  Treino em grupo · Histórico · Avaliação física · **Financeiro** · Dados e backup · **Geral**
+  **Carregar treino** · Treino em grupo · Histórico · Avaliação física · **Financeiro** ·
+  Dados e backup · **Geral**
 - O topo tem só as ações do app (instalar, tela cheia, sair) — a troca de aluno é feita na aba
   **Alunos**, que é a primeira
 - `sw.js` — service worker (cache offline)
