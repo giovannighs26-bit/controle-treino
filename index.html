@@ -129,6 +129,7 @@
     .card h2,.card h3{margin:0 0 14px}.card h2{font-size:18px}.card h3{font-size:15px;color:var(--accent2)}
     label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}
     .form{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
+    .sess-start{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:12px}
     .span12{grid-column:span 12}.span8{grid-column:span 8}.span6{grid-column:span 6}.span4{grid-column:span 4}
     .span3{grid-column:span 3}.span2{grid-column:span 2}
     input,select,textarea{width:100%;border:1px solid var(--line);border-radius:11px;background:#0d1511;color:var(--text);padding:10px 11px;outline:none}
@@ -789,6 +790,64 @@
     html[data-theme="light"] .ag-mini{background:#0000000d}
     html[data-theme="light"] .ag-mini:hover{background:#0000001a}
     html[data-theme="light"] .ag-gc.aula{background:linear-gradient(145deg,#d8a93d44,#d8a93d18)}
+
+    /* ===== Aba "Carregar treino" — modo guiado ===== */
+    .tr-resumo{margin-top:12px}
+    .tr-chip{display:inline-flex;align-items:center;gap:5px;background:var(--panel2);border:1px solid var(--line);
+      border-radius:99px;padding:5px 11px;font-size:12px;color:var(--muted)}
+    .tr-chip b{color:var(--text)}
+    .tr-overlay{position:fixed;inset:0;z-index:85;background:var(--bg);display:flex;flex-direction:column;
+      gap:10px;padding:12px 12px calc(12px + env(safe-area-inset-bottom));overflow:auto;overscroll-behavior:contain}
+    .tr-overlay[hidden]{display:none}
+    body.tr-on .aluno-fab{display:none}
+    body.tr-on .timer-bar{display:none}
+    .tr-restbar{display:flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--accent);
+      border-radius:12px;padding:6px 10px;margin-bottom:8px;width:100%;justify-content:center}
+    .tr-restbar[hidden]{display:none}
+    .tr-restbar.alarm{border-color:var(--ok);background:rgba(99,197,139,.12)}
+    .tr-resttime{font-variant-numeric:tabular-nums;font-weight:800;font-size:19px;color:var(--accent2);min-width:62px;text-align:center}
+    .tr-restlabel{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+    .tr-top{display:flex;align-items:center;gap:10px;max-width:820px;width:100%;margin:0 auto}
+    .tr-top-mid{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}
+    .tr-top-mid strong{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .tr-top-mid span{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .tr-clock{font-variant-numeric:tabular-nums;font-weight:800;font-size:17px;color:var(--accent2);
+      background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:5px 10px}
+    .tr-progress{height:6px;border-radius:99px;background:var(--panel2);border:1px solid var(--line);
+      overflow:hidden;max-width:820px;width:100%;margin:0 auto}
+    .tr-progress > div{height:100%;background:var(--gh-grad);transition:width .3s ease}
+    .tr-body{flex:1;display:flex;flex-direction:column;gap:12px;max-width:820px;width:100%;margin:0 auto}
+    .tr-step{font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);font-weight:800}
+    .tr-body h2{margin:0;font-size:clamp(20px,5.2vw,32px);line-height:1.12}
+    .tr-target{display:flex;flex-wrap:wrap;gap:7px}
+    .tr-sets{display:flex;flex-direction:column;gap:8px}
+    .tr-set{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;background:var(--panel);
+      border:1px solid var(--line);border-radius:14px;padding:10px}
+    .tr-set.done{border-color:var(--ok);background:linear-gradient(180deg,rgba(99,197,139,.10),transparent)}
+    .tr-set .tr-n{font-weight:800;color:var(--muted);min-width:22px;text-align:center;padding-bottom:10px}
+    .tr-set .field{flex:1 1 76px;min-width:64px}
+    .tr-set .field label{font-size:10px}
+    .tr-rest{display:flex;flex-direction:column;align-items:center;gap:3px}
+    .tr-rest small{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+    .tr-play{border:1px solid var(--accent);color:var(--accent2);background:transparent;border-radius:10px;
+      padding:8px 10px;font-weight:800;cursor:pointer;font-variant-numeric:tabular-nums}
+    .tr-play:active{transform:scale(.95)}
+    .tr-set .check{flex:0 0 auto;padding-bottom:6px}
+    .tr-foot{display:flex;gap:8px;align-items:center;max-width:820px;width:100%;margin:0 auto;flex-wrap:wrap}
+    .tr-foot .tr-restbar{margin-bottom:0}
+    .tr-foot #trNext{flex:1}
+    .tr-foot .btn[disabled]{opacity:.45;cursor:not-allowed}
+    .tr-done-card{max-width:620px;margin:auto;text-align:center;align-items:center;gap:14px}
+    .tr-done-card .big{font-size:56px;line-height:1}
+    .tr-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%}
+    .tr-kpi{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:10px}
+    .tr-kpi b{display:block;font-size:22px;font-variant-numeric:tabular-nums}
+    .tr-kpi span{font-size:11px;color:var(--muted)}
+    @media (max-width:520px){
+      .tr-set .field{flex:1 1 68px}
+      .tr-rest{order:5;flex:1 1 100%;flex-direction:row;justify-content:space-between}
+      .tr-set .check{order:6;flex:1 1 100%;padding-bottom:0}
+    }
 </style>
 </head>
 <body>
@@ -874,6 +933,7 @@
     <button class="tab" data-page="fichas">Fichas de treino</button>
     <button class="tab" data-page="montar">Montar treino</button>
     <button class="tab" data-page="session">Registrar treino</button>
+    <button class="tab" data-page="treino">Carregar treino</button>
     <button class="tab" data-page="grupo">Treino em grupo</button>
     <button class="tab" data-page="history">Histórico</button>
     <button class="tab" data-page="aval">Avaliação física</button>
@@ -1140,14 +1200,17 @@
     <article class="card">
       <h2>Registrar treino</h2>
       <form id="sessionForm">
-        <div class="form">
+        <div class="form sess-start">
+          <div class="field span4"><label>Aluno</label><select id="sessionStudent"></select></div>
           <div class="field span4"><label>Treino do dia — ficha do aluno</label><select id="sessionDaySelect"></select></div>
-          <div class="field span3"><label>&nbsp;</label><button type="button" class="btn secondary" id="loadDayBtn" style="width:100%">↻ Carregar treino do dia</button></div>
-          <div class="field span2"><label>Data</label><input type="date" id="sessionDate" required></div>
+          <div class="field span2"><label>&nbsp;</label><button type="button" class="btn" id="sessionStartBtn" style="width:100%">▶ Iniciar treino</button></div>
+          <div class="field span2"><label>&nbsp;</label><button type="button" class="btn secondary" id="loadDayBtn" style="width:100%">↻ Recarregar</button></div>
+        </div>
+        <div class="form">
+          <div class="field span3"><label>Data</label><input type="date" id="sessionDate" required></div>
           <div class="field span3"><label>Semana do ciclo</label><input type="number" id="sessionWeek" min="1" value="1"></div>
-          <div class="field span7"><label>Nome da sessão</label><input id="sessionName" placeholder="Carregado da ficha do aluno" required></div>
           <div class="field span2"><label>Duração (min)</label><input type="number" id="sessionDuration" min="0" placeholder="60"></div>
-          <div class="field span3"><label>Descanso padrão</label>
+          <div class="field span4"><label>Descanso padrão</label>
             <div class="timer-presets">
               <button type="button" class="btn ghost" data-rest="30">30s</button>
               <button type="button" class="btn ghost" data-rest="45">45s</button>
@@ -1156,6 +1219,7 @@
               <button type="button" class="btn ghost" data-rest="120">120s</button>
             </div>
           </div>
+          <div class="field span12"><label>Nome da sessão</label><input id="sessionName" placeholder="Carregado da ficha do aluno" required></div>
         </div>
         <p class="hint" id="sessionPeriodHint"></p>
         <h3 style="margin-top:16px">Exercícios — marque as séries feitas e ajuste carga, reps e RIR</h3>
@@ -1172,6 +1236,26 @@
       </form>
     </article>
   </div></section>
+
+  <section class="page" id="treino"><div class="grid">
+    <article class="card">
+      <div class="actions" style="justify-content:space-between;margin-bottom:12px;flex-wrap:wrap">
+        <h2 style="margin:0">Carregar treino</h2>
+        <span class="badge">modo guiado · exercício por exercício</span>
+      </div>
+      <p class="hint">Escolha o aluno e o treino do dia e toque em <strong>Iniciar</strong>. A tela fica cheia, o app conduz
+        exercício por exercício e você marca as séries com o <strong>descanso de cada série</strong> no play. Ao concluir,
+        o treino é gravado no <strong>Histórico</strong> e entra na <strong>evolução</strong> do aluno.</p>
+      <div class="form">
+        <div class="field span5"><label>Aluno</label><select id="trStudent"></select></div>
+        <div class="field span5"><label>Treino do dia — ficha do aluno</label><select id="trDay"></select></div>
+        <div class="field span2"><label>&nbsp;</label><button type="button" class="btn" id="trStart" style="width:100%">▶ Iniciar</button></div>
+      </div>
+      <div class="tr-resumo" id="trResumo"></div>
+    </article>
+  </div></section>
+
+  <div class="tr-overlay" id="trOverlay" hidden></div>
 
   <section class="page" id="grupo"><div class="grid">
     <article class="card">
@@ -1793,7 +1877,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '38';
+  const APP_V = '39';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -2667,6 +2751,7 @@
     if (id === 'alunos') alRender();
     if (id === 'dashboard') { renderDashboard(); renderDashAlerts(); setTimeout(drawDashboardCharts, 30); }
     if (id === 'session') autoLoadToday();
+    if (id === 'treino') trRender();
     if (id === 'grupo') renderGrupo();
     if (id === 'aval') { renderAval(); setTimeout(drawAvChart, 40); }
     if (id === 'fichas') renderPlans();
@@ -3664,6 +3749,19 @@
     const i = days.findIndex(d => noAccent(d.title).includes(short));
     return i >= 0 ? i : 0;
   }
+  /* Seletor de aluno dentro da aba "Registrar treino" */
+  function renderSessionStudents(){
+    const sel = $('#sessionStudent'); if (!sel) return;
+    const lista = alunoLista();
+    if (!lista.length){
+      sel.innerHTML = '<option value="">Nenhum aluno cadastrado</option>';
+      sel.disabled = true; return;
+    }
+    sel.disabled = false;
+    const cur = state.activeStudentId;
+    sel.innerHTML = lista.map(s => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('');
+    if (lista.some(s => s.id === cur)) sel.value = cur;
+  }
   function renderSessionDays(){
     const sel = $('#sessionDaySelect'); if (!sel) return;
     const s = active(); const plan = s ? plansOf(s.id) : null;
@@ -3753,6 +3851,7 @@
   });
 
   function autoLoadToday(){
+    renderSessionStudents();
     renderSessionDays();
     const cards = $$('#exerciseCards .ex-card');
     const onlyBlank = cards.length === 1 && !cards[0].querySelector('.ex-name').value.trim()
@@ -3781,6 +3880,28 @@
   }
   $('#loadDayBtn').addEventListener('click', () => loadDayIntoSession(num($('#sessionDaySelect').value) || 0));
   $('#sessionDaySelect').addEventListener('change', () => loadDayIntoSession(num($('#sessionDaySelect').value) || 0));
+  const sessAluno = $('#sessionStudent');
+  if (sessAluno) sessAluno.addEventListener('change', () => {
+    const id = sessAluno.value;
+    if (!id || id === state.activeStudentId) return;
+    setAlunoAtivo(id);
+    renderSessionDays();
+    loadDayIntoSession(num($('#sessionDaySelect').value) || 0, true);
+    notify(`Treino de ${active() ? active().name : 'aluno'} carregado.`);
+  });
+  const sessIniciar = $('#sessionStartBtn');
+  if (sessIniciar) sessIniciar.addEventListener('click', () => {
+    const s = active(); const plan = s ? plansOf(s.id) : null;
+    if (!s) return notify('Selecione um aluno para iniciar o treino.', true);
+    if (!plan || !plan.days.length) return notify('Este aluno não tem ficha cadastrada.', true);
+    const idx = num($('#sessionDaySelect').value) || 0;
+    $('#sessionDate').value = today();
+    loadDayIntoSession(idx);
+    if (!chrono.running) chronoStart();
+    const first = $('#exerciseCards .ex-card');
+    if (first && first.scrollIntoView) first.scrollIntoView({ behavior:'smooth', block:'center' });
+    notify(`Treino de ${s.name} iniciado — cronômetro rodando.`);
+  });
   $$('#session .timer-presets [data-rest]').forEach(b => b.addEventListener('click', () => {
     const sec = num(b.dataset.rest);
     $$('#exerciseCards .ex-rest').forEach(i => { i.value = sec; });
@@ -3815,6 +3936,323 @@
       : `Sessão salva — ${done} série(s) registrada(s).`);
     showPage('dashboard');
   });
+
+  /* ================= ABA "CARREGAR TREINO" (modo guiado) =================
+     Conduz o treino exercicio por exercicio, com descanso em cada serie, e grava a
+     sessao no MESMO formato da aba "Registrar treino" (state.sessions). Assim
+     Historico, recordes, evolucao e painel ficam sincronizados. */
+  let trRun = null;
+  let trTimer = null;
+
+  function trRender(){
+    const sel = $('#trStudent'); if (!sel) return;
+    const lista = alunoLista();
+    if (!lista.length){
+      sel.innerHTML = '<option value="">Nenhum aluno cadastrado</option>';
+      sel.disabled = true;
+    } else {
+      sel.disabled = false;
+      const cur = state.activeStudentId;
+      sel.innerHTML = lista.map(s => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('');
+      if (lista.some(s => s.id === cur)) sel.value = cur;
+    }
+    trDays();
+    trResumo();
+  }
+  function trDays(){
+    const sel = $('#trDay'); if (!sel) return;
+    const sid = $('#trStudent').value;
+    const plan = sid ? plansOf(sid) : null;
+    if (!plan || !plan.days.length){
+      sel.innerHTML = '<option value="">Sem ficha para este aluno</option>';
+      sel.disabled = true; return;
+    }
+    sel.disabled = false;
+    const cur = sel.value;
+    sel.innerHTML = plan.days.map((d,i) => `<option value="${i}">${esc(d.title)}</option>`).join('');
+    sel.value = plan.days.some((_,i) => String(i) === cur) ? cur : String(guessTodayIndex(plan.days));
+  }
+  function trResumo(){
+    const box = $('#trResumo'); if (!box) return;
+    const sid = $('#trStudent').value;
+    const plan = sid ? plansOf(sid) : null;
+    if (!plan || !plan.days.length){
+      box.innerHTML = '<p class="hint">Este aluno ainda não tem ficha. Monte o treino na aba <strong>Montar treino</strong> e volte aqui.</p>';
+      return;
+    }
+    const i = num($('#trDay').value) || 0;
+    const day = plan.days[Math.min(i, plan.days.length - 1)];
+    const rests = day.items.map(it => parseItem(it).rest).filter(v => num(v) > 0);
+    const medio = rests.length ? Math.round(rests.reduce((a,b) => a + num(b), 0) / rests.length) : 60;
+    box.innerHTML = '<div class="tr-target" style="margin-top:12px">' +
+      `<span class="tr-chip">📋 <b>${day.items.length}</b> exercício(s)</span>` +
+      `<span class="tr-chip">⏱ descanso médio <b>${medio}s</b></span>` +
+      '<span class="tr-chip">🎯 conduzido do primeiro ao último</span></div>';
+  }
+  function trChips(ex){
+    const rMin = num(ex.repsMin) || num(ex.reps) || 0;
+    const rMax = num(ex.repsMax) || rMin;
+    const out = [];
+    if (num(ex.setsPlanned)) out.push(`<span class="tr-chip"><b>${num(ex.setsPlanned)}</b> séries</span>`);
+    if (rMin) out.push(`<span class="tr-chip">reps <b>${rMax > rMin ? rMin + '–' + rMax : rMin}</b></span>`);
+    if (num(ex.load)) out.push(`<span class="tr-chip">carga alvo <b>${fmt(ex.load)} kg</b></span>`);
+    if (num(ex.rir)) out.push(`<span class="tr-chip">RIR <b>${num(ex.rir)}</b></span>`);
+    out.push(`<span class="tr-chip">descanso <b>${num(ex.rest) || 60}s</b></span>`);
+    return out.join('');
+  }
+  function trBuild(sid, dayIndex){
+    const plan = sid ? plansOf(sid) : null;
+    if (!plan || !plan.days.length) return null;
+    const day = plan.days[Math.min(Math.max(0, num(dayIndex)), plan.days.length - 1)];
+    const exercises = (day.items.length ? day.items : ['']).map(it => {
+      const p = it ? parseItem(it) : {};
+      const base = { setsPlanned: p.sets, reps: p.reps, repsMin: p.repsMin, repsMax: p.repsMax, load: p.load, rir: p.rir, blocks: p.blocks };
+      return {
+        name: p.name || '', method: p.method || '',
+        setsPlanned: num(p.sets) || 3, reps: num(p.reps), repsMin: num(p.repsMin), repsMax: num(p.repsMax),
+        load: num(p.load), rir: num(p.rir), rest: num(p.rest) || 60, note: '',
+        sets: makeSets(base)
+      };
+    });
+    return { studentId: sid, dayIndex: num(dayIndex) || 0, dayTitle: day.title || 'Treino',
+      exercises, i: 0, startedAt: Date.now() };
+  }
+  function trSetHTML(s, k, rest){
+    const kind = kindOf(s);
+    const meta = kindMeta(kind);
+    return `<div class="tr-set${s.done ? ' done' : ''}" data-k="${k}">
+      <div class="tr-n">${k + 1}</div>
+      <div class="field"><label>Reps</label><input class="tr-reps" type="number" min="0" inputmode="numeric" value="${s.reps ?? ''}"></div>
+      <div class="field"><label>Carga (kg)</label><input class="tr-load" type="text" inputmode="decimal" value="${s.load ?? ''}"></div>
+      <div class="field" style="flex:0 1 74px"><label>RIR</label><input class="tr-rir" type="number" min="0" max="10" value="${s.rir ?? ''}"></div>
+      <div class="tr-rest"><button type="button" class="tr-play" data-play="${k}" title="Iniciar descanso de ${rest}s">▶ ${rest}s</button><small>${meta.label}</small></div>
+      <label class="check"><input type="checkbox" class="tr-done" ${s.done ? 'checked' : ''}> Feita</label>
+    </div>`;
+  }
+  function trPaint(){
+    const run = trRun; const ov = $('#trOverlay'); if (!run || !ov) return;
+    const ex = run.exercises[run.i];
+    const total = run.exercises.length;
+    const aluno = (state.students.find(s => s.id === run.studentId) || {}).name || 'Aluno';
+    const sens = sensorFor(ex);
+    const pct = Math.round((run.i / total) * 100);
+    ov.innerHTML = `
+      <header class="tr-top">
+        <button type="button" class="btn ghost small" id="trClose" title="Sair do treino guiado">✕</button>
+        <div class="tr-top-mid"><strong>${esc(aluno)}</strong><span>${esc(run.dayTitle)}</span></div>
+        <span class="tr-clock" id="trClock">00:00</span>
+        <button type="button" class="btn ghost small" id="trFs" title="Tela cheia">⤢</button>
+      </header>
+      <div class="tr-progress"><div id="trBar" style="width:${pct}%"></div></div>
+      <main class="tr-body">
+        <div class="tr-step" id="trStep">Exercício ${run.i + 1} de ${total}</div>
+        <h2 id="trExName">${esc(ex.name || 'Exercício')}</h2>
+        <div class="tr-target">${trChips(ex)}</div>
+        <div class="tr-sets" id="trSets">${ex.sets.map((s,k) => trSetHTML(s, k, num(ex.rest) || 60)).join('')}</div>
+        <div class="ex-sensor s-${sens.level}" id="trSensor"><strong>${sens.title}</strong><span>${sens.text}</span></div>
+      </main>
+      <footer class="tr-foot">
+        <div class="tr-restbar" id="trRestBar" hidden>
+          <button type="button" class="btn ghost small" id="trRestToggle">❚❚</button>
+          <span class="tr-resttime" id="trRestTime">00:00</span>
+          <span class="tr-restlabel" id="trRestLabel">Descanso</span>
+          <button type="button" class="btn ghost small" id="trRestAdd">+30s</button>
+        </div>
+        <button type="button" class="btn ghost" id="trPrev"${run.i === 0 ? ' disabled' : ''}>←</button>
+        <button type="button" class="btn ghost small" id="trSkip">Pular</button>
+        <button type="button" class="btn" id="trNext">${run.i >= total - 1 ? 'Concluir treino ✓' : 'Próximo exercício →'}</button>
+      </footer>`;
+    ov.scrollTop = 0;
+    trWire();
+    trReady();
+  }
+  function trWire(){
+    const run = trRun; if (!run) return;
+    const ex = run.exercises[run.i];
+    const c = $('#trClose'); if (c) c.addEventListener('click', trClose);
+    const p = $('#trPrev'); if (p) p.addEventListener('click', trPrev);
+    const n = $('#trNext'); if (n) n.addEventListener('click', trNext);
+    const sk = $('#trSkip'); if (sk) sk.addEventListener('click', trNext);
+    const fs = $('#trFs'); if (fs) fs.addEventListener('click', () => { isFullscreen() ? exitFullscreen() : goFullscreen(); });
+    const rt = $('#trRestToggle');
+    if (rt) rt.addEventListener('click', () => {
+      if (timer.alarm){ timer.alarm = false; timerStart(timer.total); }
+      else { timer.running = !timer.running; paintTimer(); }
+      trRestPaint();
+    });
+    const ra = $('#trRestAdd');
+    if (ra) ra.addEventListener('click', () => {
+      timer.left += 30; timer.total += 30; timer.alarm = false; paintTimer(); trRestPaint();
+    });
+    trRestPaint();
+    $$('#trSets .tr-set').forEach(row => {
+      const k = num(row.dataset.k);
+      const g = sel => row.querySelector(sel);
+      g('.tr-reps').addEventListener('input', () => { ex.sets[k].reps = num(g('.tr-reps').value); trReady(); });
+      g('.tr-load').addEventListener('input', () => { ex.sets[k].load = num(g('.tr-load').value.replace(',', '.')); trReady(); });
+      g('.tr-rir').addEventListener('input', () => { ex.sets[k].rir = num(g('.tr-rir').value); });
+      g('.tr-play').addEventListener('click', () => { timerStart(num(ex.rest) || 60); notify(`Descanso de ${num(ex.rest) || 60}s iniciado.`); trRestPaint(); });
+      g('.tr-done').addEventListener('change', e => {
+        ex.sets[k].done = e.target.checked;
+        row.classList.toggle('done', e.target.checked);
+        if (e.target.checked) timerStart(num(ex.rest) || 60);
+        trSensorPaint();
+        trRestPaint();
+        trReady();
+      });
+    });
+  }
+  function trSensorPaint(){
+    const run = trRun; const box = $('#trSensor'); if (!run || !box) return;
+    const sens = sensorFor(run.exercises[run.i]);
+    box.className = 'ex-sensor s-' + sens.level;
+    box.innerHTML = `<strong>${sens.title}</strong><span>${sens.text}</span>`;
+  }
+  function trReady(){
+    const run = trRun; const btn = $('#trNext'); if (!run || !btn) return;
+    const ex = run.exercises[run.i];
+    const ultimo = run.i >= run.exercises.length - 1;
+    const ready = ultimo ? run.exercises.some(e => e.sets.some(s => s.done)) : ex.sets.some(s => s.done);
+    btn.disabled = !ready;
+    btn.classList.toggle('ghost', !ready);
+  }
+  function trRestPaint(){
+    const bar = $('#trRestBar'); if (!bar) return;
+    const ativo = !$('#timerBar').hidden;
+    bar.hidden = !ativo;
+    if (!ativo) return;
+    $('#trRestTime').textContent = fmtClock(timer.left);
+    $('#trRestLabel').textContent = timer.alarm ? 'Descanso concluído!' : (timer.running ? 'Descanso' : 'Pausado');
+    const tg = $('#trRestToggle'); if (tg) tg.textContent = timer.alarm ? '↻' : (timer.running ? '❚❚' : '▶');
+    bar.classList.toggle('alarm', !!timer.alarm);
+  }
+  function trClock(){
+    trRestPaint();
+    const el = $('#trClock'); if (!el || !trRun) return;
+    const t = Math.max(0, Math.floor((Date.now() - trRun.startedAt) / 1000));
+    el.textContent = `${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;
+  }
+  function trNext(){
+    const run = trRun; if (!run) return;
+    if (run.i >= run.exercises.length - 1) return trFinish();
+    run.i++; trPaint();
+  }
+  function trPrev(){ const run = trRun; if (!run || run.i <= 0) return; run.i--; trPaint(); }
+  function trCollect(){
+    return trRun.exercises.map(e => ({
+      id: uid(), name: e.name, method: e.method || '', setsPlanned: num(e.setsPlanned),
+      reps: num(e.repsMin) || num(e.reps), repsMin: num(e.repsMin) || num(e.reps), repsMax: num(e.repsMax) || num(e.repsMin) || num(e.reps),
+      load: num(e.load), rir: num(e.rir), rest: num(e.rest) || 60,
+      sets: e.sets.map(s => {
+        const o = { kind: kindOf(s), reps: num(s.reps), load: num(s.load), rir: num(s.rir), done: !!s.done };
+        if (Array.isArray(s.blocks) && s.blocks.length) o.blocks = s.blocks.slice();
+        return o;
+      }),
+      note: e.note || ''
+    })).filter(e => e.name);
+  }
+  /* Grava a sessao no MESMO formato da aba "Registrar treino". */
+  function trSave(parcial){
+    const run = trRun; if (!run) return null;
+    const exercises = trCollect();
+    if (!exercises.length) return null;
+    const done = exercises.reduce((n,e) => n + e.sets.filter(s => s.done).length, 0);
+    if (!done) return null;
+    const dur = Math.max(1, Math.round((Date.now() - run.startedAt) / 60000));
+    const prior = prMapFor(run.studentId);
+    state.sessions.push({ id: uid(), studentId: run.studentId, date: today(),
+      name: run.dayTitle + (parcial ? ' (parcial)' : ''), week: 1, duration: dur,
+      exercises, createdAt: new Date().toISOString() });
+    const after = prMapFor(run.studentId);
+    const novos = [];
+    after.forEach((v,k) => { const p = prior.get(k); if (!p || v.e1rm > p.e1rm + 0.01) novos.push(k); });
+    save(); snapshotSave();
+    return { exercises, done, dur, novos };
+  }
+  function trFinish(){
+    const r = trSave(false);
+    if (!r) return notify('Marque pelo menos uma série antes de concluir.', true);
+    if (chrono.running) chronoPause();
+    clearInterval(trTimer);
+    trDone(r);
+  }
+  function trDone(r){
+    const ov = $('#trOverlay'); if (!ov) return;
+    const vol = r.exercises.reduce((n,e) => n + volumeOf(e), 0);
+    const trab = r.exercises.reduce((n,e) => n + e.sets.filter(s => kindOf(s) === 'trabalho').length, 0);
+    const aluno = (state.students.find(s => s.id === (trRun ? trRun.studentId : '')) || {}).name || 'Aluno';
+    ov.innerHTML = `
+      <header class="tr-top">
+        <div class="tr-top-mid"><strong>Treino concluído</strong><span>${esc(aluno)}${trRun ? ' · ' + esc(trRun.dayTitle) : ''}</span></div>
+        <button type="button" class="btn ghost small" id="trClose2">✕</button>
+      </header>
+      <main class="tr-body tr-done-card">
+        <div class="big">🏁</div>
+        <h2>Treino registrado!</h2>
+        <p class="hint">A sessão entrou no <strong>Histórico</strong> e já conta na <strong>evolução</strong> e nos recordes do aluno.</p>
+        <div class="tr-kpis">
+          <div class="tr-kpi"><b>${r.exercises.length}</b><span>exercícios</span></div>
+          <div class="tr-kpi"><b>${r.done}</b><span>séries feitas</span></div>
+          <div class="tr-kpi"><b>${r.dur}</b><span>minutos</span></div>
+        </div>
+        <div class="tr-target" style="justify-content:center">
+          <span class="tr-chip">volume <b>${fmt(vol)} kg</b></span>
+          <span class="tr-chip">séries de trabalho <b>${trab}</b></span>
+        </div>
+        ${r.novos.length ? `<p class="hint">🏆 <strong>${r.novos.length} novo(s) recorde(s)</strong>: ${r.novos.slice(0,4).map(esc).join(', ')}${r.novos.length > 4 ? '…' : ''}</p>` : ''}
+        <div class="actions" style="justify-content:center;flex-wrap:wrap">
+          <button type="button" class="btn" id="trVerHist">Ver histórico</button>
+          <button type="button" class="btn secondary" id="trNovo">Novo treino</button>
+        </div>
+      </main>`;
+    const a = $('#trClose2'); if (a) a.addEventListener('click', trCloseDone);
+    const b = $('#trVerHist'); if (b) b.addEventListener('click', () => { trCloseDone(); showPage('history'); });
+    const d = $('#trNovo'); if (d) d.addEventListener('click', () => { trCloseDone(); trRender(); });
+  }
+  function trOpen(){
+    const sid = $('#trStudent').value;
+    if (!sid) return notify('Selecione um aluno para carregar o treino.', true);
+    const plan = plansOf(sid);
+    if (!plan || !plan.days.length) return notify('Este aluno não tem ficha cadastrada.', true);
+    const idx = num($('#trDay').value) || 0;
+    if (state.activeStudentId !== sid) setAlunoAtivo(sid);
+    trRun = trBuild(sid, idx);
+    if (!trRun) return notify('Não foi possível carregar o treino.', true);
+    if (!chrono.running) chronoStart();
+    const ov = $('#trOverlay');
+    ov.hidden = false;
+    document.body.classList.add('tr-on');
+    trPaint();
+    clearInterval(trTimer);
+    trTimer = setInterval(trClock, 1000);
+    trClock();
+    try { if (!isFullscreen()) goFullscreen(); } catch(e){}
+    notify(`Treino de ${(state.students.find(s => s.id === sid) || {}).name || 'aluno'} iniciado.`);
+  }
+  function trCloseDone(){
+    clearInterval(trTimer); trRun = null;
+    const ov = $('#trOverlay');
+    if (ov){ ov.hidden = true; ov.innerHTML = ''; }
+    document.body.classList.remove('tr-on');
+    exitFullscreen();
+  }
+  function trClose(){
+    if (!trRun) return trCloseDone();
+    const doneSets = trRun.exercises.reduce((n,e) => n + e.sets.filter(s => s.done).length, 0);
+    if (doneSets && !confirm('Sair do treino guiado? As séries marcadas serão salvas como sessão parcial.')) return;
+    if (doneSets){ trSave(true); notify('Sessão parcial salva no histórico.'); }
+    trCloseDone();
+  }
+  const trSt = $('#trStudent');
+  if (trSt) trSt.addEventListener('change', () => {
+    const id = trSt.value;
+    if (id && id !== state.activeStudentId) setAlunoAtivo(id);
+    trDays(); trResumo();
+  });
+  const trDy = $('#trDay');
+  if (trDy) trDy.addEventListener('change', trResumo);
+  const trGo = $('#trStart');
+  if (trGo) trGo.addEventListener('click', trOpen);
 
   /* ---------- TREINO EM GRUPO ---------- */
   function grpEnsure(){
@@ -8126,7 +8564,8 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
   }
 
   /* ---------- RENDER ---------- */
-  function renderAll(){ agRender(); renderPicker(); alWire(); alunoPickWire(); alRender(); renderAlunoFab(); geralRender(); renderDashboard(); renderDashAlerts(); renderPlans(); renderHistory(); renderData(); renderSessionDays(); updateSessionHint(); renderAval(); renderGrupo();
+  function renderAll(){ agRender(); renderPicker(); alWire(); alunoPickWire(); alRender(); renderAlunoFab(); geralRender(); renderDashboard(); renderDashAlerts(); renderPlans(); renderHistory(); renderData(); renderSessionStudents(); renderSessionDays(); updateSessionHint(); renderAval(); renderGrupo();
+    if ($('#treino') && $('#treino').classList.contains('active')) trRender();
     if ($('#montar') && $('#montar').classList.contains('active')) mtRender();
     finRender(); }
   $('#sessionDate').value = today();
