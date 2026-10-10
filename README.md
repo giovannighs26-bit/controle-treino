@@ -31,6 +31,8 @@ Aba dedicada a montar e ajustar a ficha sem sair da tela (sem modal):
 - **Carregar treino** — modo guiado: escolhe o aluno e o treino do dia, a tela fica cheia e o app
   conduz **exercício por exercício**, com **descanso em cada série** e um play para o cronômetro;
   ao concluir, o treino é gravado no histórico e entra na evolução do aluno
+- **Treino em grupo** — o mesmo modo guiado para **até 4 alunos de uma vez**, com a tela dividida em
+  quadrantes e uma sessão gravada por aluno
 - A ficha também **salva sozinha** enquanto você digita; o rodapé mostra
   “alterações não salvas” / “salvo ✓”
 - **Nada que você não tocou é reescrito**
@@ -50,6 +52,20 @@ A aba **Carregar treino** conduz a sessão do começo ao fim:
 - No fim, **Concluir treino ✓** grava a sessão no **mesmo formato da aba *Registrar treino*** —
   ou seja, aparece no **Histórico**, conta na **evolução**, nos **recordes** e no painel
 - Sair no meio do treino oferece salvar as séries marcadas como **sessão parcial**
+
+### Treino em grupo — modo guiado (tela dividida)
+A aba **Treino em grupo** também tem um modo guiado, para conduzir **até 4 alunos ao mesmo tempo**:
+
+- Monte as colunas (aluno + treino do dia) e toque em **▶ Iniciar treino guiado**
+- A tela fica cheia e **dividida em até 4 quadrantes** (2×2), um por aluno, com o nome, o exercício
+  atual e a linha de alvo (`4×6–8 · 40 kg · 90s descanso`)
+- Cada aluno tem **a própria série**: reps, carga e RIR, o **play do descanso** e **✓ Feita**.
+  Marcar *Feita* avança só a série daquele aluno e o descanso começa sozinho
+- **Próximo exercício →** anda para todos juntos (o cursor de cada aluno volta à 1ª série do
+  exercício novo); **Pular** avança sem marcar, **←** volta e **↷** pula uma série
+- No fim, **Concluir treino ✓** grava **uma sessão por aluno**, todas com o mesmo `groupId` e
+  `groupSize` — então cada uma entra no histórico, nos recordes e na evolução do respectivo aluno
+- Sair no meio salva as séries marcadas como **sessões parciais**
 
 ### As abas ficam sincronizadas
 A aba *Registrar treino* guarda uma cópia do dia da ficha. Se você editar a ficha depois, ela se
