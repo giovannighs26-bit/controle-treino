@@ -754,6 +754,59 @@
       padding:9px 11px;font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;resize:vertical}
     html[data-theme="light"] .pa-row{background:#f3f6f3}
     html[data-theme="light"] .pa-link textarea{background:#fff}
+
+    /* ================= AGENDA PESSOAL ================= */
+    .ag-wrap{display:flex;flex-direction:column;gap:14px}
+    .ag-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+    .ag-kpi{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:12px;min-width:0}
+    .ag-kpi b{display:block;font-size:20px;line-height:1.2;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+    .ag-kpi small{color:var(--muted);font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:4px}
+    .ag-kpi.good b{color:var(--ok)}
+    .ag-kpi.warn b{color:var(--accent)}
+    .ag-grade{display:grid;grid-template-columns:52px repeat(var(--cols,5),minmax(0,1fr));gap:2px;overflow-x:auto;font-size:11px;padding-bottom:2px}
+    .ag-gh{position:sticky;top:0;background:var(--panel);padding:7px 4px;text-align:center;font-weight:700;color:var(--muted);font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;z-index:2}
+    .ag-gt{color:var(--muted);font-size:10px;line-height:1.1;padding:1px 6px 0 0;display:flex;align-items:flex-start;justify-content:flex-end;font-variant-numeric:tabular-nums}
+    .ag-gc{min-height:23px;border-radius:5px;background:var(--panel2);border:1px solid transparent;overflow:hidden}
+    .ag-gc.livre{background:#63c58b1f;border-color:#63c58b3d;cursor:pointer}
+    .ag-gc.livre:hover{background:#63c58b38;border-color:#63c58b}
+    .ag-gc.bloq{background:#0e1512;border-color:var(--line);background-image:repeating-linear-gradient(45deg,transparent,transparent 5px,#ffffff08 5px,#ffffff08 10px)}
+    .ag-gc.aula{background:linear-gradient(145deg,#d8a93d3d,#d8a93d14);border-color:#d8a93d88;cursor:pointer}
+    .ag-gc b{display:block;font-size:10px;line-height:1.2;padding:2px 4px 0;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .ag-gc .ag-mk{display:block;font-size:9px;color:var(--muted);padding:0 4px;line-height:1.25}
+    .ag-gc.livre .ag-mk{color:#63c58b}
+    .ag-leg{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:11px;color:var(--muted)}
+    .ag-leg i{display:inline-block;width:12px;height:12px;border-radius:4px;vertical-align:-2px;margin-right:5px}
+    .ag-dia{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px}
+    .ag-dia h3{margin:0 0 9px;font-size:13px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+    .ag-chips{display:flex;gap:8px;flex-wrap:wrap}
+    .ag-chip{display:inline-flex;align-items:center;gap:8px;background:#63c58b1a;border:1px solid #63c58b55;color:var(--text);border-radius:999px;padding:5px 6px 5px 12px;font-size:12px;font-variant-numeric:tabular-nums}
+    .ag-chip.none{background:#df6a671a;border-color:#df6a6755;padding-right:12px;color:var(--muted)}
+    .ag-chip button{border:0;background:var(--accent);color:#141008;border-radius:999px;font:600 10.5px/1 inherit;padding:5px 9px;cursor:pointer}
+    .ag-row{display:flex;align-items:center;gap:10px;padding:9px 11px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);margin-bottom:8px;flex-wrap:wrap}
+    .ag-row .ag-c{width:6px;height:30px;border-radius:4px;flex:0 0 6px}
+    .ag-row .ag-n{flex:1;min-width:130px}
+    .ag-row .ag-n b{display:block;font-size:13px}
+    .ag-row .ag-n small{color:var(--muted);font-size:11px}
+    .ag-row .ag-h{font-variant-numeric:tabular-nums;font-size:12.5px;color:var(--accent2);white-space:nowrap}
+    .ag-row.off{opacity:.5}
+    .ag-mini{border:0;background:#ffffff10;color:var(--text);border-radius:8px;font:600 11px/1 inherit;padding:7px 9px;cursor:pointer}
+    .ag-mini:hover{background:#ffffff22}
+    .ag-mini.del:hover{background:#df6a6733;color:#ffd7d5}
+    .ag-f{display:flex;flex-direction:column;gap:4px;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+    .ag-f .fin-input{min-width:112px}
+    .ag-prio{display:flex;gap:8px;align-items:center;padding:8px 11px;border-radius:11px;background:var(--panel2);border:1px solid var(--line);margin-bottom:7px;font-size:12px;flex-wrap:wrap}
+    .ag-prio .ag-tag{font:700 10px/1 inherit;padding:5px 8px;border-radius:6px;background:var(--accent);color:#141008;white-space:nowrap}
+    .ag-prio.ev .ag-tag{background:var(--danger);color:#fff}
+    .ag-prio .fin-input{max-width:120px}
+    .ag-sug{display:flex;align-items:center;gap:10px;padding:11px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);margin-bottom:8px;flex-wrap:wrap}
+    .ag-sug .ag-rk{width:24px;height:24px;border-radius:50%;background:var(--accent);color:#141008;font:700 12px/24px inherit;text-align:center;flex:0 0 24px}
+    .ag-sug.best{border-color:var(--accent)}
+    .ag-sug.aviso{border-color:var(--danger)}
+    .ag-vazio{color:var(--muted);font-size:12.5px;padding:10px 2px}
+    html[data-theme="light"] .ag-gc.bloq{background:#e7ece7;background-image:repeating-linear-gradient(45deg,transparent,transparent 5px,#00000010 5px,#00000010 10px)}
+    html[data-theme="light"] .ag-mini{background:#0000000d}
+    html[data-theme="light"] .ag-mini:hover{background:#0000001a}
+    html[data-theme="light"] .ag-gc.aula{background:linear-gradient(145deg,#d8a93d44,#d8a93d18)}
 </style>
 </head>
 <body>
@@ -835,6 +888,7 @@
   <nav class="tabs" aria-label="Navegação">
     <button class="tab" data-page="alunos">Alunos</button>
     <button class="tab active" data-page="dashboard">Visão geral</button>
+    <button class="tab" data-page="agenda">Agenda</button>
     <button class="tab" data-page="fichas">Fichas de treino</button>
     <button class="tab" data-page="montar">Montar treino</button>
     <button class="tab" data-page="session">Registrar treino</button>
@@ -846,6 +900,73 @@
     <button class="tab" data-page="data">Dados e backup</button>
     <button class="tab" data-page="geral">Geral</button>
   </nav>
+
+
+  <section class="page" id="agenda"><div class="ag-wrap">
+
+    <article class="card">
+      <div class="actions" style="justify-content:space-between;margin-bottom:14px;flex-wrap:wrap">
+        <h2 style="margin:0">Agenda semanal <span class="badge" id="agBadge"></span></h2>
+        <div class="actions" style="flex-wrap:wrap">
+          <button class="btn" id="agAddAula" type="button">+ Aula</button>
+          <button class="btn ghost" id="agAddBloq" type="button">+ Bloqueio</button>
+          <button class="btn ghost" id="agCsv" type="button">CSV</button>
+        </div>
+      </div>
+      <div class="ag-kpis" id="agKpis"></div>
+    </article>
+
+    <article class="card">
+      <h2 style="margin:0 0 4px">Grade da semana</h2>
+      <p class="hint" style="margin:0 0 12px">Clique em um horário <b>livre</b> para agendar uma aula ali.
+      Clique numa aula para editá-la.</p>
+      <div id="agGrade"></div>
+      <div class="ag-leg" id="agLeg"></div>
+    </article>
+
+    <article class="card">
+      <h2 style="margin:0 0 4px">Horários livres</h2>
+      <p class="hint" style="margin:0 0 12px">Calculado automaticamente: janela do dia menos os bloqueios fixos e as aulas já marcadas.</p>
+      <div id="agLivre"></div>
+    </article>
+
+    <article class="card">
+      <h2 style="margin:0 0 4px">Encaixe recomendado</h2>
+      <p class="hint" style="margin:0 0 12px">Onde cabe uma aula nova, respeitando as prioridades e os dias a evitar.</p>
+      <div class="actions" style="margin:0 0 12px;flex-wrap:wrap;align-items:flex-end">
+        <label class="ag-f"><span>Duração</span>
+          <select class="fin-input" id="agDur">
+            <option value="30">30 min</option>
+            <option value="45">45 min</option>
+            <option value="50">50 min</option>
+            <option value="60" selected>1 hora</option>
+            <option value="75">1h15</option>
+            <option value="90">1h30</option>
+          </select></label>
+        <label class="ag-f"><span>Aluno</span><select class="fin-input" id="agEncaixeAluno"></select></label>
+        <button class="btn" id="agEncaixar" type="button">Sugerir horários</button>
+      </div>
+      <div id="agEncaixe"></div>
+    </article>
+
+    <article class="card">
+      <h2 style="margin:0 0 12px">Aulas da semana <span class="badge" id="agAulasN"></span></h2>
+      <div id="agAulas"></div>
+    </article>
+
+    <article class="card">
+      <h2 style="margin:0 0 12px">Bloqueios fixos</h2>
+      <div id="agBloq"></div>
+      <h2 style="margin:20px 0 12px">Prioridades de encaixe</h2>
+      <div id="agPrio"></div>
+    </article>
+
+    <article class="card">
+      <h2 style="margin:0 0 12px">Próximas aulas</h2>
+      <div id="agProx"></div>
+    </article>
+
+  </div></section>
 
   <section class="page" id="alunos"><div class="grid">
     <article class="card">
@@ -1317,6 +1438,47 @@
       </div>
     </section>
 
+
+    <div class="modal" id="agAulaModal"><div class="modal-box">
+      <div class="modal-head"><h2 id="agAulaTit">Nova aula</h2><button class="close" type="button" data-close>&times;</button></div>
+      <div class="grid">
+        <div class="field span6"><label>Aluno</label><select class="fin-input" id="agAulaAluno"></select></div>
+        <div class="field span6"><label>Nome livre (se não for aluno cadastrado)</label><input class="fin-input" id="agAulaNome" type="text" placeholder="Ex.: Aula experimental" maxlength="60"></div>
+        <div class="field span6"><label>Dia da semana</label><select class="fin-input" id="agAulaDia"></select></div>
+        <div class="field span6"><label>Início</label><input class="fin-input" id="agAulaIni" type="time" step="300"></div>
+        <div class="field span6"><label>Duração</label><select class="fin-input" id="agAulaDur">
+          <option value="30">30 min</option><option value="45">45 min</option><option value="50">50 min</option>
+          <option value="60" selected>1 hora</option><option value="75">1h15</option><option value="90">1h30</option></select></div>
+        <div class="field span6"><label>Situação</label><select class="fin-input" id="agAulaAtivo">
+          <option value="1">Ativa</option><option value="0">Pausada</option></select></div>
+        <div class="field span6"><label>Vale a partir de</label><input class="fin-input" id="agAulaDesde" type="date"></div>
+        <div class="field span12"><label>Observações</label><input class="fin-input" id="agAulaObs" type="text" placeholder="Ex.: treino de perna, avaliação física…" maxlength="120"></div>
+      </div>
+      <div id="agAulaAviso"></div>
+      <div class="actions" style="justify-content:space-between;margin-top:14px">
+        <button class="btn ghost" id="agAulaDel" type="button">Excluir aula</button>
+        <div class="actions"><button class="btn ghost" type="button" data-close>Cancelar</button>
+          <button class="btn" id="agAulaSalvar" type="button">Salvar aula</button></div>
+      </div>
+    </div></div>
+
+    <div class="modal" id="agBloqModal"><div class="modal-box">
+      <div class="modal-head"><h2 id="agBloqTit">Novo bloqueio</h2><button class="close" type="button" data-close>&times;</button></div>
+      <p class="hint" style="margin-top:0">Período fixo em que você <b>não</b> dá aula (trabalho, sono, estágio, deslocamento…).
+      Se o fim for menor que o início, o bloqueio atravessa a meia-noite.</p>
+      <div class="grid">
+        <div class="field span12"><label>Nome</label><input class="fin-input" id="agBloqNome" type="text" placeholder="Trabalho, Sono, Estágio…" maxlength="40"></div>
+        <div class="field span6"><label>Início</label><input class="fin-input" id="agBloqIni" type="time" step="300"></div>
+        <div class="field span6"><label>Fim</label><input class="fin-input" id="agBloqFim" type="time" step="300"></div>
+        <div class="field span12"><label>Dias</label><div class="ag-chips" id="agBloqDias"></div></div>
+      </div>
+      <div class="actions" style="justify-content:space-between;margin-top:14px">
+        <button class="btn ghost" id="agBloqDel" type="button">Excluir bloqueio</button>
+        <div class="actions"><button class="btn ghost" type="button" data-close>Cancelar</button>
+          <button class="btn" id="agBloqSalvar" type="button">Salvar bloqueio</button></div>
+      </div>
+    </div></div>
+
     <div class="modal" id="alunoLinkModal">
       <div class="modal-box">
         <div class="modal-head">
@@ -1673,7 +1835,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '36';
+  const APP_V = '37';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -1689,7 +1851,7 @@
 
   let state = load();
 
-  function blank(){ return {version:1, auth:null, activeStudentId:null, students:[], plans:{}, sessions:[], periodizations:{}, assessments:[], group:null, finance:null, portal:null, alertaDias:7}; }
+  function blank(){ return {version:1, auth:null, activeStudentId:null, students:[], plans:{}, sessions:[], periodizations:{}, assessments:[],     group:null, finance:null, portal:null, agenda:null, alertaDias:7}; }
   function load(){
     try { const p = JSON.parse(localStorage.getItem(KEY)); if (p && Array.isArray(p.students)) return Object.assign(blank(), p); } catch(e){}
     return blank();
@@ -2547,6 +2709,7 @@
     $$('.tab').forEach(b => b.classList.toggle('active', b.dataset.page === id));
     $$('.page').forEach(p => p.classList.toggle('active', p.id === id));
     if (id === 'history') setTimeout(drawChart, 30);
+    if (id === 'agenda') agRender();
     if (id === 'alunos') alRender();
     if (id === 'dashboard') { renderDashboard(); renderDashAlerts(); setTimeout(drawDashboardCharts, 30); }
     if (id === 'session') autoLoadToday();
@@ -4176,7 +4339,7 @@
 
   /* ---------- BUSCA GLOBAL ---------- */
   const GS_PAGES = [['dashboard','Visão geral'],['session','Registrar treino'],['montar','Montar treino'],['fichas','Fichas de treino'],
-    ['alunos','Alunos'],['aval','Avaliação física'],['area','Área do aluno'],['financeiro','Financeiro'],['history','Histórico'],['grupo','Treino em grupo'],['data','Dados e backup'],['geral','Sobre o app']];
+    ['alunos','Alunos'],['agenda','Agenda'],['aval','Avaliação física'],['area','Área do aluno'],['financeiro','Financeiro'],['history','Histórico'],['grupo','Treino em grupo'],['data','Dados e backup'],['geral','Sobre o app']];
   function gsOpen(){
     const m = $('#gsModal'); if (!m) return;
     m.classList.add('open');
@@ -6807,6 +6970,7 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
         group: data.group || state.group || null,
         finance: (data.finance && typeof data.finance === 'object') ? data.finance : state.finance,
         portal: (data.portal && typeof data.portal === 'object') ? data.portal : state.portal,
+        agenda: (data.agenda && typeof data.agenda === 'object') ? data.agenda : state.agenda,
         seedApplied: data.seedApplied !== undefined ? data.seedApplied : state.seedApplied,
         avSeedApplied: data.avSeedApplied !== undefined ? data.avSeedApplied : state.avSeedApplied};
       let restauradas = 0;
@@ -7664,8 +7828,537 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
     if (ir && !ir.dataset.wired){ ir.dataset.wired = '1'; ir.addEventListener('click', () => showPage('data')); }
   }
 
+
+  /* ==================== AGENDA PESSOAL ====================
+     Modelo do dia a dia do treinador: bloqueios fixos (trabalho, sono, estagio),
+     janelas livres calculadas, aulas dos alunos e sugestao de encaixe.
+     Estado em state.agenda = {cfg, bloques, aulas, prio, evitar}.
+     Prefixo de CSS/ids: ag- / ag*. */
+  const AG_DIAS = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const AG_DIAS_L = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+  const AG_CORES = ['#d8a93d','#63c58b','#5aa9e6','#c084fc','#f97316','#2dd4bf','#e879f9','#a3e635'];
+  const AG_PADRAO = {
+    cfg:{dias:[1,2,3,4,5], ini:'07:00', fim:'23:00', passo:30, minMin:30},
+    bloques:[
+      {id:'bk1', nome:'Trabalho',   ini:'23:00', fim:'07:00', dias:[1,2,3,4,5], tipo:'trabalho'},
+      {id:'bk2', nome:'Sono',       ini:'08:00', fim:'13:30', dias:[1,2,3,4,5], tipo:'sono'},
+      {id:'bk3', nome:'Estágio',    ini:'18:00', fim:'21:00', dias:[1,2,3,4,5], tipo:'estagio'},
+      {id:'bk4', nome:'Transição',  ini:'07:00', fim:'08:00', dias:[1,2,3,4,5], tipo:'outro'},
+      {id:'bk5', nome:'Compromisso',ini:'14:30', fim:'15:30', dias:[2,3],       tipo:'outro'},
+      {id:'bk6', nome:'Compromisso',ini:'17:00', fim:'18:00', dias:[1,2,4],     tipo:'outro'},
+      {id:'bk7', nome:'Compromisso',ini:'21:00', fim:'22:00', dias:[1,2,3,4],   tipo:'outro'}
+    ],
+    aulas:[],
+    prio:[
+      {dia:4, ini:'13:30', fim:'17:00', nota:'Prioridade 1'},
+      {dia:5, ini:'13:30', fim:'18:00', nota:'Prioridade 2'},
+      {dia:1, ini:'14:30', fim:'17:00', nota:'Prioridade 3'}
+    ],
+    evitar:[3]
+  };
+  function agEnsure(){
+    if (!state.agenda || typeof state.agenda !== 'object') state.agenda = JSON.parse(JSON.stringify(AG_PADRAO));
+    const a = state.agenda;
+    if (!a.cfg || typeof a.cfg !== 'object') a.cfg = JSON.parse(JSON.stringify(AG_PADRAO.cfg));
+    if (!Array.isArray(a.cfg.dias) || !a.cfg.dias.length) a.cfg.dias = [1,2,3,4,5];
+    if (!a.cfg.ini) a.cfg.ini = '07:00';
+    if (!a.cfg.fim) a.cfg.fim = '23:00';
+    if (!a.cfg.passo) a.cfg.passo = 30;
+    if (!a.cfg.minMin) a.cfg.minMin = 30;
+    if (!Array.isArray(a.bloques)) a.bloques = JSON.parse(JSON.stringify(AG_PADRAO.bloques));
+    if (!Array.isArray(a.aulas)) a.aulas = [];
+    if (!Array.isArray(a.prio)) a.prio = JSON.parse(JSON.stringify(AG_PADRAO.prio));
+    if (!Array.isArray(a.evitar)) a.evitar = [3];
+    return a;
+  }
+  function agMin(h){ const q = String(h == null ? '0:0' : h).split(':'); const a = parseInt(q[0],10), b = parseInt(q[1],10); return (isNaN(a)?0:a)*60 + (isNaN(b)?0:b); }
+  function agHM(m){ m = ((Math.round(m) % 1440) + 1440) % 1440; return String(Math.floor(m/60)).padStart(2,'0') + ':' + String(m%60).padStart(2,'0'); }
+  function agDurMin(h1,h2){ let d = agMin(h2) - agMin(h1); if (d <= 0) d += 1440; return d; }
+  function agJanela(){ const c = agEnsure().cfg; let i = agMin(c.ini), f = agMin(c.fim); if (f <= i) f += 1440; return [i,f]; }
+  function agSeg(i,f){ const S = agMin(i); return [S, S + agDurMin(i,f)]; }
+  function agCobre(b, t){
+    let S = agMin(b.ini), E = agMin(b.fim); if (E <= S) E += 1440;
+    for (let k = -1; k <= 1; k++){ if (t >= S + k*1440 && t < E + k*1440) return true; }
+    return false;
+  }
+  function agOcupados(dia){
+    const a = agEnsure(), w = agJanela(), out = [];
+    const push = (s,e) => {
+      let S = s, E = e; if (E <= S) E += 1440;
+      for (let k = -1; k <= 1; k++){
+        const i = Math.max(S + k*1440, w[0]), j = Math.min(E + k*1440, w[1]);
+        if (j > i) out.push([i,j]);
+      }
+    };
+    a.bloques.forEach(b => { if ((b.dias || []).indexOf(dia) >= 0) push(agMin(b.ini), agMin(b.fim)); });
+    a.aulas.forEach(x => { if (x.dia === dia && x.ativo !== false) push(agMin(x.ini), agMin(x.fim)); });
+    out.sort((p,q) => p[0] - q[0]);
+    const m = [];
+    out.forEach(iv => {
+      if (m.length && iv[0] <= m[m.length-1][1]) m[m.length-1][1] = Math.max(m[m.length-1][1], iv[1]);
+      else m.push([iv[0], iv[1]]);
+    });
+    return m;
+  }
+  function agLivres(dia, min){
+    const a = agEnsure(), w = agJanela(), oc = agOcupados(dia);
+    const mm = min || a.cfg.minMin || 30;
+    const out = []; let cur = w[0];
+    oc.forEach(iv => { if (iv[0] > cur) out.push([cur, iv[0]]); cur = Math.max(cur, iv[1]); });
+    if (cur < w[1]) out.push([cur, w[1]]);
+    return out.filter(iv => iv[1] - iv[0] >= mm);
+  }
+  function agEstado(dia, t){
+    const a = agEnsure(), w = agJanela();
+    if (t < w[0] || t >= w[1]) return {k:'fora'};
+    const au = a.aulas.find(x => x.dia === dia && x.ativo !== false && agMin(x.ini) <= t && t < agMin(x.fim));
+    if (au) return {k:'aula', aula:au};
+    const bl = a.bloques.find(b => (b.dias || []).indexOf(dia) >= 0 && agCobre(b, t));
+    if (bl) return {k:'bloq', bloco:bl};
+    return {k:'livre'};
+  }
+  function agNomeAula(x){
+    const st = state.students.find(y => y.id === x.studentId);
+    return (st && st.name) || x.nome || 'Aula';
+  }
+  function agCor(x){
+    if (x.cor) return x.cor;
+    const base = agNomeAula(x);
+    let h = 0; for (let i = 0; i < base.length; i++) h = (h*31 + base.charCodeAt(i)) % 997;
+    return AG_CORES[h % AG_CORES.length];
+  }
+  function agAulas(dia){ return agEnsure().aulas.filter(x => x.dia === dia && x.ativo !== false).sort((p,q) => agMin(p.ini) - agMin(q.ini)); }
+  function agHh(m){ if (m < 60) return m + 'min'; const h = Math.floor(m/60), r = m % 60; return h + 'h' + (r ? String(r).padStart(2,'0') : ''); }
+  function agProxLivre(){
+    const a = agEnsure(), agora = new Date(), hoje = agora.getDay();
+    const min = agora.getHours()*60 + agora.getMinutes();
+    const ordem = a.cfg.dias.slice().sort((x,y) => ((x - hoje + 7) % 7) - ((y - hoje + 7) % 7));
+    for (let i = 0; i < ordem.length; i++){
+      const d = ordem[i], dif = (d - hoje + 7) % 7;
+      const liv = agLivres(d);
+      for (let j = 0; j < liv.length; j++){
+        const iv = liv[j];
+        if (dif === 0 && iv[0] < min + 15) continue;
+        return {dia:d, dif:dif, ini:agHM(iv[0]), fim:agHM(iv[1]), min:iv[1]-iv[0]};
+      }
+    }
+    return null;
+  }
+  function agSobrepoe(i1,f1,i2,f2){
+    const p = agSeg(i1,f1), q = agSeg(i2,f2);
+    for (let k = -1; k <= 1; k++){
+      const qs = q[0] + k*1440, qe = q[1] + k*1440;
+      if (p[0] < qe && qs < p[1]) return true;
+    }
+    return false;
+  }
+  function agSugerir(duracao){
+    const a = agEnsure(), out = [];
+    a.cfg.dias.forEach(d => {
+      const pi = a.prio.findIndex(p => p.dia === d);
+      const prio = pi >= 0 ? a.prio[pi] : null;
+      const evita = a.evitar.indexOf(d) >= 0;
+      agLivres(d, duracao).forEach(iv => {
+        if (iv[1] - iv[0] < duracao) return;
+        let score = 0;
+        if (prio) score += 300 - pi*100;
+        if (evita) score -= 250;
+        score += Math.min(120, Math.round((iv[1]-iv[0]) / 15) * 5);
+        if (prio && iv[0] <= agMin(prio.ini) && iv[1] >= agMin(prio.ini) + duracao) score += 60;
+        out.push({dia:d, ini:agHM(iv[0]), fim:agHM(iv[1]), score:score, nota: prio ? prio.nota : '', evita:evita});
+      });
+    });
+    out.sort((x,y) => y.score - x.score);
+    return out;
+  }
+
+  /* ---------- render ---------- */
+  function agKpiHTML(){
+    const a = agEnsure();
+    let nAulas = 0, minAula = 0, minLivre = 0;
+    a.cfg.dias.forEach(d => {
+      a.aulas.forEach(x => { if (x.dia === d && x.ativo !== false){ nAulas++; minAula += agDurMin(x.ini, x.fim); } });
+      agLivres(d).forEach(iv => { minLivre += iv[1] - iv[0]; });
+    });
+    const pl = agProxLivre();
+    const k = (t,v,c) => '<div class="ag-kpi ' + (c || '') + '"><small>' + t + '</small><b>' + v + '</b></div>';
+    let h = k('Aulas na semana', nAulas);
+    h += k('Horas em aula', agHh(minAula));
+    h += k('Horas livres', agHh(minLivre), 'good');
+    h += k('Próximo horário livre', pl ? ((pl.dif === 0 ? 'hoje' : AG_DIAS[pl.dia]) + ' ' + pl.ini) : '—', pl ? 'good' : 'warn');
+    h += k('Janelas livres', agEnsure().cfg.dias.reduce((n,d) => n + agLivres(d).length, 0));
+    return h;
+  }
+  function agGradeHTML(){
+    const a = agEnsure(), dias = a.cfg.dias, w = agJanela(), passo = a.cfg.passo || 30;
+    let h = '<div class="ag-grade" style="--cols:' + dias.length + '">';
+    h += '<div class="ag-gh"></div>' + dias.map(d => '<div class="ag-gh">' + AG_DIAS[d] + '</div>').join('');
+    for (let t = w[0]; t < w[1]; t += passo){
+      h += '<div class="ag-gt">' + (t % 60 === 0 ? agHM(t) : '') + '</div>';
+      for (let i = 0; i < dias.length; i++){
+        const d = dias[i], st = agEstado(d, t), ant = t - passo >= w[0] ? agEstado(d, t - passo) : {k:'fora'};
+        const novo = st.k !== ant.k || (st.k === 'aula' && ant.k === 'aula' && ant.aula !== st.aula);
+        let inner = '';
+        if (st.k === 'aula'){
+          if (novo) inner = '<b>' + esc(agNomeAula(st.aula)) + '</b><span class="ag-mk">' + st.aula.ini + '-' + st.aula.fim + '</span>';
+        } else if (st.k === 'bloq'){
+          if (novo) inner = '<span class="ag-mk">' + esc(st.bloco.nome) + '</span>';
+        } else if (st.k === 'livre'){
+          if (novo) inner = '<span class="ag-mk">livre ' + agHM(t) + '-' + agHM(agLivres(d).find(iv => iv[0] <= t && t < iv[1])[1]) + '</span>';
+        }
+        h += '<div class="ag-gc ' + st.k + '" data-dia="' + d + '" data-t="' + t + '" title="' + AG_DIAS_L[d] + ' ' + agHM(t) + '">' + inner + '</div>';
+      }
+    }
+    h += '</div>';
+    return h;
+  }
+  function agLivreHTML(){
+    const a = agEnsure();
+    let h = '';
+    a.cfg.dias.forEach(d => {
+      const liv = agLivres(d);
+      h += '<div class="ag-dia"><h3><span>' + AG_DIAS_L[d] + '</span><span style="color:var(--muted);font-weight:400;font-size:11px">' +
+        (liv.length ? liv.length + ' janela(s)' : 'sem janela livre') + '</span></h3><div class="ag-chips">';
+      if (!liv.length) h += '<span class="ag-chip none">Nenhum horário livre com os bloqueios atuais</span>';
+      else liv.forEach(iv => { h += '<span class="ag-chip">' + agHM(iv[0]) + '-' + agHM(iv[1]) +
+        ' <button type="button" data-ag="marcar" data-dia="' + d + '" data-ini="' + agHM(iv[0]) + '">+ aula</button></span>'; });
+      h += '</div></div>';
+    });
+    return h;
+  }
+  function agEncaixeHTML(){
+    const a = agEnsure();
+    const dur = parseInt(($('#agDur') || {}).value || '60', 10);
+    const s = agSugerir(dur);
+    if (!s.length) return '<div class="ag-vazio">Nenhuma janela livre comporta ' + dur + ' minutos com os bloqueios e aulas atuais. Reduza a duração ou libere um bloqueio.</div>';
+    let lista = s.slice(0, 5);
+    const ev = s.filter(x => x.evita && lista.indexOf(x) < 0)[0];
+    if (ev) lista = lista.concat([ev]);
+    let h = '<p class="hint" style="margin:0 0 10px">Ordenado por prioridade, tamanho da janela e dia a evitar. A ultima linha (se houver) e o melhor encaixe no dia marcado para evitar.</p>';
+    lista.forEach((x, i) => {
+      const ini = x.ini, fim = agHM(agMin(x.ini) + dur);
+      h += '<div class="ag-sug' + (i === 0 ? ' best' : '') + (x.evita ? ' aviso' : '') + '">' +
+        '<span class="ag-rk">' + (i+1) + '</span>' +
+        '<div class="ag-n" style="flex:1;min-width:150px"><b>' + AG_DIAS_L[x.dia] + ' ' + ini + '-' + fim + '</b>' +
+        '<small>' + (x.evita ? 'dia marcado para evitar' : (x.nota || 'janela livre')) + ' · livre até ' + x.fim + '</small></div>' +
+        '<button class="btn" type="button" data-ag="marcar" data-dia="' + x.dia + '" data-ini="' + ini + '">Agendar</button></div>';
+    });
+    return h;
+  }
+  function agAulasHTML(){
+    const a = agEnsure();
+    let h = '', n = 0;
+    a.cfg.dias.slice().sort((x,y) => x-y).forEach(d => {
+      const lista = a.aulas.filter(x => x.dia === d).sort((p,q) => agMin(p.ini) - agMin(q.ini));
+      if (!lista.length) return;
+      h += '<div class="ag-dia"><h3><span>' + AG_DIAS_L[d] + '</span></h3>';
+      lista.forEach(x => {
+        n++;
+        h += '<div class="ag-row' + (x.ativo === false ? ' off' : '') + '">' +
+          '<i class="ag-c" style="background:' + agCor(x) + '"></i>' +
+          '<div class="ag-n"><b>' + esc(agNomeAula(x)) + '</b><small>' + esc(x.obs || 'Aula') + (x.ativo === false ? ' · pausada' : '') + '</small></div>' +
+          '<span class="ag-h">' + x.ini + '-' + x.fim + '</span>' +
+          '<button class="ag-mini" type="button" data-ag="edit" data-id="' + x.id + '">Editar</button>' +
+          '<button class="ag-mini del" type="button" data-ag="del" data-id="' + x.id + '">Excluir</button></div>';
+      });
+      h += '</div>';
+    });
+    if (!h) h = '<div class="ag-vazio">Nenhuma aula cadastrada ainda. Use <b>+ Aula</b> ou clique num horário livre da grade.</div>';
+    return {html:h, n:n};
+  }
+  function agBloqHTML(){
+    const a = agEnsure();
+    if (!a.bloques.length) return '<div class="ag-vazio">Nenhum bloqueio cadastrado.</div>';
+    let h = '';
+    a.bloques.forEach(b => {
+      const dias = (b.dias || []).slice().sort((x,y) => x-y).map(d => AG_DIAS[d]).join(', ');
+      h += '<div class="ag-row"><i class="ag-c" style="background:var(--muted)"></i>' +
+        '<div class="ag-n"><b>' + esc(b.nome) + '</b><small>' + dias + '</small></div>' +
+        '<span class="ag-h">' + b.ini + '-' + b.fim + '</span>' +
+        '<button class="ag-mini" type="button" data-ag="bedit" data-id="' + b.id + '">Editar</button>' +
+        '<button class="ag-mini del" type="button" data-ag="bdel" data-id="' + b.id + '">Excluir</button></div>';
+    });
+    return h;
+  }
+  function agPrioHTML(){
+    const a = agEnsure();
+    let h = '';
+    a.prio.forEach((p, i) => {
+      h += '<div class="ag-prio"><span class="ag-tag">' + esc(p.nota || ('P' + (i+1))) + '</span>' +
+        '<select class="fin-input" data-pf="dia" data-i="' + i + '">' +
+          AG_DIAS.map((n,d) => '<option value="' + d + '"' + (d === p.dia ? ' selected' : '') + '>' + n + '</option>').join('') + '</select>' +
+        '<input class="fin-input" type="time" step="300" data-pf="ini" data-i="' + i + '" value="' + p.ini + '">' +
+        '<span style="color:var(--muted)">até</span>' +
+        '<input class="fin-input" type="time" step="300" data-pf="fim" data-i="' + i + '" value="' + p.fim + '">' +
+        '<input class="fin-input" data-pf="nota" data-i="' + i + '" value="' + esc(p.nota || '') + '" placeholder="Rótulo" style="max-width:130px">' +
+        '<button class="ag-mini del" type="button" data-ag="pdel" data-i="' + i + '" style="margin-left:auto">Excluir</button></div>';
+    });
+    h += '<div class="ag-prio ev"><span class="ag-tag">Evitar</span>' +
+      AG_DIAS.map((n,d) => '<label class="check" style="font-size:12px;text-transform:none"><input type="checkbox" data-pe="' + d + '"' + (a.evitar.indexOf(d) >= 0 ? ' checked' : '') + '> ' + n + '</label>').join('') +
+      '<button class="ag-mini" type="button" data-ag="padd" style="margin-left:auto">+ Prioridade</button></div>';
+    return h;
+  }
+  function agProxHTML(){
+    const a = agEnsure();
+    const base = new Date(); base.setHours(0,0,0,0);
+    const out = [];
+    for (let k = 0; k < 21 && out.length < 12; k++){
+      const d = new Date(base.getTime() + k*86400000), dow = d.getDay();
+      if (a.cfg.dias.indexOf(dow) < 0) continue;
+      agAulas(dow).forEach(x => {
+        if (x.desde && d < new Date(x.desde + 'T00:00:00')) return;
+        out.push({d:d, dow:dow, x:x});
+      });
+    }
+    if (!out.length) return '<div class="ag-vazio">Nenhuma aula agendada.</div>';
+    let h = '';
+    out.forEach(o => {
+      const hoje = o.d.getTime() === base.getTime();
+      h += '<div class="ag-row"><i class="ag-c" style="background:' + agCor(o.x) + '"></i>' +
+        '<div class="ag-n"><b>' + esc(agNomeAula(o.x)) + '</b><small>' + AG_DIAS_L[o.dow] + ' · ' +
+        o.d.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'}) + (hoje ? ' · hoje' : '') + '</small></div>' +
+        '<span class="ag-h">' + o.x.ini + '-' + o.x.fim + '</span>' +
+        '<button class="ag-mini" type="button" data-ag="edit" data-id="' + o.x.id + '">Editar</button></div>';
+    });
+    return h;
+  }
+  function agRender(){
+    agWire();
+    const pg = $('#agenda');
+    if (!pg || !pg.classList.contains('active')) return;
+    agEnsure();
+    $('#agKpis').innerHTML = agKpiHTML();
+    $('#agGrade').innerHTML = agGradeHTML();
+    $('#agLeg').innerHTML = '<span><i style="background:#63c58b"></i>Livre</span>' +
+      '<span><i style="background:#d8a93d"></i>Aula</span>' +
+      '<span><i style="background:#22302a;border:1px solid var(--line)"></i>Bloqueio</span>';
+    $('#agLivre').innerHTML = agLivreHTML();
+    $('#agEncaixe').innerHTML = agEncaixeHTML();
+    const au = agAulasHTML();
+    $('#agAulas').innerHTML = au.html;
+    $('#agAulasN').textContent = au.n;
+    $('#agBadge').textContent = au.n + ' aula(s)';
+    $('#agBloq').innerHTML = agBloqHTML();
+    $('#agPrio').innerHTML = agPrioHTML();
+    $('#agProx').innerHTML = agProxHTML();
+    agFillAlunos();
+  }
+  function agFillAlunos(){
+    const sel = $('#agEncaixeAluno'); if (!sel) return;
+    const atual = sel.value;
+    const al = state.students.filter(x => x.id !== 'usuario').slice().sort((a,b) => (a.name||'').localeCompare(b.name||''));
+    sel.innerHTML = '<option value="">— só sugerir —</option>' + al.map(x => '<option value="' + x.id + '">' + esc(x.name) + '</option>').join('');
+    if (atual) sel.value = atual;
+  }
+
+  /* ---------- modal da aula ---------- */
+  let agEdit = null;
+  function agAlunoOptions(sel){
+    const al = state.students.filter(x => x.id !== 'usuario').slice().sort((a,b) => (a.name||'').localeCompare(b.name||''));
+    return '<option value="">— sem aluno (usar nome livre) —</option>' +
+      al.map(x => '<option value="' + x.id + '"' + (x.id === sel ? ' selected' : '') + '>' + esc(x.name) + '</option>').join('');
+  }
+  function agAulaAbrir(id, dia, ini){
+    agEnsure();
+    const a = state.agenda;
+    const x = id ? a.aulas.find(y => y.id === id) : null;
+    agEdit = {tipo:'aula', id: x ? x.id : null};
+    $('#agAulaTit').textContent = x ? 'Editar aula' : 'Nova aula';
+    $('#agAulaAluno').innerHTML = agAlunoOptions(x ? x.studentId : (active() ? active().id : ''));
+    $('#agAulaNome').value = (x && !x.studentId) ? (x.nome || '') : '';
+    $('#agAulaDia').innerHTML = a.cfg.dias.slice().sort((p,q) => p-q).map(d => '<option value="' + d + '">' + AG_DIAS_L[d] + '</option>').join('');
+    $('#agAulaDia').value = String(x ? x.dia : (dia || a.cfg.dias[0] || 1));
+    $('#agAulaIni').value = x ? x.ini : (ini || '13:30');
+    $('#agAulaDur').value = String(x ? agDurMin(x.ini, x.fim) : 60);
+    $('#agAulaDesde').value = x ? (x.desde || today()) : today();
+    $('#agAulaObs').value = x ? (x.obs || '') : '';
+    $('#agAulaAtivo').value = (x && x.ativo === false) ? '0' : '1';
+    $('#agAulaDel').style.display = x ? '' : 'none';
+    agAulaAviso();
+    $('#agAulaModal').classList.add('open');
+  }
+  function agAulaAviso(){
+    const box = $('#agAulaAviso'); if (!box) return;
+    const a = agEnsure();
+    const dia = parseInt($('#agAulaDia').value, 10);
+    const ini = $('#agAulaIni').value || '00:00';
+    const dur = parseInt($('#agAulaDur').value, 10) || 60;
+    const fim = agHM(agMin(ini) + dur);
+    const av = [];
+    a.bloques.forEach(b => {
+      if ((b.dias || []).indexOf(dia) < 0) return;
+      if (agSobrepoe(ini, fim, b.ini, b.fim)) av.push('o bloqueio <b>' + esc(b.nome) + '</b> (' + b.ini + '-' + b.fim + ')');
+    });
+    a.aulas.forEach(x => {
+      if (x.dia !== dia || x.ativo === false) return;
+      if (agEdit && agEdit.id === x.id) return;
+      if (agSobrepoe(ini, fim, x.ini, x.fim)) av.push('a aula de <b>' + esc(agNomeAula(x)) + '</b> (' + x.ini + '-' + x.fim + ')');
+    });
+    const dentro = agLivres(dia).some(iv => iv[0] <= agMin(ini) && iv[1] >= agMin(ini) + dur);
+    box.innerHTML = av.length
+      ? '<div class="ag-sug aviso" style="margin-top:12px"><span>Conflito: sobrepõe ' + av.join(' e ') + '. Você ainda pode salvar.</span></div>'
+      : '<div class="ag-sug" style="margin-top:12px"><span>Sem conflito · ' + AG_DIAS_L[dia] + ' ' + ini + '-' + fim + (dentro ? ' (dentro de uma janela livre)' : '') + '</span></div>';
+  }
+  function agAulaSalvar(){
+    const a = agEnsure();
+    const sid = $('#agAulaAluno').value;
+    const nome = ($('#agAulaNome').value || '').trim();
+    if (!sid && !nome){ notify('Escolha o aluno ou digite um nome', true); return; }
+    const dia = parseInt($('#agAulaDia').value, 10);
+    const ini = $('#agAulaIni').value || '13:30';
+    const dur = parseInt($('#agAulaDur').value, 10) || 60;
+    const fim = agHM(agMin(ini) + dur);
+    const id = (agEdit && agEdit.id) || ('ag' + Date.now().toString(36) + Math.random().toString(36).slice(2,6));
+    const antigo = a.aulas.find(y => y.id === id);
+    const obj = {id:id, studentId:sid || '', nome: sid ? '' : nome, dia:dia, ini:ini, fim:fim,
+      desde: $('#agAulaDesde').value || today(), ate:null,
+      obs: ($('#agAulaObs').value || '').trim(),
+      cor: antigo ? (antigo.cor || '') : '', ativo: $('#agAulaAtivo').value === '1'};
+    const i = a.aulas.findIndex(y => y.id === id);
+    if (i >= 0) a.aulas[i] = obj; else a.aulas.push(obj);
+    save();
+    $('#agAulaModal').classList.remove('open');
+    notify('Aula salva · ' + AG_DIAS_L[dia] + ' ' + ini + '-' + fim);
+  }
+  function agAulaDel(id){
+    const a = agEnsure();
+    const x = a.aulas.find(y => y.id === id);
+    if (!x) return;
+    if (!confirm('Excluir a aula de ' + agNomeAula(x) + ' (' + AG_DIAS_L[x.dia] + ' ' + x.ini + '-' + x.fim + ')?')) return;
+    a.aulas = a.aulas.filter(y => y.id !== id);
+    save();
+    $('#agAulaModal').classList.remove('open');
+    notify('Aula excluída');
+  }
+
+  /* ---------- modal do bloqueio ---------- */
+  function agBloqAbrir(id){
+    agEnsure();
+    const a = state.agenda;
+    const b = id ? a.bloques.find(y => y.id === id) : null;
+    agEdit = {tipo:'bloq', id: b ? b.id : null};
+    $('#agBloqTit').textContent = b ? 'Editar bloqueio' : 'Novo bloqueio';
+    $('#agBloqNome').value = b ? b.nome : '';
+    $('#agBloqIni').value = b ? b.ini : '08:00';
+    $('#agBloqFim').value = b ? b.fim : '12:00';
+    $('#agBloqDias').innerHTML = AG_DIAS.map((n,d) => '<label class="check" style="font-size:12px"><input type="checkbox" value="' + d + '"' +
+      (b && (b.dias || []).indexOf(d) >= 0 ? ' checked' : '') + '> ' + n + '</label>').join('');
+    $('#agBloqDel').style.display = b ? '' : 'none';
+    $('#agBloqModal').classList.add('open');
+  }
+  function agBloqSalvar(){
+    const a = agEnsure();
+    const nome = ($('#agBloqNome').value || '').trim() || 'Bloqueio';
+    const dias = $$('#agBloqDias input').filter(c => c.checked).map(c => parseInt(c.value, 10));
+    if (!dias.length){ notify('Escolha pelo menos um dia', true); return; }
+    const ini = $('#agBloqIni').value || '08:00', fim = $('#agBloqFim').value || '12:00';
+    const id = (agEdit && agEdit.id) || ('bk' + Date.now().toString(36));
+    const obj = {id:id, nome:nome, ini:ini, fim:fim, dias:dias, tipo:'outro'};
+    const i = a.bloques.findIndex(y => y.id === id);
+    if (i >= 0) a.bloques[i] = obj; else a.bloques.push(obj);
+    save();
+    $('#agBloqModal').classList.remove('open');
+    notify('Bloqueio salvo · ' + ini + '-' + fim);
+  }
+  function agBloqDel(id){
+    const a = agEnsure();
+    const b = a.bloques.find(y => y.id === id);
+    if (!b) return;
+    if (!confirm('Excluir o bloqueio "' + b.nome + '" (' + b.ini + '-' + b.fim + ')?')) return;
+    a.bloques = a.bloques.filter(y => y.id !== id);
+    save();
+    $('#agBloqModal').classList.remove('open');
+    notify('Bloqueio excluído');
+  }
+
+  /* ---------- CSV ---------- */
+  function agCsv(){
+    const a = agEnsure(), L = ['Tipo;Dia;Inicio;Fim;Aluno;Observacao'];
+    a.bloques.forEach(b => (b.dias || []).slice().sort((x,y) => x-y).forEach(d =>
+      L.push('Bloqueio;' + AG_DIAS_L[d] + ';' + b.ini + ';' + b.fim + ';' + b.nome + ';')));
+    a.aulas.forEach(x => L.push('Aula;' + AG_DIAS_L[x.dia] + ';' + x.ini + ';' + x.fim + ';' + agNomeAula(x) + ';' + (x.obs || '')));
+    a.cfg.dias.forEach(d => agLivres(d).forEach(iv =>
+      L.push('Livre;' + AG_DIAS_L[d] + ';' + agHM(iv[0]) + ';' + agHM(iv[1]) + ';;')));
+    const csv = '\uFEFF' + L.join('\r\n');
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const el = document.createElement('a');
+    el.href = url; el.download = 'agenda-semanal.csv';
+    document.body.appendChild(el); el.click(); el.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+    notify('CSV da agenda gerado');
+  }
+
+  /* ---------- wiring ---------- */
+  function agWire(){
+    const once = (sel, ev, fn) => {
+      const el = $(sel); if (!el || el.dataset.agWired) return;
+      el.dataset.agWired = '1'; el.addEventListener(ev, fn);
+    };
+    once('#agGrade', 'click', ev => {
+      const c = ev.target.closest('.ag-gc'); if (!c) return;
+      const dia = parseInt(c.dataset.dia, 10), t = parseInt(c.dataset.t, 10);
+      const st = agEstado(dia, t);
+      if (st.k === 'aula') agAulaAbrir(st.aula.id);
+      else if (st.k === 'livre') agAulaAbrir(null, dia, agHM(t));
+    });
+    const marcar = ev => {
+      const b = ev.target.closest('[data-ag="marcar"]'); if (!b) return;
+      agAulaAbrir(null, parseInt(b.dataset.dia, 10), b.dataset.ini);
+    };
+    once('#agLivre', 'click', marcar);
+    once('#agEncaixe', 'click', marcar);
+    const aulaEv = ev => {
+      const b = ev.target.closest('[data-ag]'); if (!b) return;
+      if (b.dataset.ag === 'edit') agAulaAbrir(b.dataset.id);
+      if (b.dataset.ag === 'del') agAulaDel(b.dataset.id);
+    };
+    once('#agAulas', 'click', aulaEv);
+    once('#agProx', 'click', aulaEv);
+    once('#agBloq', 'click', ev => {
+      const b = ev.target.closest('[data-ag]'); if (!b) return;
+      if (b.dataset.ag === 'bedit') agBloqAbrir(b.dataset.id);
+      if (b.dataset.ag === 'bdel') agBloqDel(b.dataset.id);
+    });
+    once('#agPrio', 'change', ev => {
+      const a = agEnsure(), el = ev.target;
+      if (el.dataset.pe !== undefined && el.dataset.pe !== ''){
+        const d = parseInt(el.dataset.pe, 10);
+        a.evitar = el.checked ? a.evitar.concat([d]).filter((v,i,arr) => arr.indexOf(v) === i)
+                              : a.evitar.filter(v => v !== d);
+        save(); return;
+      }
+      const i = parseInt(el.dataset.i, 10), f = el.dataset.pf;
+      if (!f || isNaN(i) || !a.prio[i]) return;
+      if (f === 'dia') a.prio[i].dia = parseInt(el.value, 10);
+      else a.prio[i][f] = el.value;
+      save();
+    });
+    once('#agPrio', 'click', ev => {
+      const b = ev.target.closest('[data-ag]'); if (!b) return;
+      const a = agEnsure();
+      if (b.dataset.ag === 'pdel'){ a.prio.splice(parseInt(b.dataset.i, 10), 1); save(); }
+      if (b.dataset.ag === 'padd'){
+        a.prio.push({dia:(a.cfg.dias[0] || 1), ini:'13:30', fim:'17:00', nota:'Prioridade ' + (a.prio.length + 1)});
+        save();
+      }
+    });
+    once('#agAddAula', 'click', () => agAulaAbrir(null));
+    once('#agAddBloq', 'click', () => agBloqAbrir(null));
+    once('#agCsv', 'click', agCsv);
+    once('#agEncaixar', 'click', () => { $('#agEncaixe').innerHTML = agEncaixeHTML(); });
+    once('#agDur', 'change', () => { $('#agEncaixe').innerHTML = agEncaixeHTML(); });
+    once('#agAulaSalvar', 'click', agAulaSalvar);
+    once('#agAulaDel', 'click', () => { if (agEdit && agEdit.id) agAulaDel(agEdit.id); });
+    once('#agBloqSalvar', 'click', agBloqSalvar);
+    once('#agBloqDel', 'click', () => { if (agEdit && agEdit.id) agBloqDel(agEdit.id); });
+    ['#agAulaDia', '#agAulaIni', '#agAulaDur'].forEach(sel => once(sel, 'change', agAulaAviso));
+    once('#agAulaAluno', 'change', () => { const n = $('#agAulaNome'); if (n && $('#agAulaAluno').value) n.value = ''; });
+    once('#agAulaNome', 'input', () => { const a = $('#agAulaAluno'); if (a && $('#agAulaNome').value.trim()) a.value = ''; });
+  }
+
   /* ---------- RENDER ---------- */
-  function renderAll(){ renderPicker(); alWire(); alunoPickWire(); alRender(); renderAlunoFab(); geralRender(); renderDashboard(); renderDashAlerts(); renderPlans(); renderHistory(); renderData(); renderSessionDays(); updateSessionHint(); renderAval(); renderGrupo(); paRender();
+  function renderAll(){ agRender(); renderPicker(); alWire(); alunoPickWire(); alRender(); renderAlunoFab(); geralRender(); renderDashboard(); renderDashAlerts(); renderPlans(); renderHistory(); renderData(); renderSessionDays(); updateSessionHint(); renderAval(); renderGrupo(); paRender();
     if ($('#montar') && $('#montar').classList.contains('active')) mtRender();
     finRender(); }
   $('#sessionDate').value = today();
