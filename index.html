@@ -848,6 +848,40 @@
       .tr-rest{order:5;flex:1 1 100%;flex-direction:row;justify-content:space-between}
       .tr-set .check{order:6;flex:1 1 100%;padding-bottom:0}
     }
+
+    /* ===== Treino em grupo — modo guiado (tela dividida) ===== */
+    .gr-overlay{position:fixed;inset:0;z-index:85;background:var(--bg);display:flex;flex-direction:column;
+      gap:8px;padding:10px 10px calc(10px + env(safe-area-inset-bottom));overflow:hidden}
+    .gr-overlay[hidden]{display:none}
+    body.gr-on .aluno-fab{display:none}
+    body.gr-on .timer-bar{display:none}
+    .gr-overlay .tr-top,.gr-overlay .tr-progress,.gr-overlay .tr-foot{max-width:1100px}
+    .gr-board{flex:1;display:grid;gap:8px;grid-template-columns:repeat(2,1fr);
+      grid-auto-rows:minmax(148px,1fr);max-width:1100px;width:100%;margin:0 auto;overflow-y:auto;overflow-x:hidden}
+    .gr-board[data-n="1"]{grid-template-columns:1fr}
+    .gr-quad{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:9px;
+      display:flex;flex-direction:column;gap:6px;min-height:0;min-width:0;overflow:hidden}
+    .gr-quad.done{border-color:var(--ok);background:linear-gradient(180deg,rgba(99,197,139,.10),transparent)}
+    .gr-qhead{display:flex;flex-direction:column;line-height:1.2;min-width:0;overflow:hidden}
+    .gr-qhead strong{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .gr-qhead span{font-size:10.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .gr-qkind{font-size:9.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--accent2);font-weight:800;
+      flex:1 1 100%;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .gr-qset{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end;min-width:0}
+    .gr-qset label{display:flex;flex-direction:column;gap:2px;font-size:9px;color:var(--muted);
+      text-transform:uppercase;letter-spacing:.4px;flex:1 1 40px;min-width:0}
+    .gr-qset input{width:100%;padding:6px;font-size:13px}
+    .gr-dots{display:flex;gap:4px;flex-wrap:wrap}
+    .gr-dots i{width:9px;height:9px;border-radius:99px;background:var(--panel2);border:1px solid var(--line);display:block}
+    .gr-dots i.on{background:var(--accent);border-color:var(--accent)}
+    .gr-dots i.now{background:var(--accent2);border-color:var(--accent2)}
+    .gr-qdone{flex:1;display:flex;align-items:center;justify-content:center;color:var(--ok);font-weight:800;font-size:13px}
+    .gr-qacts{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;min-width:0}
+    .gr-qacts .btn{flex:1 1 auto;min-width:0;padding:8px 5px;font-size:11.5px;white-space:nowrap}
+    .gr-qalvo{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .gr-qset input{padding:9px 8px;font-size:15px}
+    body.tr-on .toast,body.gr-on .toast{top:calc(10px + env(safe-area-inset-top));bottom:auto}
+    @media (max-width:399px){ .gr-board{grid-template-columns:1fr;grid-auto-rows:auto} }
 </style>
 </head>
 <body>
@@ -1293,14 +1327,18 @@
           </div>
         </div>
         <div class="actions">
-          <button type="button" class="btn" id="grpSaveAll">Salvar todos</button>
+          <button type="button" class="btn" id="grpStart">▶ Iniciar treino guiado</button>
+          <button type="button" class="btn secondary" id="grpSaveAll">Salvar todos</button>
           <button type="button" class="btn ghost" id="grpClear">Limpar</button>
         </div>
       </div>
       <div class="grp-grid" id="grpGrid" data-n="4"></div>
-      <p class="hint">Cada coluna é um aluno. Ao salvar, cada treino entra no histórico normal do aluno, na mesma data.</p>
+      <p class="hint">Cada coluna é um aluno. Ao salvar, cada treino entra no histórico normal do aluno, na mesma data.
+        Ou toque em <strong>▶ Iniciar treino guiado</strong> para conduzir todos ao mesmo tempo, com a tela dividida.</p>
     </article>
   </div></section>
+
+  <div class="gr-overlay" id="grOverlay" hidden></div>
 
 
   <section class="page" id="history"><div class="grid">
@@ -1877,7 +1915,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '39';
+  const APP_V = '40';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -4253,6 +4291,260 @@
   if (trDy) trDy.addEventListener('change', trResumo);
   const trGo = $('#trStart');
   if (trGo) trGo.addEventListener('click', trOpen);
+
+  /* ================= TREINO EM GRUPO — MODO GUIADO =================
+     Tela dividida em ate 4 quadrantes (um por aluno). O treino anda exercicio por
+     exercicio para todos juntos; cada aluno tem a serie atual com reps/carga/RIR,
+     play do descanso e "Feita". No fim, cada aluno vira uma sessao normal
+     (grpPushSession) — logo entra no Historico, recordes e evolucao. */
+  let grRun = null;
+  let grTimer = null;
+
+  function grNome(id){ const s = state.students.find(x => x.id === id); return s ? s.name : 'Aluno'; }
+  function grTotal(run){ return Math.max(1, ...run.slots.map(s => s.exercises.length)); }
+
+  function grStart(){
+    const g = grpEnsure();
+    for (let i = 0; i < g.n; i++) grpReadCol(i);
+    const ativos = [];
+    for (let i = 0; i < g.n; i++){
+      const slot = g.slots[i];
+      if (!slot.studentId) continue;
+      if (!slot.exercises.length) grpLoadSlot(i, true);
+      if (!slot.exercises.length) continue;
+      const exercises = slot.exercises.map(e => Object.assign({}, e, {
+        sets: (Array.isArray(e.sets) && e.sets.length) ? e.sets : makeSets(e), cur: 0
+      }));
+      ativos.push({ studentId: slot.studentId, dayTitle: slot.dayTitle || 'Treino', exercises });
+    }
+    if (!ativos.length) return notify('Escolha ao menos um aluno com ficha cadastrada.', true);
+    grRun = { date: g.date || today(), time: g.time || '', slots: ativos, step: 0, startedAt: Date.now() };
+    if (!chrono.running) chronoStart();
+    const ov = $('#grOverlay');
+    ov.hidden = false;
+    document.body.classList.add('gr-on');
+    grPaint();
+    clearInterval(grTimer);
+    grTimer = setInterval(grTick, 1000);
+    grTick();
+    try { if (!isFullscreen()) goFullscreen(); } catch(e){}
+    notify(`Treino em grupo iniciado — ${ativos.length} aluno(s).`);
+  }
+  function grQuadHTML(sl, i){
+    const run = grRun;
+    const nome = esc(grNome(sl.studentId));
+    const ex = sl.exercises[run.step];
+    if (!ex){
+      return `<div class="gr-quad done" data-slot="${i}">
+        <div class="gr-qhead"><strong>${nome}</strong><span>${esc(sl.dayTitle)}</span></div>
+        <div class="gr-qdone">✓ Treino concluído</div>
+        <div class="gr-dots">${sl.exercises.map((e,k) => `<i class="${k < run.step ? 'on' : ''}"></i>`).join('')}</div>
+      </div>`;
+    }
+    const cur = num(ex.cur) || 0;
+    const fim = cur >= ex.sets.length;
+    const set = ex.sets[Math.min(cur, ex.sets.length - 1)] || {};
+    const dots = ex.sets.map((s,k) => `<i class="${s.done ? 'on' : (k === cur ? 'now' : '')}"></i>`).join('');
+    const rMin = num(ex.repsMin) || num(ex.reps), rMax = num(ex.repsMax) || rMin;
+    const alvo = [num(ex.setsPlanned) ? num(ex.setsPlanned) + '×' + (rMax > rMin ? rMin + '–' + rMax : (rMin || '—')) : '',
+      num(ex.load) ? fmt(ex.load) + ' kg' : '', (num(ex.rest) || 60) + 's descanso'].filter(Boolean).join(' · ');
+    const corpo = fim
+      ? '<div class="gr-qdone">✓ Séries concluídas</div>'
+      : `<div class="gr-qset">
+           <span class="gr-qkind">${kindMeta(kindOf(set)).label}</span>
+           <label>Reps<input class="gr-reps" type="number" min="0" inputmode="numeric" value="${set.reps ?? ''}"></label>
+           <label>Carga<input class="gr-load" type="text" inputmode="decimal" value="${set.load ?? ''}"></label>
+           <label>RIR<input class="gr-rir" type="number" min="0" max="10" value="${set.rir ?? ''}"></label>
+         </div>`;
+    const acts = fim
+      ? `<button type="button" class="btn ghost small gr-undo" data-slot="${i}">↺ Corrigir última</button>`
+      : `<button type="button" class="btn ghost small gr-play" data-slot="${i}">▶ ${num(ex.rest) || 60}s</button>
+         <button type="button" class="btn small gr-done" data-slot="${i}">✓ Feita</button>
+         <button type="button" class="btn ghost small gr-skipset" data-slot="${i}" title="Pular esta série">↷</button>`;
+    return `<div class="gr-quad${fim ? ' done' : ''}" data-slot="${i}">
+      <div class="gr-qhead"><strong>${nome}</strong><span>${esc(ex.name || 'Exercício')} · série ${Math.min(cur + 1, ex.sets.length)}/${ex.sets.length}</span></div>
+      ${corpo}
+      <div class="gr-qalvo">${esc(alvo)}</div>
+      <div class="gr-dots">${dots}</div>
+      <div class="gr-qacts">${acts}</div>
+    </div>`;
+  }
+  function grPaint(){
+    const run = grRun; const ov = $('#grOverlay'); if (!run || !ov) return;
+    const total = grTotal(run);
+    const pct = Math.round((run.step / total) * 100);
+    ov.innerHTML = `
+      <header class="tr-top">
+        <button type="button" class="btn ghost small" id="grClose" title="Sair do treino em grupo">✕</button>
+        <div class="tr-top-mid"><strong>Treino em grupo · ${run.slots.length} aluno(s)</strong><span>${dateFmt(run.date)}${run.time ? ' · ' + esc(run.time) : ''}</span></div>
+        <span class="tr-clock" id="grClock">00:00</span>
+        <button type="button" class="btn ghost small" id="grFs" title="Tela cheia">⤢</button>
+      </header>
+      <div class="tr-progress"><div id="grBar" style="width:${pct}%"></div></div>
+      <div class="tr-step" id="grStep">Exercício ${Math.min(run.step + 1, total)} de ${total}</div>
+      <div class="gr-board" id="grBoard" data-n="${run.slots.length}">${run.slots.map((sl,i) => grQuadHTML(sl, i)).join('')}</div>
+      <footer class="tr-foot">
+        <div class="tr-restbar" id="grRestBar" hidden>
+          <button type="button" class="btn ghost small" id="grRestToggle">❚❚</button>
+          <span class="tr-resttime" id="grRestTime">00:00</span>
+          <span class="tr-restlabel" id="grRestLabel">Descanso</span>
+          <button type="button" class="btn ghost small" id="grRestAdd">+30s</button>
+        </div>
+        <button type="button" class="btn ghost" id="grPrev"${run.step === 0 ? ' disabled' : ''}>←</button>
+        <button type="button" class="btn ghost small" id="grSkip">Pular</button>
+        <button type="button" class="btn" id="grNext">${run.step >= total - 1 ? 'Concluir treino ✓' : 'Próximo exercício →'}</button>
+      </footer>`;
+    grWire();
+  }
+  function grWire(){
+    const run = grRun; if (!run) return;
+    const c = $('#grClose'); if (c) c.addEventListener('click', grClose);
+    const p = $('#grPrev'); if (p) p.addEventListener('click', () => { if (run.step > 0){ run.step--; grPaint(); } });
+    const n = $('#grNext'); if (n) n.addEventListener('click', grNext);
+    const sk = $('#grSkip'); if (sk) sk.addEventListener('click', grNext);
+    const fs = $('#grFs'); if (fs) fs.addEventListener('click', () => { isFullscreen() ? exitFullscreen() : goFullscreen(); });
+    const rt = $('#grRestToggle');
+    if (rt) rt.addEventListener('click', () => {
+      if (timer.alarm){ timer.alarm = false; timerStart(timer.total); }
+      else { timer.running = !timer.running; paintTimer(); }
+      grRestPaint();
+    });
+    const ra = $('#grRestAdd');
+    if (ra) ra.addEventListener('click', () => { timer.left += 30; timer.total += 30; timer.alarm = false; paintTimer(); grRestPaint(); });
+    $$('#grBoard .gr-quad').forEach(q => {
+      const i = num(q.dataset.slot);
+      const sl = run.slots[i]; if (!sl) return;
+      const ex = sl.exercises[run.step];
+      const el = sel => q.querySelector(sel);
+      const cur = ex ? (num(ex.cur) || 0) : 0;
+      if (ex && cur < ex.sets.length){
+        const set = ex.sets[cur];
+        const r = el('.gr-reps'), l = el('.gr-load'), rr = el('.gr-rir');
+        if (r) r.addEventListener('input', () => { set.reps = num(r.value); });
+        if (l) l.addEventListener('input', () => { set.load = num(l.value.replace(',', '.')); });
+        if (rr) rr.addEventListener('input', () => { set.rir = num(rr.value); });
+        const pl = el('.gr-play');
+        if (pl) pl.addEventListener('click', () => {
+          timerStart(num(ex.rest) || 60);
+          notify(`Descanso de ${num(ex.rest) || 60}s — ${grNome(sl.studentId)}.`);
+          grRestPaint();
+        });
+        const dn = el('.gr-done');
+        if (dn) dn.addEventListener('click', () => {
+          set.done = true; ex.cur = cur + 1;
+          timerStart(num(ex.rest) || 60);
+          grPaint();
+        });
+        const ss = el('.gr-skipset');
+        if (ss) ss.addEventListener('click', () => { ex.cur = cur + 1; grPaint(); });
+      }
+      const un = el('.gr-undo');
+      if (un) un.addEventListener('click', () => { ex.cur = Math.max(0, ex.sets.length - 1); grPaint(); });
+    });
+    grRestPaint();
+    grReady();
+  }
+  function grRestPaint(){
+    const bar = $('#grRestBar'); if (!bar) return;
+    const ativo = !$('#timerBar').hidden;
+    bar.hidden = !ativo;
+    if (!ativo) return;
+    $('#grRestTime').textContent = fmtClock(timer.left);
+    $('#grRestLabel').textContent = timer.alarm ? 'Descanso concluído!' : (timer.running ? 'Descanso' : 'Pausado');
+    const tg = $('#grRestToggle'); if (tg) tg.textContent = timer.alarm ? '↻' : (timer.running ? '❚❚' : '▶');
+    bar.classList.toggle('alarm', !!timer.alarm);
+  }
+  function grTick(){
+    grRestPaint();
+    const el = $('#grClock'); if (!el || !grRun) return;
+    const t = Math.max(0, Math.floor((Date.now() - grRun.startedAt) / 1000));
+    el.textContent = `${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;
+  }
+  function grReady(){
+    const run = grRun; const btn = $('#grNext'); if (!run || !btn) return;
+    const ultimo = run.step >= grTotal(run) - 1;
+    const noPasso = run.slots.some(sl => { const e = sl.exercises[run.step]; return e && e.sets.some(s => s.done); });
+    const algum = run.slots.some(sl => sl.exercises.some(e => e.sets.some(s => s.done)));
+    btn.disabled = ultimo ? !algum : !noPasso;
+    btn.classList.toggle('ghost', btn.disabled);
+  }
+  function grNext(){
+    const run = grRun; if (!run) return;
+    if (run.step >= grTotal(run) - 1) return grFinish();
+    run.step++; grPaint();
+  }
+  function grFinish(){
+    const run = grRun; if (!run) return;
+    const gid = uid();
+    const prior = new Map(run.slots.map(sl => [sl.studentId, prMapFor(sl.studentId)]));
+    let saved = 0, series = 0;
+    const resumo = [];
+    run.slots.forEach(sl => {
+      const ex = sl.exercises.filter(e => e.name);
+      const done = ex.reduce((n,e) => n + e.sets.filter(s => s.done).length, 0);
+      if (!done || !ex.length) return;
+      grpPushSession({ studentId: sl.studentId, dayTitle: sl.dayTitle, exercises: ex },
+        run.date, run.time, gid, run.slots.length);
+      series += done; saved++;
+      const novos = [];
+      const antes = prior.get(sl.studentId) || new Map();
+      prMapFor(sl.studentId).forEach((v,k) => { const p = antes.get(k); if (!p || v.e1rm > p.e1rm + 0.01) novos.push(k); });
+      resumo.push({ nome: grNome(sl.studentId), done, novos });
+    });
+    if (!saved) return notify('Marque pelo menos uma série antes de concluir.', true);
+    const g = grpEnsure();
+    for (let i = 0; i < g.n; i++) g.slots[i].exercises = [];
+    save(); snapshotSave();
+    if (chrono.running) chronoPause();
+    clearInterval(grTimer);
+    grDone(saved, series, resumo);
+  }
+  function grDone(saved, series, resumo){
+    const ov = $('#grOverlay'); if (!ov) return;
+    const run = grRun;
+    const totalNovos = resumo.reduce((n,r) => n + r.novos.length, 0);
+    ov.innerHTML = `
+      <header class="tr-top">
+        <div class="tr-top-mid"><strong>Treino em grupo concluído</strong><span>${run ? dateFmt(run.date) : ''}</span></div>
+        <button type="button" class="btn ghost small" id="grClose2">✕</button>
+      </header>
+      <main class="tr-body tr-done-card">
+        <div class="big">🏁</div>
+        <h2>Treinos registrados!</h2>
+        <p class="hint">Cada aluno entrou no <strong>Histórico</strong> e já conta na própria <strong>evolução</strong>.</p>
+        <div class="tr-kpis">
+          <div class="tr-kpi"><b>${saved}</b><span>aluno(s)</span></div>
+          <div class="tr-kpi"><b>${series}</b><span>séries feitas</span></div>
+          <div class="tr-kpi"><b>${totalNovos}</b><span>recordes</span></div>
+        </div>
+        <div class="tr-target" style="justify-content:center">
+          ${resumo.map(r => `<span class="tr-chip">${esc(r.nome)} · <b>${r.done}</b> séries${r.novos.length ? ' · 🏆 ' + r.novos.length : ''}</span>`).join('')}
+        </div>
+        <div class="actions" style="justify-content:center;flex-wrap:wrap">
+          <button type="button" class="btn" id="grVerHist">Ver histórico</button>
+          <button type="button" class="btn secondary" id="grNovo">Novo treino</button>
+        </div>
+      </main>`;
+    const a = $('#grClose2'); if (a) a.addEventListener('click', grCloseDone);
+    const b = $('#grVerHist'); if (b) b.addEventListener('click', () => { grCloseDone(); showPage('history'); });
+    const d = $('#grNovo'); if (d) d.addEventListener('click', () => { grCloseDone(); showPage('grupo'); });
+  }
+  function grCloseDone(){
+    clearInterval(grTimer); grRun = null;
+    const ov = $('#grOverlay');
+    if (ov){ ov.hidden = true; ov.innerHTML = ''; }
+    document.body.classList.remove('gr-on');
+    exitFullscreen();
+  }
+  function grClose(){
+    if (!grRun) return grCloseDone();
+    const doneSets = grRun.slots.reduce((n,sl) => n + sl.exercises.reduce((m,e) => m + e.sets.filter(s => s.done).length, 0), 0);
+    if (doneSets && !confirm('Sair do treino em grupo? As séries marcadas serão salvas como sessões parciais.')) return;
+    if (doneSets) grFinish();
+    else grCloseDone();
+  }
+  const grStartBtn = $('#grpStart');
+  if (grStartBtn) grStartBtn.addEventListener('click', grStart);
 
   /* ---------- TREINO EM GRUPO ---------- */
   function grpEnsure(){
