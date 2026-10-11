@@ -78,6 +78,7 @@
     .student-picker{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;min-width:min(100%,430px)}
     .tabs{display:flex;gap:8px;overflow:auto;padding:4px 0 14px;scrollbar-width:none}
     .tabs::-webkit-scrollbar{display:none}
+    .nav-sep{flex:0 0 1px;align-self:stretch;margin:2px 5px;background:var(--line);opacity:.85}
     /* ===== BOTAO FLUTUANTE DO ALUNO + SELETOR ===== */
     .aluno-fab{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom));z-index:88;
       display:flex;align-items:center;gap:9px;padding:7px 15px 7px 7px;border-radius:999px;
@@ -961,17 +962,28 @@
 
 
   <nav class="tabs" aria-label="Navegação">
-    <button class="tab" data-page="alunos">Alunos</button>
+    <!-- 1. Painel -->
     <button class="tab active" data-page="dashboard">Visão geral</button>
-    <button class="tab" data-page="agenda">Agenda</button>
+    <!-- 2. Cadastro e avaliação -->
+    <span class="nav-sep" aria-hidden="true"></span>
+    <button class="tab" data-page="alunos">Alunos</button>
+    <button class="tab" data-page="aval">Avaliação física</button>
+    <!-- 3. Montagem do treino -->
+    <span class="nav-sep" aria-hidden="true"></span>
     <button class="tab" data-page="fichas">Fichas de treino</button>
     <button class="tab" data-page="montar">Montar treino</button>
+    <!-- 4. Execução do treino -->
+    <span class="nav-sep" aria-hidden="true"></span>
     <button class="tab" data-page="session">Registrar treino</button>
     <button class="tab" data-page="treino">Carregar treino</button>
     <button class="tab" data-page="grupo">Treino em grupo</button>
+    <!-- 5. Acompanhamento e gestão -->
+    <span class="nav-sep" aria-hidden="true"></span>
     <button class="tab" data-page="history">Histórico</button>
-    <button class="tab" data-page="aval">Avaliação física</button>
+    <button class="tab" data-page="agenda">Agenda</button>
     <button class="tab" data-page="financeiro">Financeiro</button>
+    <!-- 6. Sistema -->
+    <span class="nav-sep" aria-hidden="true"></span>
     <button class="tab" data-page="data">Dados e backup</button>
     <button class="tab" data-page="geral">Geral</button>
   </nav>
@@ -1915,7 +1927,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '40';
+  const APP_V = '41';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
