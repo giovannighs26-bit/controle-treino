@@ -67,6 +67,21 @@ A aba **Treino em grupo** também tem um modo guiado, para conduzir **até 4 alu
   `groupSize` — então cada uma entra no histórico, nos recordes e na evolução do respectivo aluno
 - Sair no meio salva as séries marcadas como **sessões parciais**
 
+### Agenda — quadro da semana
+A aba *Agenda* mostra a semana inteira num **quadro de horários**:
+
+- Colunas = dias (Seg a Sex), linhas = horas, do primeiro horário com aula até o último
+- Cada aluno aparece como um **bloco colorido** com nome curto e horário
+- Quando **dois alunos dividem o mesmo horário**, os blocos ficam **lado a lado** (ex.: segunda 17:00
+  com Giovanna e Rueny) — é assim que o treino em grupo aparece na agenda
+- Os horários **livres** são blocos **tracejados verdes** com o intervalo (`+ livre 08:00-17:00`).
+  **Clique num bloco livre para agendar uma aula ali**; clique no bloco de um aluno para editar
+- Abaixo do quadro, *Horários livres* lista as janelas de cada dia e *Encaixe recomendado* sugere onde
+  cabe uma aula nova
+
+A agenda já vem preenchida com a grade semanal dos alunos (carregada uma única vez — depois disso
+você edita à vontade, e nada é reescrito por cima).
+
 ### As abas ficam sincronizadas
 A aba *Registrar treino* guarda uma cópia do dia da ficha. Se você editar a ficha depois, ela se
 atualiza sozinha:
@@ -340,11 +355,15 @@ Aba final, informativa: o que o app é e como ele se comporta.
 
 ## Estrutura
 - `index.html` — o app inteiro (HTML + CSS + JS, sem dependências externas)
-- Abas: **Alunos** · Visão geral · Fichas de treino · **Montar treino** · Registrar treino ·
-  **Carregar treino** · Treino em grupo · Histórico · Avaliação física · **Financeiro** ·
-  Dados e backup · **Geral**
+- Abas em ordem de uso, do cadastro ao acompanhamento, separadas por 6 grupos:
+  1. **Visão geral**
+  2. Cadastro e avaliação: **Alunos** · **Avaliação física**
+  3. Montagem do treino: **Fichas de treino** · **Montar treino**
+  4. Execução: Registrar treino · **Carregar treino** · Treino em grupo
+  5. Acompanhamento e gestão: Histórico · Agenda · **Financeiro**
+  6. Sistema: Dados e backup · **Geral**
 - O topo tem só as ações do app (instalar, tela cheia, sair) — a troca de aluno é feita na aba
-  **Alunos**, que é a primeira
+  **Alunos**
 - `sw.js` — service worker (cache offline)
 - `manifest.json` / `manifest.webmanifest` — manifest do PWA
 - `icons/` — ícones (o favicon é `icon.svg`; o ícone de atalho do iPhone vai embutido no
