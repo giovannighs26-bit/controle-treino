@@ -161,6 +161,22 @@ versão em texto para colar no WhatsApp. Cada lançamento do histórico também 
 Nos dois casos abre a janela de impressão: escolha **Salvar como PDF**. No celular use
 Compartilhar → Imprimir → Salvar em PDF.
 
+## Mover uma avaliação para outro aluno
+Cada avaliação no histórico da aba *Avaliação física* tem o botão **Mover**, ao lado de *Editar* e
+*Excluir*. Ele serve para corrigir uma avaliação lançada no aluno errado sem precisar digitar tudo
+de novo.
+
+- O modal mostra a data e o aluno atual, e lista os outros alunos num seletor.
+- **Mover avaliação** (padrão) — a avaliação sai do cadastro antigo e passa para o novo. Todos os
+dados vão junto: data, peso, altura, idade, medidas, dobras, % de gordura, observações, examinador
+**e as fotos**. Só muda o dono.
+- **Manter uma cópia para o aluno atual** — marcando a caixa, a origem fica com a avaliação e o
+destino recebe uma cópia (útil quando dois alunos treinam juntos e fazem a mesma avaliação).
+- Se o destino **já tiver uma avaliação naquela data**, o modal avisa antes de confirmar.
+
+O gráfico de evolução, o comparativo com a primeira avaliação e o relatório em PDF passam a
+considerar a avaliação no novo aluno assim que a mudança é confirmada.
+
 ## Modo Aluno — a ficha no celular do aluno
 O botão **🔗 Compartilhar com o aluno** (aba Fichas de treino) gera um link que contém a ficha
 inteira comprimida dentro dele mesmo.
