@@ -787,6 +787,31 @@
     .ag-sug.best{border-color:var(--accent)}
     .ag-sug.aviso{border-color:var(--danger)}
     .ag-vazio{color:var(--muted);font-size:12.5px;padding:10px 2px}
+    /* --- Quadro da semana (formato novo: horarios livres em blocos tracejados) --- */
+    .ag2-wrap{overflow-x:auto;padding-bottom:4px}
+    .ag2{min-width:560px}
+    .ag2-head{display:grid;grid-template-columns:58px repeat(var(--d,5),minmax(0,1fr));gap:0;padding-bottom:6px}
+    .ag2-hc{text-align:center;font-weight:700;color:var(--muted);font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;padding:6px 4px}
+    .ag2-body{display:grid;grid-template-columns:58px repeat(var(--d,5),minmax(0,1fr));gap:0;height:var(--h,600px);overflow:hidden;border:1px solid var(--line);border-radius:14px;background:var(--panel2)}
+    .ag2-gut{position:relative;border-right:1px solid var(--line)}
+    .ag2-hr{position:absolute;right:7px;font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums;transform:translateY(-50%);white-space:nowrap}
+    .ag2-col{position:relative;border-right:1px solid var(--line);min-width:0}
+    .ag2-col:last-child{border-right:0}
+    .ag2-line{position:absolute;left:0;right:0;height:1px;background:var(--line);opacity:.5}
+    .ag2-livre{position:absolute;left:3px;right:3px;border-radius:8px;border:1px dashed #63c58b66;background:#63c58b12;color:#63c58b;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;overflow:hidden;padding:2px;transition:.15s}
+    .ag2-livre:hover{background:#63c58b2e;border-color:#63c58b}
+    .ag2-livre span{font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;opacity:.9}
+    .ag2-livre b{font-size:10.5px;font-variant-numeric:tabular-nums}
+    .ag2-aula{position:absolute;border-radius:8px;border:1px solid var(--line);border-left:4px solid var(--c,#d8a93d);background:var(--panel);padding:3px 6px;overflow:hidden;cursor:pointer;transition:.15s}
+    .ag2-aula:hover{filter:brightness(1.2)}
+    .ag2-aula b{display:block;font-size:11px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .ag2-aula span{display:block;font-size:9.5px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    @supports (background:color-mix(in srgb,red 20%,transparent)){
+      .ag2-aula{background:color-mix(in srgb,var(--c,#d8a93d) 22%,transparent)}
+    }
+    html[data-theme="light"] .ag2-body{background:#fff}
+    html[data-theme="light"] .ag2-livre{background:#63c58b1f}
+    html[data-theme="light"] .ag2-aula{background:color-mix(in srgb,var(--c,#d8a93d) 26%,#fff)}
     html[data-theme="light"] .ag-gc.bloq{background:#e7ece7;background-image:repeating-linear-gradient(45deg,transparent,transparent 5px,#00000010 5px,#00000010 10px)}
     html[data-theme="light"] .ag-mini{background:#0000000d}
     html[data-theme="light"] .ag-mini:hover{background:#0000001a}
@@ -1004,9 +1029,10 @@
     </article>
 
     <article class="card">
-      <h2 style="margin:0 0 4px">Grade da semana</h2>
-      <p class="hint" style="margin:0 0 12px">Clique em um horário <b>livre</b> para agendar uma aula ali.
-      Clique numa aula para editá-la.</p>
+      <h2 style="margin:0 0 4px">Quadro da semana</h2>
+      <p class="hint" style="margin:0 0 12px">Os blocos <b style="color:#63c58b">tracejados</b> são os horários
+      <b>livres</b> — clique neles para agendar uma aula. Clique no bloco de um aluno para editar. Quando dois
+      alunos dividem o mesmo horário, os blocos aparecem lado a lado.</p>
       <div id="agGrade"></div>
       <div class="ag-leg" id="agLeg"></div>
     </article>
@@ -1927,7 +1953,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '41';
+  const APP_V = '42';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -8379,7 +8405,34 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
     if (!Array.isArray(a.aulas)) a.aulas = [];
     if (!Array.isArray(a.prio)) a.prio = JSON.parse(JSON.stringify(AG_PADRAO.prio));
     if (!Array.isArray(a.evitar)) a.evitar = [3];
+    if (a.seedAulas !== 1) agSeedAulas(a);
     return a;
+  }
+  /* Agenda real do treinador: [id do aluno, nome curto, dia da semana, inicio].
+     Carregada uma unica vez (a.seedAulas) para nao duplicar em quem ja tem os dados. */
+  const AG_SEED_AULAS = [
+    ['ariana','Ariana',3,'07:00'],
+    ['daniele','Dani',1,'07:00'], ['daniele','Dani',2,'07:00'], ['daniele','Dani',5,'17:00'],
+    ['fabiana','Fabiana Teodoro',1,'21:00'], ['fabiana','Fabiana Teodoro',2,'21:00'], ['fabiana','Fabiana Teodoro',4,'21:00'],
+    ['giovanna','Giovanna',1,'17:00'], ['giovanna','Giovanna',2,'17:00'], ['giovanna','Giovanna',4,'17:00'],
+    ['janaina','Janaina',2,'14:30'],
+    ['leticia','Leticia Teodoro',1,'21:00'], ['leticia','Leticia Teodoro',2,'21:00'], ['leticia','Leticia Teodoro',3,'21:00'], ['leticia','Leticia Teodoro',4,'21:00'],
+    ['rueny','Rueny Araujo',1,'17:00'], ['rueny','Rueny Araujo',2,'17:00'], ['rueny','Rueny Araujo',4,'17:00'],
+    ['silvana','Silvana',5,'16:00'],
+    ['sebastiao','Sebastiao',4,'07:00']
+  ];
+  function agSeedAulas(a){
+    a.seedAulas = 1;
+    const BK = ['bk1','bk2','bk3','bk4','bk5','bk6','bk7'];
+    a.bloques = (a.bloques || []).filter(b => BK.indexOf(b.id) < 0);
+    a.evitar = [];
+    a.aulas = (a.aulas || []).filter(x => !x.seedAulas);
+    AG_SEED_AULAS.forEach((row, i) => {
+      a.aulas.push({id:'ags' + i, studentId:row[0], nome:row[1], dia:row[2], ini:row[3],
+        fim:agHM(agMin(row[3]) + 60), desde:today(), ate:null, obs:'Aula semanal',
+        cor:'', ativo:true, seedAulas:true});
+    });
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e){}
   }
   function agMin(h){ const q = String(h == null ? '0:0' : h).split(':'); const a = parseInt(q[0],10), b = parseInt(q[1],10); return (isNaN(a)?0:a)*60 + (isNaN(b)?0:b); }
   function agHM(m){ m = ((Math.round(m) % 1440) + 1440) % 1440; return String(Math.floor(m/60)).padStart(2,'0') + ':' + String(m%60).padStart(2,'0'); }
@@ -8430,6 +8483,18 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
   function agNomeAula(x){
     const st = state.students.find(y => y.id === x.studentId);
     return (st && st.name) || x.nome || 'Aula';
+  }
+  /* Nome curto para caber no bloco do quadro: primeiro nome + ultimo sobrenome. */
+  function agNomeCurto(x, soPrimeiro){
+    const st = state.students.find(y => y.id === x.studentId);
+    if (!st) return x.nome || 'Aula';
+    const partes = String(st.name || '').split(/\s+/).filter(Boolean);
+    if (soPrimeiro) return partes[0] || st.name;
+    if (partes.length <= 2) return st.name;
+    const lixo = ['de','da','do','dos','das','e','di','du'];
+    let fim = partes.length - 1;
+    while (fim > 0 && lixo.indexOf(partes[fim].toLowerCase().replace(/\./g,'')) >= 0) fim--;
+    return partes[0] + ' ' + partes[fim];
   }
   function agCor(x){
     if (x.cor) return x.cor;
@@ -8497,6 +8562,96 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
     h += k('Horas livres', agHh(minLivre), 'good');
     h += k('Próximo horário livre', pl ? ((pl.dif === 0 ? 'hoje' : AG_DIAS[pl.dia]) + ' ' + pl.ini) : '—', pl ? 'good' : 'warn');
     h += k('Janelas livres', agEnsure().cfg.dias.reduce((n,d) => n + agLivres(d).length, 0));
+    return h;
+  }
+  /* Faixa de horas que o quadro mostra: cobre todas as aulas, arredondada na hora. */
+  function ag2Faixa(){
+    const a = agEnsure();
+    let ini = 24*60, fim = 0;
+    a.aulas.forEach(x => {
+      if (x.ativo === false) return;
+      const s0 = agMin(x.ini), e0 = s0 + agDurMin(x.ini, x.fim);
+      if (s0 < ini) ini = s0;
+      if (e0 > fim) fim = e0;
+    });
+    if (ini > fim){ ini = agMin('07:00'); fim = agMin('21:00'); }
+    ini = Math.floor(ini/60)*60;
+    fim = Math.ceil(fim/60)*60;
+    if (fim - ini < 6*60) fim = ini + 6*60;
+    return [ini, fim];
+  }
+  /* Faixas laterais para aulas que dividem o mesmo horario (ex.: Giovanna + Rueny as 17h). */
+  function ag2Lanes(lista){
+    const res = [], grupos = [];
+    lista.forEach((x, i) => {
+      const s0 = agMin(x.ini), e0 = s0 + agDurMin(x.ini, x.fim);
+      let g = null;
+      for (let k = 0; k < grupos.length; k++){
+        const G = grupos[k];
+        const bate = G.itens.some(j => {
+          const y = lista[j], s1 = agMin(y.ini), e1 = s1 + agDurMin(y.ini, y.fim);
+          return s0 < e1 && s1 < e0;
+        });
+        if (bate){ g = G; break; }
+      }
+      if (!g){ g = {itens:[]}; grupos.push(g); }
+      g.itens.push(i);
+    });
+    grupos.forEach(G => {
+      const faixas = [];
+      G.itens.forEach(i => {
+        const x = lista[i], s0 = agMin(x.ini), e0 = s0 + agDurMin(x.ini, x.fim);
+        let k = -1;
+        for (let j = 0; j < faixas.length; j++){ if (faixas[j] <= s0){ k = j; break; } }
+        if (k < 0){ k = faixas.length; faixas.push(e0); } else faixas[k] = e0;
+        res[i] = {i:k, total:1};
+      });
+      G.itens.forEach(i => { res[i].total = faixas.length; });
+    });
+    return res;
+  }
+  /* Quadro da semana: horas na vertical, dias na horizontal, livres em blocos tracejados. */
+  function ag2HTML(){
+    const a = agEnsure();
+    const dias = a.cfg.dias.slice().sort((x,y) => x - y);
+    const fx = ag2Faixa(), ini = fx[0], fim = fx[1];
+    const PXH = 44, H = Math.round((fim - ini)/60*PXH);
+    const y = m => Math.round((m - ini)/60*PXH);
+    let h = '<div class="ag2-wrap"><div class="ag2">';
+    h += '<div class="ag2-head" style="--d:' + dias.length + '"><div class="ag2-hc"></div>' +
+      dias.map(d => '<div class="ag2-hc">' + AG_DIAS[d] + '</div>').join('') + '</div>';
+    h += '<div class="ag2-body" style="--d:' + dias.length + ';--h:' + H + 'px">';
+    h += '<div class="ag2-gut">';
+    for (let t = ini; t <= fim; t += 60){
+      const prim = (t === ini);
+      h += '<div class="ag2-hr" style="top:' + (prim ? 2 : y(t)) + 'px' + (prim ? ';transform:none' : '') + '">' + agHM(t) + '</div>';
+    }
+    h += '</div>';
+    dias.forEach(d => {
+      h += '<div class="ag2-col" data-dia="' + d + '">';
+      for (let t = ini; t <= fim; t += 60) h += '<div class="ag2-line" style="top:' + y(t) + 'px"></div>';
+      agLivres(d).forEach(iv => {
+        const s0 = Math.max(iv[0], ini), e0 = Math.min(iv[1], fim);
+        if (e0 - s0 < 30) return;
+        h += '<div class="ag2-livre" data-dia="' + d + '" data-t="' + s0 + '" title="' + AG_DIAS_L[d] +
+          ' ' + agHM(s0) + '-' + agHM(e0) + ' livre — clique para agendar" style="top:' + y(s0) +
+          'px;height:' + Math.max(22, Math.round((e0 - s0)/60*PXH) - 4) + 'px"><span>+ livre</span><b>' +
+          agHM(s0) + '-' + agHM(e0) + '</b></div>';
+      });
+      const lista = a.aulas.filter(x => x.dia === d && x.ativo !== false)
+        .sort((p,q) => agMin(p.ini) - agMin(q.ini) || agNomeAula(p).localeCompare(agNomeAula(q)));
+      const lanes = ag2Lanes(lista);
+      lista.forEach((x, i) => {
+        const s0 = agMin(x.ini), e0 = s0 + agDurMin(x.ini, x.fim);
+        const L = lanes[i] || {i:0, total:1}, w = 100/L.total;
+        h += '<div class="ag2-aula" data-dia="' + d + '" data-t="' + s0 + '" style="top:' + y(s0) +
+          'px;height:' + Math.max(24, Math.round((e0 - s0)/60*PXH) - 4) + 'px;left:calc(' + (L.i*w) +
+          '% + 3px);width:calc(' + w + '% - 6px);--c:' + agCor(x) + '" title="' + esc(agNomeAula(x)) + ' · ' +
+          AG_DIAS_L[d] + ' ' + x.ini + '-' + x.fim + '"><b>' + esc(agNomeCurto(x, L.total > 1)) + '</b><span>' + x.ini + '-' + x.fim + '</span></div>';
+      });
+      h += '</div>';
+    });
+    h += '</div></div></div>';
     return h;
   }
   function agGradeHTML(){
@@ -8638,10 +8793,11 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
     if (!pg || !pg.classList.contains('active')) return;
     agEnsure();
     $('#agKpis').innerHTML = agKpiHTML();
-    $('#agGrade').innerHTML = agGradeHTML();
-    $('#agLeg').innerHTML = '<span><i style="background:#63c58b"></i>Livre</span>' +
-      '<span><i style="background:#d8a93d"></i>Aula</span>' +
-      '<span><i style="background:#22302a;border:1px solid var(--line)"></i>Bloqueio</span>';
+    $('#agGrade').innerHTML = ag2HTML();
+    $('#agLeg').innerHTML = '<span><i style="background:#63c58b"></i>Horario livre (clique para agendar)</span>' +
+      '<span><i style="background:#d8a93d"></i>Aula do aluno</span>' +
+      '<span><i style="background:#22302a;border:1px solid var(--line)"></i>Bloqueio</span>' +
+      '<span><i style="background:#5aa9e6"></i>2 alunos no mesmo horario aparecem lado a lado</span>';
     $('#agLivre').innerHTML = agLivreHTML();
     $('#agEncaixe').innerHTML = agEncaixeHTML();
     const au = agAulasHTML();
@@ -8806,7 +8962,7 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
       el.dataset.agWired = '1'; el.addEventListener(ev, fn);
     };
     once('#agGrade', 'click', ev => {
-      const c = ev.target.closest('.ag-gc'); if (!c) return;
+      const c = ev.target.closest('.ag-gc, .ag2-aula, .ag2-livre'); if (!c) return;
       const dia = parseInt(c.dataset.dia, 10), t = parseInt(c.dataset.t, 10);
       const st = agEstado(dia, t);
       if (st.k === 'aula') agAulaAbrir(st.aula.id);
