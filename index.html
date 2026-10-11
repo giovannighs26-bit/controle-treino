@@ -1580,6 +1580,22 @@
     </section>
 
 
+    <div class="modal" id="avMoveModal"><div class="modal-box">
+      <div class="modal-head"><h2>Mover avaliação</h2><button class="close" type="button" data-close>&times;</button></div>
+      <p class="hint" style="margin-top:0" id="avMoveResumo"></p>
+      <div class="grid">
+        <div class="field span12"><label for="avMoveDest">Levar para o aluno</label>
+          <select class="fin-input" id="avMoveDest"></select></div>
+        <div class="field span12"><label for="avMoveCopy" style="display:flex;align-items:center;gap:9px;font-size:13px;cursor:pointer">
+          <input type="checkbox" id="avMoveCopy" style="width:auto;margin:0"> Manter uma cópia para o aluno atual</label></div>
+      </div>
+      <div id="avMoveAviso"></div>
+      <div class="actions" style="justify-content:flex-end;margin-top:14px">
+        <button class="btn ghost" type="button" data-close>Cancelar</button>
+        <button class="btn" id="avMoveOk" type="button">Mover avaliação</button>
+      </div>
+    </div></div>
+
     <div class="modal" id="agAulaModal"><div class="modal-box">
       <div class="modal-head"><h2 id="agAulaTit">Nova aula</h2><button class="close" type="button" data-close>&times;</button></div>
       <div class="grid">
@@ -1953,7 +1969,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '42';
+  const APP_V = '43';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -7819,11 +7835,13 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
         <div class="m">IMC ${avFmt(avBmi(a))} · massa magra ${avFmt(c.leanMass)} kg · % gordura ${c.src || 'não calculado'}</div></div>
         <div class="actions">
           <button class="btn secondary small" data-av-edit="${esc(a.id)}">Editar</button>
+          <button class="btn secondary small" data-av-move="${esc(a.id)}" title="Mover ou copiar para outro aluno">Mover</button>
           <button class="btn danger small" data-av-del="${esc(a.id)}">Excluir</button>
         </div></div>`;
     }).join('') : '<div class="empty">Nenhuma avaliação para este aluno. Toque em “+ Nova avaliação”.</div>';
     $$('[data-av-edit]').forEach(b => b.addEventListener('click', () => avEdit(b.dataset.avEdit)));
     $$('[data-av-del]').forEach(b => b.addEventListener('click', () => avDelete(b.dataset.avDel)));
+    $$('[data-av-move]').forEach(b => b.addEventListener('click', () => avMoveOpen(b.dataset.avMove)));
   }
   function renderAvResults(){
     const a = avResultsSource();
@@ -8131,6 +8149,55 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
     notify(wasNew ? 'Avaliação registrada.' : 'Avaliação atualizada.');
   }
 
+  /* ---- mover / copiar avaliacao para outro aluno ---- */
+  let avMoveId = null;
+  function avMoveOpen(id){
+    const a = avFind(id); if (!a) return;
+    const outros = state.students.filter(s => s.id !== a.studentId);
+    if (!outros.length) return notify('Não há outro aluno cadastrado para receber esta avaliação.', true);
+    const de = state.students.find(s => s.id === a.studentId);
+    avMoveId = id;
+    $('#avMoveResumo').innerHTML = 'Avaliação de <b>' + esc(dateFmt(a.date)) + '</b>' +
+      (de ? ', hoje no cadastro de <b>' + esc(de.name) + '</b>' : '') + '.';
+    $('#avMoveDest').innerHTML = outros.map(s => '<option value="' + esc(s.id) + '">' + esc(s.name) + '</option>').join('');
+    $('#avMoveCopy').checked = false;
+    avMoveAviso();
+    $('#avMoveModal').classList.add('open');
+  }
+  function avMoveAviso(){
+    const sel = $('#avMoveDest'); if (!sel) return;
+    const copiar = $('#avMoveCopy').checked;
+    $('#avMoveOk').textContent = copiar ? 'Copiar avaliação' : 'Mover avaliação';
+    const a = avMoveId ? avFind(avMoveId) : null;
+    const dup = a ? avList().find(x => x.studentId === sel.value && x.date === a.date && x.id !== a.id) : null;
+    $('#avMoveAviso').innerHTML = dup
+      ? '<div class="ag-sug aviso"><span>Este aluno já tem uma avaliação em ' + esc(dateFmt(a.date)) +
+        '. Você pode ' + (copiar ? 'copiar' : 'mover') + ' mesmo assim.</span></div>'
+      : '';
+  }
+  function avMoveConfirm(){
+    const a = avMoveId ? avFind(avMoveId) : null;
+    if (!a) return;
+    const sid = $('#avMoveDest').value;
+    const dest = state.students.find(s => s.id === sid);
+    if (!dest) return notify('Escolha o aluno de destino.', true);
+    const copiar = $('#avMoveCopy').checked;
+    if (copiar){
+      const novo = JSON.parse(JSON.stringify(a));
+      novo.id = uid();
+      novo.studentId = sid;
+      novo.updatedAt = new Date().toISOString();
+      avList().push(novo);
+    } else {
+      a.studentId = sid;
+      a.updatedAt = new Date().toISOString();
+    }
+    avMoveId = null;
+    $('#avMoveModal').classList.remove('open');
+    save();
+    notify((copiar ? 'Avaliação copiada para ' : 'Avaliação movida para ') + dest.name + '.');
+  }
+
   /* ---- importação ---- */
   function avNormName(v){
     return String(v || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -8262,6 +8329,9 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
   $('#avCancelBtn').addEventListener('click', avCloseForm);
   $('#avSaveBtn').addEventListener('click', avSave);
   $('#avDeleteBtn').addEventListener('click', () => avEditing && avDelete(avEditing));
+  $('#avMoveOk').addEventListener('click', avMoveConfirm);
+  $('#avMoveDest').addEventListener('change', avMoveAviso);
+  $('#avMoveCopy').addEventListener('change', avMoveAviso);
   ['#avDate','#avSex','#avBirth','#avAge','#avHeight','#avWeight','#avBfInf','#avExaminer','#avNotes'].forEach(s =>
     $(s).addEventListener('input', () => avReadForm() && avLive()));
   ['#avMeasures','#avFolds'].forEach(s => $(s).addEventListener('input', () => avReadForm() && avLive()));
