@@ -18,8 +18,16 @@ Aba dedicada a montar e ajustar a ficha sem sair da tela (sem modal):
   treino (o botão aparece na barra de cima e também no rodapé da ficha)
 - **+ Exercício** — acrescenta uma linha; o campo do exercício tem **autocomplete** com todos os
   nomes que você já usa (fichas + histórico)
-- Campos por exercício: exercício, séries, reps (aceita faixa `6–8` ou blocos `6+4+2`), carga (aceita
-  vírgula, ex.: `42,5`), RIR e descanso/observações
+- Campos por exercício: exercício, **preparo (aq/rec)**, **séries de trabalho**, reps (aceita faixa
+  `6–8` ou blocos `6+4+2`), carga (aceita vírgula, ex.: `42,5`), RIR e descanso/observações
+- **Preparo aq/rec — o padrão do app**: todo exercício novo já nasce com **1 aquecimento + 1
+  reconhecimento de carga + 3 séries de trabalho**. Os dois campos ao lado de *Séries trab.* são as
+  quantidades de aquecimento e de reconhecimento (padrão `1` e `1`); mude-os só quando quiser fugir
+  do padrão — por exemplo `2` e `0` para duas ativações e nenhum reconhecimento
+- As **3 séries de trabalho** seguem a faixa de reps da ficha (`8–12`, por exemplo), e só elas contam
+  para o volume e para a fadiga — aquecimento e reconhecimento são registrados, mas ficam de fora
+- O preparo é gravado junto do exercício **apenas quando foge do padrão 1+1**; as fichas que já
+  existem continuam idênticas e seguem valendo 1 aquecimento + 1 reconhecimento
 - **Duplicar** — cria um treino novo a partir de um existente
 - **Copiar p/ aluno** — leva o treino inteiro para a ficha de outro aluno
 - **Excluir** — remove o treino inteiro; o `×` de cada linha remove um exercício
