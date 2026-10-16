@@ -35,7 +35,7 @@
     html[data-theme="light"] .fin-hist-row,html[data-theme="light"] .fin-tot div,html[data-theme="light"] .fin-msg{background:#f7faf7}
     html[data-theme="light"] .item,html[data-theme="light"] .al-row,html[data-theme="light"] .week,
     html[data-theme="light"] .ficha,html[data-theme="light"] #mtFicha .mt-day,html[data-theme="light"] .ex-card,
-    html[data-theme="light"] .av-row,html[data-theme="light"] .av-cmp th,html[data-theme="light"] .av-imp-row,
+    html[data-theme="light"] .av-row,html[data-theme="light"] .av-cmp th,
     html[data-theme="light"] #alunoView .al-list li{background:#fff}
     html[data-theme="light"] .ficha-head,html[data-theme="light"] #mtFicha .mt-day-head{background:#eef4ee}
     html[data-theme="light"] .ex,html[data-theme="light"] .av-arrow.flat,html[data-theme="light"] .ap-av{background:#e8efe8;color:var(--accent2)}
@@ -121,12 +121,9 @@
       border:1px solid var(--line);border-radius:14px;background:#101813;color:var(--text);padding:10px 12px}
     .al-row:hover{border-color:#3d4c3d}
     .al-row.on{border-color:var(--accent);background:#16211a}
-    .al-av{flex:0 0 38px;height:38px;border-radius:999px;display:grid;place-items:center;font-weight:900;
-      font-size:13px;background:#1d2a20;color:var(--accent2);border:1px solid var(--line)}
     .al-nome{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
     .al-nome b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .al-nome small{color:var(--muted);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .al-tag{color:var(--muted);font-size:11px;white-space:nowrap}
     .card h2,.card h3{margin:0 0 14px}.card h2{font-size:18px}.card h3{font-size:15px;color:var(--accent2)}
     label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}
     .form{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
@@ -164,7 +161,6 @@
     .remove{width:40px;height:40px;border-radius:11px;border:1px solid #633833;background:#3c2422;color:#ffc6c3}
     .chart-box{position:relative;height:320px;border-radius:14px;background:#0d1511;border:1px solid var(--line);padding:10px}
     .chart-box canvas{width:100%;height:100%}
-    .period-preview{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:8px;margin-top:14px}
     .week{padding:12px;background:#101813;border:1px solid var(--line);border-radius:12px}
     .week.current{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
     .week strong{display:block;color:var(--accent2)}.week small{color:var(--muted)}
@@ -364,7 +360,6 @@
       .tabs{padding:2px 0 8px}.card{padding:12px 14px}.card h2{font-size:16px;margin-bottom:8px}
       .grid{gap:10px}.summary{grid-template-columns:repeat(4,1fr)}.chart-box{height:220px}
       .exercise-row{grid-template-columns:1.8fr .9fr .55fr .7fr .7fr .65fr 1.4fr auto}
-      .period-preview{grid-template-columns:repeat(auto-fit,minmax(105px,1fr))}
       .login-box{padding:18px 20px}.gh-mark{width:44px;height:44px}
     }
     @media print{
@@ -392,7 +387,6 @@
     .chrono-btn:hover{border-color:var(--accent)}
     .chrono-btn:active{transform:scale(.95)}
     .chrono.run #chronoToggle{background:var(--accent);color:#1c1608;border-color:var(--accent)}
-    .chrono-btn.ghosty{font-size:12px;font-weight:600}
     .sys-row{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
     @media(max-width:700px){
       .chrono{padding:7px 12px;gap:8px}
@@ -474,10 +468,8 @@
     .tip-btn{border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:9px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer}
     .tip-btn:hover{border-color:var(--accent);color:var(--accent)}
     @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-    .tips-box{display:grid;gap:13px}
     .tip-cat{display:inline-flex;align-items:center;font-size:10px;font-weight:800;letter-spacing:.9px;
       text-transform:uppercase;color:#1c1608;background:var(--accent);padding:4px 10px;border-radius:999px;width:max-content}
-    .tip-text{font-size:15px;line-height:1.55;margin:0}
     .tip-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;color:var(--muted);font-size:11px;flex-wrap:wrap}
     /* ===== HOME mais apresentavel ===== */
     .hero-date{font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
@@ -560,9 +552,6 @@
     .photo-thumbs img{width:76px;height:100px;object-fit:cover;border-radius:10px;border:1px solid var(--line);display:block;background:#0d1511}
     .photo-thumbs button{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;border:1px solid #633833;
       background:#3c2422;color:#ffc6c3;font-size:13px;line-height:1;padding:0}
-    .av-imp-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px;border:1px solid var(--line);
-      border-radius:12px;background:#101813;flex-wrap:wrap}
-    .av-imp-row select{max-width:260px}
     @media(max-width:700px){
       .av-cmp th,.av-cmp td{padding:7px 5px;font-size:12px}
       .photo-thumbs img{width:62px;height:82px}
@@ -750,17 +739,6 @@
     .ag-kpi small{color:var(--muted);font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:4px}
     .ag-kpi.good b{color:var(--ok)}
     .ag-kpi.warn b{color:var(--accent)}
-    .ag-grade{display:grid;grid-template-columns:52px repeat(var(--cols,5),minmax(0,1fr));gap:2px;overflow-x:auto;font-size:11px;padding-bottom:2px}
-    .ag-gh{position:sticky;top:0;background:var(--panel);padding:7px 4px;text-align:center;font-weight:700;color:var(--muted);font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;z-index:2}
-    .ag-gt{color:var(--muted);font-size:10px;line-height:1.1;padding:1px 6px 0 0;display:flex;align-items:flex-start;justify-content:flex-end;font-variant-numeric:tabular-nums}
-    .ag-gc{min-height:23px;border-radius:5px;background:var(--panel2);border:1px solid transparent;overflow:hidden}
-    .ag-gc.livre{background:#63c58b1f;border-color:#63c58b3d;cursor:pointer}
-    .ag-gc.livre:hover{background:#63c58b38;border-color:#63c58b}
-    .ag-gc.bloq{background:#0e1512;border-color:var(--line);background-image:repeating-linear-gradient(45deg,transparent,transparent 5px,#ffffff08 5px,#ffffff08 10px)}
-    .ag-gc.aula{background:linear-gradient(145deg,#d8a93d3d,#d8a93d14);border-color:#d8a93d88;cursor:pointer}
-    .ag-gc b{display:block;font-size:10px;line-height:1.2;padding:2px 4px 0;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .ag-gc .ag-mk{display:block;font-size:9px;color:var(--muted);padding:0 4px;line-height:1.25}
-    .ag-gc.livre .ag-mk{color:#63c58b}
     .ag-leg{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:11px;color:var(--muted)}
     .ag-leg i{display:inline-block;width:12px;height:12px;border-radius:4px;vertical-align:-2px;margin-right:5px}
     .ag-dia{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px}
@@ -815,10 +793,8 @@
     html[data-theme="light"] .ag2-body{background:#fff}
     html[data-theme="light"] .ag2-livre{background:#63c58b1f}
     html[data-theme="light"] .ag2-aula{background:color-mix(in srgb,var(--c,#d8a93d) 26%,#fff)}
-    html[data-theme="light"] .ag-gc.bloq{background:#e7ece7;background-image:repeating-linear-gradient(45deg,transparent,transparent 5px,#00000010 5px,#00000010 10px)}
     html[data-theme="light"] .ag-mini{background:#0000000d}
     html[data-theme="light"] .ag-mini:hover{background:#0000001a}
-    html[data-theme="light"] .ag-gc.aula{background:linear-gradient(145deg,#d8a93d44,#d8a93d18)}
 
     /* ===== Aba "Carregar treino" — modo guiado ===== */
     .tr-resumo{margin-top:12px}
@@ -894,8 +870,12 @@
     .gr-qhead{display:flex;flex-direction:column;line-height:1.2;min-width:0;overflow:hidden}
     .gr-qhead strong{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .gr-qhead span{font-size:10.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .gr-qkind{font-size:9.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--accent2);font-weight:800;
-      flex:1 1 100%;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .gr-qtop{display:flex;align-items:center;gap:8px;min-width:0}
+    .gr-qtop strong{flex:1;min-width:0}
+    .gr-clock{font-variant-numeric:tabular-nums;font-weight:800;font-size:11.5px;color:var(--accent2);
+      background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:1px 6px;white-space:nowrap}
+    .gr-play.on{border-color:var(--accent2);color:var(--accent2)}
+    .gr-play.alarm{border-color:var(--ok);color:var(--ok);background:rgba(99,197,139,.14)}
     .gr-quad{overflow:auto;scrollbar-width:thin}
     .gr-quad > *{flex:0 0 auto}
     .gr-qhead{position:sticky;top:-9px;z-index:2;background:var(--panel);padding:9px 0 4px;margin:-9px 0 0}
@@ -925,6 +905,11 @@
     .gr-qdone{display:flex;align-items:center;justify-content:center;color:var(--ok);font-weight:800;font-size:13px;flex:1}
     .gr-qacts{display:flex;gap:5px;flex-wrap:nowrap;min-width:0}
     .gr-qacts .btn{flex:1 1 auto;min-width:0;padding:8px 4px;font-size:11.5px;white-space:nowrap}
+    .gr-qacts .btn[disabled]{opacity:.4;cursor:not-allowed}
+    .gr-setrow.gr-free{grid-template-columns:auto minmax(0,1fr);background:transparent;border-style:dashed}
+    .gr-freetxt{font-size:11px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .ex-card.ex-free{border-style:dashed}
+    .ex-free-hint{font-size:11.5px;color:var(--muted);margin:2px 0 8px}
     body.tr-on .toast,body.gr-on .toast{top:calc(10px + env(safe-area-inset-top));bottom:auto}
     @media (max-width:399px){ .gr-board{grid-template-columns:1fr;grid-auto-rows:auto} }
 </style>
@@ -1988,7 +1973,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '45';
+  const APP_V = '47';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -3293,13 +3278,6 @@
     const n = plan ? plan.days.reduce((a, d) => a + (d.items || []).length, 0) : 0;
     notify(`Ficha salva — ${treinos} treino(s), ${n} exercício(s).`);
   }
-  function mtCounts(){
-    const box = $('#mtFicha'); if (!box) return;
-    box.querySelectorAll('.mt-day').forEach(dayEl => {
-      const c = dayEl.querySelector('.mt-count');
-      if (c) c.textContent = `${dayEl.querySelectorAll('.mt-row').length} exercício(s)`;
-    });
-  }
   function mtWire(box){
     box.querySelectorAll('[data-addex]').forEach(b => b.addEventListener('click', () => {
       const i = num(b.dataset.addex);
@@ -3695,6 +3673,8 @@
   /* Séries iniciais: 1 ativação de aquecimento + 1 reconhecimento de carga + N de trabalho */
   function makeSets(data){
     data = data || {};
+    /* Item de orientacao (sem prescricao): nao gera series nenhuma. */
+    if (data.free) return [];
     const planned = Math.max(1, num(data.setsPlanned) || num(data.sets) || 3);
     const rMin = num(data.repsMin) || num(data.reps) || 10;
     const rMax = num(data.repsMax) || rMin;
@@ -3745,6 +3725,26 @@
   }
   function exCard(data){
     data = data || {};
+    /* Item de orientacao da ficha: so o texto, sem series para registrar. */
+    if (data.free){
+      const c = document.createElement('div');
+      c.className = 'ex-card ex-free';
+      c.dataset.student = data.studentId || '';
+      c.innerHTML = `
+        <div class="ex-head">
+          <input class="ex-name" placeholder="Item de orientação" value="${esc(data.name || '')}">
+          <button class="remove ex-del" type="button" title="Remover">×</button>
+        </div>
+        <div class="ex-free-hint">Item de orientação da ficha — sem séries para registrar.</div>
+        <input class="ex-note" placeholder="Observações" value="${esc(data.note || '')}">`;
+      c.querySelector('.ex-del').addEventListener('click', () => {
+        const parent = c.parentElement;
+        const count = parent ? parent.querySelectorAll('.ex-card').length : 1;
+        if (count > 1) c.remove();
+        else notify('O treino precisa ter ao menos um exercício.', true);
+      });
+      return c;
+    }
     const setArr = Array.isArray(data.sets) ? data.sets : [];
     const plannedSets = num(data.setsPlanned) || num(data.sets) || setArr.length || 3;
     const rMin = num(data.repsMin) || num(data.reps) || 10;
@@ -3853,6 +3853,11 @@
   }
   function addExerciseCard(data){ $('#exerciseCards').append(exCard(data)); }
   function readExData(card){
+    if (card.classList.contains('ex-free')){
+      return { name: card.querySelector('.ex-name').value.trim(), free: true, method: '',
+        setsPlanned: 0, reps: 0, repsMin: 0, repsMax: 0, load: 0, rir: 0, rest: 0,
+        sets: [], note: (card.querySelector('.ex-note') || {}).value || '' };
+    }
     const ms = card.querySelector('.ex-method');
     return {
       name: card.querySelector('.ex-name').value.trim(),
@@ -3926,7 +3931,8 @@
     $('#exerciseCards').innerHTML = '';
     (day.items.length ? day.items : ['']).forEach(it => {
       const p = it ? parseItem(it) : {};
-      addExerciseCard({ name: p.name || '', setsPlanned: p.sets, reps: p.reps, repsMin: p.repsMin, repsMax: p.repsMax,
+      const free = !!it && !mtHasRx(it);
+      addExerciseCard({ name: p.name || '', free, setsPlanned: p.sets, reps: p.reps, repsMin: p.repsMin, repsMax: p.repsMax,
         load: p.load, rir: p.rir, rest: p.rest, method: p.method, blocks: p.blocks,
         prepAqu: p.prepAqu, prepRec: p.prepRec });
     });
@@ -4138,9 +4144,10 @@
     const day = plan.days[Math.min(Math.max(0, num(dayIndex)), plan.days.length - 1)];
     const exercises = (day.items.length ? day.items : ['']).map(it => {
       const p = it ? parseItem(it) : {};
-      const base = { setsPlanned: p.sets, reps: p.reps, repsMin: p.repsMin, repsMax: p.repsMax, load: p.load, rir: p.rir, blocks: p.blocks, prepAqu: p.prepAqu, prepRec: p.prepRec };
+      const free = !!it && !mtHasRx(it);
+      const base = { free, setsPlanned: p.sets, reps: p.reps, repsMin: p.repsMin, repsMax: p.repsMax, load: p.load, rir: p.rir, blocks: p.blocks, prepAqu: p.prepAqu, prepRec: p.prepRec };
       return {
-        name: p.name || '', method: p.method || '',
+        name: p.name || '', free, method: p.method || '',
         setsPlanned: num(p.sets) || 3, reps: num(p.reps), repsMin: num(p.repsMin), repsMax: num(p.repsMax),
         load: num(p.load), rir: num(p.rir), rest: num(p.rest) || 60, note: '',
         sets: makeSets(base)
@@ -4177,7 +4184,7 @@
       </header>
       <div class="tr-progress"><div id="trBar" style="width:${pct}%"></div></div>
       <main class="tr-body">
-        <div class="tr-step" id="trStep">Exercício ${run.i + 1} de ${total}</div>
+        <div class="tr-step">Exercício ${run.i + 1} de ${total}</div>
         <h2 id="trExName">${esc(ex.name || 'Exercício')}</h2>
         <div class="tr-target">${trChips(ex)}</div>
         <div class="tr-sets" id="trSets">${ex.sets.map((s,k) => trSetHTML(s, k, num(ex.rest) || 60)).join('')}</div>
@@ -4271,7 +4278,7 @@
   }
   function trPrev(){ const run = trRun; if (!run || run.i <= 0) return; run.i--; trPaint(); }
   function trCollect(){
-    return trRun.exercises.map(e => ({
+    return trRun.exercises.filter(e => !e.free).map(e => ({
       id: uid(), name: e.name, method: e.method || '', setsPlanned: num(e.setsPlanned),
       reps: num(e.repsMin) || num(e.reps), repsMin: num(e.repsMin) || num(e.reps), repsMax: num(e.repsMax) || num(e.repsMin) || num(e.reps),
       load: num(e.load), rir: num(e.rir), rest: num(e.rest) || 60,
@@ -4416,10 +4423,11 @@
       const exercises = slot.exercises.map(e => Object.assign({}, e, {
         sets: (Array.isArray(e.sets) && e.sets.length) ? e.sets : makeSets(e)
       }));
-      ativos.push({ studentId: slot.studentId, dayTitle: slot.dayTitle || 'Treino', exercises, cur: 0, fim: false });
+      ativos.push({ studentId: slot.studentId, dayTitle: slot.dayTitle || 'Treino', exercises, cur: 0, fim: false,
+        inicio: Date.now(), fimEm: null, resto: { left: 0, total: 0, running: false, alarm: false } });
     }
     if (!ativos.length) return notify('Escolha ao menos um aluno com ficha cadastrada.', true);
-    grRun = { date: g.date || today(), time: g.time || '', slots: ativos, startedAt: Date.now() };
+    grRun = { date: g.date || today(), time: g.time || '', slots: ativos, inicio: Date.now() };
     if (!chrono.running) chronoStart();
     const ov = $('#grOverlay');
     ov.hidden = false;
@@ -4430,6 +4438,37 @@
     grTick();
     try { if (!isFullscreen()) goFullscreen(); } catch(e){}
     notify(`Treino em grupo iniciado — ${ativos.length} aluno(s).`);
+  }
+  /* Cronometro e descanso de cada aluno: independentes entre si. */
+  function grRelogio(sl){
+    const fim = sl.fimEm || Date.now();
+    return chronoFmt(Math.max(0, fim - (sl.inicio || fim)));
+  }
+  function grRestoTxt(sl, padrao){
+    const r = sl.resto || {};
+    if (r.alarm) return '✓ descanso';
+    if (r.running || r.left > 0) return fmtClock(r.left);
+    return '▶ ' + (num(padrao) || 60) + 's';
+  }
+  function grRestoStart(sl, sec){
+    if (!sl.resto) sl.resto = { left:0, total:0, running:false, alarm:false };
+    sl.resto.total = Math.max(5, num(sec) || 60);
+    sl.resto.left = sl.resto.total;
+    sl.resto.running = true;
+    sl.resto.alarm = false;
+  }
+  function grRestoPinta(i){
+    const run = grRun; const sl = run && run.slots[i]; if (!sl) return;
+    const b = document.querySelector(`#grBoard .gr-play[data-slot="${i}"]`);
+    if (!b) return;
+    b.textContent = grRestoTxt(sl, num(b.dataset.rest) || 60);
+    b.classList.toggle('alarm', !!(sl.resto && sl.resto.alarm));
+    b.classList.toggle('on', !!(sl.resto && sl.resto.running));
+  }
+  function grRelogioPinta(i){
+    const run = grRun; const sl = run && run.slots[i]; if (!sl) return;
+    const c = document.querySelector(`#grBoard .gr-clock[data-slot="${i}"]`);
+    if (c) c.textContent = grRelogio(sl);
   }
   function grQuadHTML(sl, i){
     const nome = esc(grNome(sl.studentId));
@@ -4442,7 +4481,10 @@
     if (sl.fim){
       const feitas = sl.exercises.reduce((n,e) => n + e.sets.filter(s => s.done).length, 0);
       return `<div class="gr-quad done" data-slot="${i}">
-        <div class="gr-qhead"><strong>${nome}</strong><span>${esc(sl.dayTitle || '')}</span></div>
+        <div class="gr-qhead">
+          <div class="gr-qtop"><strong>${nome}</strong><span class="gr-clock" data-slot="${i}">${grRelogio(sl)}</span></div>
+          <span>${esc(sl.dayTitle || '')}</span>
+        </div>
         <div class="gr-qdone">✓ Treino concluído · ${feitas} séries</div>
         <div class="gr-qacts"><button type="button" class="btn ghost small gr-rever" data-slot="${i}">↺ Revisar</button></div>
       </div>`;
@@ -4452,8 +4494,13 @@
     const prox = sl.exercises[cur + 1];
     const tech = techOf(ex.method);
     const feitas = ex.sets.filter(s => s.done).length;
-    const completo = ex.sets.length > 0 && feitas === ex.sets.length;
-    const rows = ex.sets.map((s, k) => {
+    const completo = ex.free ? true : (ex.sets.length > 0 && feitas === ex.sets.length);
+    const rows = ex.free
+      ? `<div class="gr-setrow gr-free">
+           <span class="gr-kind">NOTA</span>
+           <span class="gr-freetxt">Item de orientação — sem séries para registrar</span>
+         </div>`
+      : ex.sets.map((s, k) => {
       const meta = kindMeta(kindOf(s));
       const campo = tech.blocks
         ? `<label class="gr-f">Blocos<input class="gr-blocks" inputmode="numeric" value="${esc(blocksText(s.blocks))}" placeholder="8+4"></label>`
@@ -4471,15 +4518,18 @@
            <strong>${esc(prox.name || 'Exercício')}</strong><span>${esc(grAlvo(prox))}</span></div>`
       : `<div class="gr-next"><span class="gr-next-lbl">Último exercício do aluno</span></div>`;
     return `<div class="gr-quad" data-slot="${i}">
-      <div class="gr-qhead"><strong>${nome}</strong><span>Exercício ${cur + 1} de ${total} · ${feitas}/${ex.sets.length} séries</span></div>
+      <div class="gr-qhead">
+        <div class="gr-qtop"><strong>${nome}</strong><span class="gr-clock" data-slot="${i}">${grRelogio(sl)}</span></div>
+        <span>Exercício ${cur + 1} de ${total} · ${ex.free ? 'item de orientação' : feitas + '/' + ex.sets.length + ' séries'}</span>
+      </div>
       <div class="gr-tech"><select class="gr-method" title="Técnica do exercício">${TECHNIQUES.map(t => `<option value="${t.id}"${t.id === (ex.method || '') ? ' selected' : ''}>${t.label}</option>`).join('')}</select></div>
       <div class="gr-exname"><strong>${esc(ex.name || 'Exercício')}</strong><span>${esc(grAlvo(ex))}</span></div>
       <div class="gr-setrows">${rows}</div>
       <div class="gr-qacts">
         <button type="button" class="btn ghost small gr-back" data-slot="${i}"${cur === 0 ? ' disabled' : ''} title="Exercício anterior">←</button>
-        <button type="button" class="btn ghost small gr-play" data-slot="${i}" title="Iniciar descanso">▶ ${num(ex.rest) || 60}s</button>
+        ${ex.free ? '' : `<button type="button" class="btn ghost small gr-play${sl.resto && sl.resto.alarm ? ' alarm' : (sl.resto && sl.resto.running ? ' on' : '')}" data-slot="${i}" data-rest="${num(ex.rest) || 60}" title="Iniciar o descanso deste aluno">${grRestoTxt(sl, ex.rest)}</button>`}
         <button type="button" class="btn small gr-adv" data-slot="${i}"${completo ? '' : ' disabled'}>${cur >= total - 1 ? 'Concluir aluno ✓' : 'Próximo →'}</button>
-        <button type="button" class="btn ghost small gr-pular" data-slot="${i}" title="Pular este exercício">↷</button>
+        ${ex.free ? '' : `<button type="button" class="btn ghost small gr-pular" data-slot="${i}" title="Pular este exercício">↷</button>`}
       </div>
       ${proxHTML}
     </div>`;
@@ -4490,19 +4540,13 @@
       <header class="tr-top">
         <button type="button" class="btn ghost small" id="grClose" title="Sair do treino em grupo">✕</button>
         <div class="tr-top-mid"><strong>Treino em grupo · ${run.slots.length} aluno(s)</strong><span>${dateFmt(run.date)}${run.time ? ' · ' + esc(run.time) : ''}</span></div>
-        <span class="tr-clock" id="grClock">00:00</span>
+        <span class="tr-clock" id="grClock">00:00:00</span>
         <button type="button" class="btn ghost small" id="grFs" title="Tela cheia">⤢</button>
       </header>
       <div class="tr-progress"><div id="grBar" style="width:0%"></div></div>
       <div class="tr-step" id="grStep"></div>
       <div class="gr-board" id="grBoard" data-n="${run.slots.length}">${run.slots.map((sl,i) => grQuadHTML(sl, i)).join('')}</div>
       <footer class="tr-foot">
-        <div class="tr-restbar" id="grRestBar" hidden>
-          <button type="button" class="btn ghost small" id="grRestToggle">❚❚</button>
-          <span class="tr-resttime" id="grRestTime">00:00</span>
-          <span class="tr-restlabel" id="grRestLabel">Descanso</span>
-          <button type="button" class="btn ghost small" id="grRestAdd">+30s</button>
-        </div>
         <button type="button" class="btn" id="grFinish" style="flex:1">Concluir treino ✓</button>
       </footer>`;
     grWire();
@@ -4513,15 +4557,6 @@
     const c = $('#grClose'); if (c) c.addEventListener('click', grClose);
     const fs = $('#grFs'); if (fs) fs.addEventListener('click', () => { isFullscreen() ? exitFullscreen() : goFullscreen(); });
     const fin = $('#grFinish'); if (fin) fin.addEventListener('click', grFinish);
-    const rt = $('#grRestToggle');
-    if (rt) rt.addEventListener('click', () => {
-      if (timer.alarm){ timer.alarm = false; timerStart(timer.total); }
-      else { timer.running = !timer.running; paintTimer(); }
-      grRestPaint();
-    });
-    const ra = $('#grRestAdd');
-    if (ra) ra.addEventListener('click', () => { timer.left += 30; timer.total += 30; timer.alarm = false; paintTimer(); grRestPaint(); });
-
     $$('#grBoard .gr-quad').forEach(q => {
       const i = num(q.dataset.slot);
       const sl = run.slots[i]; if (!sl || sl.fim || !sl.exercises.length) return;
@@ -4558,18 +4593,19 @@
         const dn = row.querySelector('.gr-done');
         if (dn) dn.addEventListener('change', () => {
           s.done = dn.checked;
-          if (dn.checked) timerStart(num(ex.rest) || 60);
+          if (dn.checked){ grRestoStart(sl, num(ex.rest) || 60); grRestoPinta(i); }
           grQuadRefresh(i);
           grProgressPaint();
-          grRestPaint();
         });
       });
 
       const pl = q.querySelector('.gr-play');
       if (pl) pl.addEventListener('click', () => {
-        timerStart(num(ex.rest) || 60);
-        grRestPaint();
-        notify(`Descanso de ${num(ex.rest) || 60}s — ${grNome(sl.studentId)}.`);
+        const sec = num(pl.dataset.rest) || 60;
+        if (sl.resto && (sl.resto.running || (sl.resto.left > 0 && !sl.resto.alarm))) sl.resto.running = !sl.resto.running;
+        else grRestoStart(sl, sec);
+        grRestoPinta(i);
+        notify(`Descanso de ${sec}s — ${grNome(sl.studentId)}.`);
       });
       const bk = q.querySelector('.gr-back');
       if (bk) bk.addEventListener('click', () => { sl.cur = Math.max(0, cur - 1); grPaint(); });
@@ -4578,35 +4614,32 @@
       const pu = q.querySelector('.gr-pular');
       if (pu) pu.addEventListener('click', () => grAdvance(i, true));
       const rv = q.querySelector('.gr-rever');
-      if (rv) rv.addEventListener('click', () => { sl.fim = false; sl.cur = Math.max(0, sl.exercises.length - 1); grPaint(); });
+      if (rv) rv.addEventListener('click', () => { sl.fim = false; sl.fimEm = null; sl.cur = Math.max(0, sl.exercises.length - 1); grPaint(); });
     });
-    grRestPaint();
-  }
-  function grRestPaint(){
-    const bar = $('#grRestBar'); if (!bar) return;
-    const ativo = !$('#timerBar').hidden;
-    bar.hidden = !ativo;
-    if (!ativo) return;
-    $('#grRestTime').textContent = fmtClock(timer.left);
-    $('#grRestLabel').textContent = timer.alarm ? 'Descanso concluído!' : (timer.running ? 'Descanso' : 'Pausado');
-    const tg = $('#grRestToggle'); if (tg) tg.textContent = timer.alarm ? '↻' : (timer.running ? '❚❚' : '▶');
-    bar.classList.toggle('alarm', !!timer.alarm);
   }
   function grTick(){
-    grRestPaint();
-    const el = $('#grClock'); if (!el || !grRun) return;
-    const t = Math.max(0, Math.floor((Date.now() - grRun.startedAt) / 1000));
-    el.textContent = `${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;
+    const run = grRun; if (!run) return;
+    const el = $('#grClock');
+    if (el) el.textContent = chronoFmt(Date.now() - (run.inicio || Date.now()));
+    run.slots.forEach((sl, i) => {
+      const r = sl.resto;
+      if (r && r.running && r.left > 0){
+        r.left--;
+        if (r.left <= 0){ r.left = 0; r.running = false; r.alarm = true; beep(); }
+      }
+      if (r && (r.running || r.alarm || r.left > 0)) grRestoPinta(i);
+      grRelogioPinta(i);
+    });
   }
   function grAdvance(i, pular){
     const sl = grRun && grRun.slots[i]; if (!sl) return;
     const cur = grCur(sl);
     const ex = sl.exercises[cur];
-    if (ex && !pular){
+    if (ex && !pular && !ex.free){
       const falta = ex.sets.filter(s => !s.done).length;
       if (falta) return notify(`Faltam ${falta} série(s) de ${ex.name || 'exercício'} — ${grNome(sl.studentId)}.`, true);
     }
-    if (cur >= sl.exercises.length - 1) sl.fim = true;
+    if (cur >= sl.exercises.length - 1){ sl.fim = true; sl.fimEm = Date.now(); }
     else sl.cur = cur + 1;
     grPaint();
     if (sl.fim) notify(`${grNome(sl.studentId)} concluiu o treino. ✓`);
@@ -4621,9 +4654,9 @@
       if (s) row.classList.toggle('done', !!s.done);
     });
     const feitas = ex.sets.filter(s => s.done).length;
-    const completo = ex.sets.length > 0 && feitas === ex.sets.length;
-    const hd = q.querySelector('.gr-qhead span');
-    if (hd) hd.textContent = `Exercício ${cur + 1} de ${sl.exercises.length} · ${feitas}/${ex.sets.length} séries`;
+    const completo = ex.free ? true : (ex.sets.length > 0 && feitas === ex.sets.length);
+    const hd = q.querySelector('.gr-qhead > span');
+    if (hd) hd.textContent = `Exercício ${cur + 1} de ${sl.exercises.length} · ${ex.free ? 'item de orientação' : feitas + '/' + ex.sets.length + ' séries'}`;
     const ad = q.querySelector('.gr-adv');
     if (ad) ad.disabled = !completo;
   }
@@ -4786,7 +4819,7 @@
     slot.exercises.forEach(e => box.append(exCard({
       name: e.name, setsPlanned: e.setsPlanned, reps: e.reps, repsMin: e.repsMin, repsMax: e.repsMax,
       load: e.load, rir: e.rir, rest: e.rest, sets: e.sets, method: e.method, studentId: slot.studentId,
-      prepAqu: e.prepAqu, prepRec: e.prepRec
+      free: e.free, prepAqu: e.prepAqu, prepRec: e.prepRec
     })));
     grpUpdateFoot(col);
     return col;
@@ -4830,9 +4863,10 @@
     slot.dayTitle = day.title;
     slot.exercises = (day.items.length ? day.items : ['']).map(it => {
       const p = it ? parseItem(it) : {};
-      return {name: p.name || '', setsPlanned: p.sets, reps: p.reps, repsMin: p.repsMin, repsMax: p.repsMax,
+      const free = !!it && !mtHasRx(it);
+      return {name: p.name || '', free, setsPlanned: free ? 0 : p.sets, reps: p.reps, repsMin: p.repsMin, repsMax: p.repsMax,
         load: p.load, rir: p.rir, rest: p.rest, method: p.method, blocks: p.blocks, note: '', sets: [],
-        prepAqu: p.prepAqu, prepRec: p.prepRec};
+        prepAqu: free ? 0 : p.prepAqu, prepRec: free ? 0 : p.prepRec};
     });
     return true;
   }
@@ -4850,7 +4884,7 @@
     notify(`${n} treino(s) carregado(s)${miss.length ? ` · coluna(s) ${miss.join(', ')} sem ficha` : ''}.`);
   }
   function grpPushSession(slot, date, time, gid, size){
-    const ex = slot.exercises.map(e => Object.assign({}, e, {id: e.id || uid()}));
+    const ex = slot.exercises.filter(e => !e.free).map(e => Object.assign({}, e, {id: e.id || uid()}));
     state.sessions.push({
       id: uid(), studentId: slot.studentId, date,
       name: slot.dayTitle || 'Treino em grupo',
@@ -8833,29 +8867,6 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
     h += '</div></div></div>';
     return h;
   }
-  function agGradeHTML(){
-    const a = agEnsure(), dias = a.cfg.dias, w = agJanela(), passo = a.cfg.passo || 30;
-    let h = '<div class="ag-grade" style="--cols:' + dias.length + '">';
-    h += '<div class="ag-gh"></div>' + dias.map(d => '<div class="ag-gh">' + AG_DIAS[d] + '</div>').join('');
-    for (let t = w[0]; t < w[1]; t += passo){
-      h += '<div class="ag-gt">' + (t % 60 === 0 ? agHM(t) : '') + '</div>';
-      for (let i = 0; i < dias.length; i++){
-        const d = dias[i], st = agEstado(d, t), ant = t - passo >= w[0] ? agEstado(d, t - passo) : {k:'fora'};
-        const novo = st.k !== ant.k || (st.k === 'aula' && ant.k === 'aula' && ant.aula !== st.aula);
-        let inner = '';
-        if (st.k === 'aula'){
-          if (novo) inner = '<b>' + esc(agNomeAula(st.aula)) + '</b><span class="ag-mk">' + st.aula.ini + '-' + st.aula.fim + '</span>';
-        } else if (st.k === 'bloq'){
-          if (novo) inner = '<span class="ag-mk">' + esc(st.bloco.nome) + '</span>';
-        } else if (st.k === 'livre'){
-          if (novo) inner = '<span class="ag-mk">livre ' + agHM(t) + '-' + agHM(agLivres(d).find(iv => iv[0] <= t && t < iv[1])[1]) + '</span>';
-        }
-        h += '<div class="ag-gc ' + st.k + '" data-dia="' + d + '" data-t="' + t + '" title="' + AG_DIAS_L[d] + ' ' + agHM(t) + '">' + inner + '</div>';
-      }
-    }
-    h += '</div>';
-    return h;
-  }
   function agLivreHTML(){
     const a = agEnsure();
     let h = '';
@@ -9141,7 +9152,7 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
       el.dataset.agWired = '1'; el.addEventListener(ev, fn);
     };
     once('#agGrade', 'click', ev => {
-      const c = ev.target.closest('.ag-gc, .ag2-aula, .ag2-livre'); if (!c) return;
+      const c = ev.target.closest('.ag2-aula, .ag2-livre'); if (!c) return;
       const dia = parseInt(c.dataset.dia, 10), t = parseInt(c.dataset.t, 10);
       const st = agEstado(dia, t);
       if (st.k === 'aula') agAulaAbrir(st.aula.id);
