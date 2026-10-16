@@ -445,6 +445,19 @@ Tudo o que é do aluno mora aqui; a Visão geral ficou só com os indicadores do
 - **Ficha ativa** — nome da ficha, nº de treinos e de exercícios, com botão para abrir
 - **Últimos treinos** — as 5 sessões mais recentes do aluno, com data, volume e séries
 
+## Tela cheia
+
+O app é feito para usar em tela cheia no celular, e ela **se recupera sozinha**:
+
+- O navegador **só entra em tela cheia com um toque do usuário**, então depois de recarregar a página
+  o app **reaproveita o primeiro toque** e volta para a tela cheia — não precisa procurar o botão
+- Se a tela cheia cair por qualquer motivo (recarregar, voltar de outro app, girar o aparelho), o app
+  **rearma** e devolve no próximo toque
+- **Fechar um treino guiado não tira você da tela cheia** — terminar o treino não é motivo para sair
+- O botão **⤢ Tela cheia** é quem manda: se você sair por ele, o app **respeita a escolha** e não
+  volta sozinho nem depois de recarregar. Ligando pelo botão, ele volta a se recuperar
+- A escolha fica gravada no aparelho (`ghPerformance.telaCheia`)
+
 ## Geral — sobre o app
 Aba final, informativa: o que o app é e como ele se comporta.
 
