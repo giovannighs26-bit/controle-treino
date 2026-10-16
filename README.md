@@ -11,6 +11,31 @@ treino em grupo e histórico com gráficos. Tudo salvo no `localStorage` do nave
 Abra `index.html` no navegador (ou instale pelo botão **⤓ Instalar**). Os dados ficam no
 dispositivo — use **Dados e backup** para exportar/importar.
 
+## Base de fichas (aba *Dados e backup*)
+
+O app já vem com as fichas dos alunos da base GH Performance. Na aba **Dados e backup** há o botão
+**⟳ Aplicar base de fichas**:
+
+- **Sem marcar** a caixa *"Substituir também as fichas já existentes"* (padrão) — cria os alunos que
+  faltam e **preenche só as fichas vazias**. O que você já editou não é tocado. Ao terminar, o app
+  informa quantas foram criadas, preenchidas, substituídas e quantas já estavam ok.
+- **Marcando** a caixa — substitui **todas** as fichas pelas da base (com confirmação). É o caminho
+  para voltar ao conteúdo original de um aluno.
+
+### Ariana — Inferior/Superior 4x
+A ficha da **Ariana Costa de Faria** está na base com 4 treinos (24 exercícios), todos com preparo
+padrão 1 aquecimento + 1 reconhecimento + séries de trabalho:
+
+| Treino | Exercícios |
+|---|---|
+| **A — Inferior Posterior/Glúteo** (Segunda) | Stiff com Halteres · Cadeira Flexora · Leg Press 45° · Elevação Pélvica (Máquina) · Cadeira Abdutora |
+| **B — Superior Empurrar** (Terça) | Supino na Máquina · Supino Inclinado com Halteres · Crucifixo na Máquina · Ombro com Halteres · Tríceps Corda · Elevação Lateral |
+| **C — Inferior Quadríceps/Glúteo** (Quarta, presencial) | Agachamento no Smith · Cadeira Extensora · Leg Press 45° · Cadeira Abdutora · Elevação Pélvica · Coice Máquina · Stiff Máquina |
+| **D — Superior Puxar** (Sexta) | Puxada Frente Máquina · Remada Baixa · Remada Curvada com Halteres · Puxada Unilateral · Bíceps Rosca Direta · Puxador Traseiro |
+
+Se a ficha dela estiver vazia no seu aparelho, abra **Dados e backup** e toque em
+**⟳ Aplicar base de fichas** — só a ficha dela é preenchida.
+
 ## Montar treino — editar a ficha do aluno
 Aba dedicada a montar e ajustar a ficha sem sair da tela (sem modal):
 
