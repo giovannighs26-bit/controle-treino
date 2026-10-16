@@ -22,6 +22,33 @@ O app já vem com as fichas dos alunos da base GH Performance. Na aba **Dados e 
 - **Marcando** a caixa — substitui **todas** as fichas pelas da base (com confirmação). É o caminho
   para voltar ao conteúdo original de um aluno.
 
+### Trazer a ficha da base para o aluno ativo
+Nem toda ficha vazia está na base e nem todo aluno tem a ficha vazia. Por isso a aba
+**Montar treino** tem o botão **↧ Trazer da base**, ao lado de *+ Novo treino*:
+
+- Ele procura na base a ficha **do aluno ativo** (pelo nome).
+- **Ficha vazia** → aplica direto, sem perguntar.
+- **Ficha com conteúdo** → pergunta: **OK substitui** a ficha atual pela da base; **Cancelar
+  acrescenta** os treinos da base no fim, preservando o que já estava lá.
+
+É o caminho para atualizar um aluno que já tem ficha sem passar pelo *Substituir também as fichas
+já existentes* da aba *Dados e backup* (que troca **todas** as fichas de uma vez).
+
+### Letícia e Fabiana — Ciclo ajustado (A/B/C)
+As fichas da **Letícia Aparecida Teodoro** e da **Fabiana Aparecida dos Santos Teodoro** estão na base
+com o ciclo ajustado de 3 treinos (23 exercícios cada), com a **mesma prescrição** e o **ajuste
+individual** de cada uma nas observações:
+
+| Treino | Exercícios |
+|---|---|
+| **A Ajustado — Inferiores 1** | Leg Press 45° · Búlgaro no Smith · Cadeira extensora · Cadeira abdutora · Elevação pélvica · Panturrilha · Prancha lateral adaptada |
+| **B — Superiores, postura e proteção articular** | Puxada frente na polia · Remada baixa neutra · Supino máquina ou halteres · Desenvolvimento · Elevação lateral · Face pull · Tríceps corda · Rosca alternada · Pallof press ou prancha inclinada |
+| **C Ajustado — Inferiores 2** | Mesa/cadeira flexora · Stiff com halteres · Elevação pélvica · Agachamento sumô com halter · Abdução máquina ou cabo · Glúteo no cabo/coice · Dead bug + respiração |
+
+Cada exercício traz o **cue do professor** e, em seguida, a orientação específica da aluna — por
+exemplo, no Búlgaro no Smith a Letícia tem *"progredir carga gradualmente se mantiver o alinhamento"*
+e a Fabiana *"começar com amplitude menor, não buscar falhar, priorizar core e equilíbrio"*.
+
 ### Ariana — Inferior/Superior 4x
 A ficha da **Ariana Costa de Faria** está na base com 4 treinos (24 exercícios), todos com preparo
 padrão 1 aquecimento + 1 reconhecimento + séries de trabalho:
