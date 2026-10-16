@@ -24,7 +24,7 @@ O app já vem com as fichas dos alunos da base GH Performance. Na aba **Dados e 
 
 ### Trazer a ficha da base para o aluno ativo
 Nem toda ficha vazia está na base e nem todo aluno tem a ficha vazia. Por isso a aba
-**Montar treino** tem o botão **↧ Trazer da base**, ao lado de *+ Novo treino*:
+A parte **Editar ficha** (aba *Fichas de treino*) tem o botão **↧ Trazer da base**, ao lado de *+ Novo treino*:
 
 - Ele procura na base a ficha **do aluno ativo** (pelo nome).
 - **Ficha vazia** → aplica direto, sem perguntar.
@@ -63,8 +63,21 @@ padrão 1 aquecimento + 1 reconhecimento + séries de trabalho:
 Se a ficha dela estiver vazia no seu aparelho, abra **Dados e backup** e toque em
 **⟳ Aplicar base de fichas** — só a ficha dela é preenchida.
 
-## Montar treino — editar a ficha do aluno
-Aba dedicada a montar e ajustar a ficha sem sair da tela (sem modal):
+## Fichas de treino — a aba única da ficha
+A aba **Fichas de treino** reúne tudo o que antes estava espalhado em três telas (*Fichas de treino*,
+*Montar treino* e *Registrar treino*, que deixaram de existir). Ela tem três partes, na ordem:
+
+1. **Lista de treinos** — cada treino com os botões **Registrar** (anota as séries numa tela só),
+   **Guiado** (conduz exercício por exercício, em tela cheia, com descanso) e **Editar** (abre o editor
+   já naquele treino). Acima: *PDF da ficha*, *Compartilhar com o aluno*, *Importar ficha* e *+ Nova ficha*.
+2. **Editar ficha** — o editor completo, na própria tela (sem modal), descrito abaixo.
+3. **Registro rápido** — a ficha inteira numa tela: marque as séries feitas, ajuste carga, reps e RIR
+   e salve. É o antigo *Registrar treino*.
+
+O fluxo natural é: criar o aluno → fazer a **Avaliação física** → montar a ficha em *Fichas de treino*
+→ registrar pelo **Registrar** ou pelo **Guiado**.
+
+### Editar a ficha (parte 2)
 
 - **+ Nova ficha** / **+ Novo treino** / **+ Adicionar treino/dia** — cria a ficha ou mais um dia de
   treino (o botão aparece na barra de cima e também no rodapé da ficha)
@@ -87,7 +100,7 @@ Aba dedicada a montar e ajustar a ficha sem sair da tela (sem modal):
   estão; o botão converte em séries quando você quiser
 - **Salvar treino** — grava na hora e confirma (“Salvo ✓”), sem esperar o salvamento automático.
   O botão fica na barra de cima e no rodapé da ficha
-- **Registrar** — em cada treino: salva e abre a aba *Registrar treino* com aquele treino já carregado
+- **Registrar** — em cada treino: salva a ficha e carrega aquele treino no **Registro rápido**, logo abaixo
 - **Carregar treino** — modo guiado: escolhe o aluno e o treino do dia, a tela fica cheia e o app
   conduz **exercício por exercício**, com **descanso em cada série** e um play para o cronômetro;
   ao concluir, o treino é gravado no histórico e entra na evolução do aluno
@@ -147,7 +160,7 @@ A aba **Treino em grupo** também tem um modo guiado, para conduzir **até 4 alu
 exercício**: aparecem no quadrante como uma **NOTA** (`Item de orientação — sem séries para registrar`),
 sem campos de reps/carga/RIR, sem descanso e sem exigir preenchimento — basta ler e tocar em
 **Próximo →**. Eles também não entram na sessão gravada nem no volume. Vale igual na aba
-*Registrar treino*, onde aparecem como um cartão tracejado.
+*Fichas de treino → Registro rápido*, onde aparecem como um cartão tracejado.
 
 ### Agenda — quadro da semana
 A aba *Agenda* mostra a semana inteira num **quadro de horários**:
@@ -165,7 +178,7 @@ A agenda já vem preenchida com a grade semanal dos alunos (carregada uma única
 você edita à vontade, e nada é reescrito por cima).
 
 ### As abas ficam sincronizadas
-A aba *Registrar treino* guarda uma cópia do dia da ficha. Se você editar a ficha depois, ela se
+O **Registro rápido** guarda uma cópia do dia da ficha. Se você editar a ficha depois, ela se
 atualiza sozinha:
 
 - **Sem nada digitado na tela** — o treino é recarregado automaticamente, sem aviso
@@ -417,6 +430,12 @@ Tudo o que é do aluno mora aqui; a Visão geral ficou só com os indicadores do
 - **Lista de todos os alunos**, em ordem alfabética, com as iniciais, o nº de treinos e o nº de
   sessões; **busca** por nome, objetivo ou nível (o contador mostra `filtrados/total`)
 - **+ Aluno** abre o cadastro; clicar num nome o torna o **aluno ativo** de todo o app
+- **✎ Editar** em cada linha abre o cadastro do aluno com **nome, objetivo, nível, situação, sexo,
+  nascimento e altura**. Sexo, nascimento e altura são **os mesmos dados que a Avaliação física usa** —
+  preencha aqui uma vez e a avaliação já vem pronta; salvar uma avaliação também atualiza o cadastro
+- **🗑 Excluir** em cada linha apaga o aluno **por inteiro**: cadastro, ficha, avaliações e fotos,
+  sessões, financeiro e o lugar dele na agenda e no treino em grupo. Pede uma confirmação que diz
+  exatamente o que será apagado, e não pode ser desfeito
 - **Botão flutuante de aluno** (canto inferior direito, em todas as telas) — mostra as iniciais e o
   primeiro nome do aluno ativo e abre o **seletor de aluno**: busca por nome/objetivo/nível, a ficha
   de cada um e a **situação do mês no financeiro** (Pago · Em aberto · Atrasado · Parcial). Sobe
@@ -456,8 +475,8 @@ Aba final, informativa: o que o app é e como ele se comporta.
 - Abas em ordem de uso, do cadastro ao acompanhamento, separadas por 6 grupos:
   1. **Visão geral**
   2. Cadastro e avaliação: **Alunos** · **Avaliação física**
-  3. Montagem do treino: **Fichas de treino** · **Montar treino**
-  4. Execução: Registrar treino · **Carregar treino** · Treino em grupo
+  3. Montagem do treino: **Fichas de treino**
+  4. Execução: **Carregar treino** · Treino em grupo
   5. Acompanhamento e gestão: Histórico · Agenda · **Financeiro**
   6. Sistema: Dados e backup · **Geral**
 - O topo tem só as ações do app (instalar, tela cheia, sair) — a troca de aluno é feita na aba
