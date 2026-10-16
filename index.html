@@ -1984,7 +1984,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '50';
+  const APP_V = '51';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -2813,7 +2813,11 @@
     clearInterval(NEWS_TIMER);
     NEWS_TIMER = setInterval(() => { if (navigator.onLine !== false) newsWarm(); }, 10*60*1000);
     setTimeout(() => { if ($('#history').classList.contains('active')) drawChart(); }, 50);
-    goFullscreen(); armFullscreen(); paintFsBtn();
+    /* Ao abrir o app: tenta entrar (vale se o carregamento veio de um toque, ex.: um
+       link) e deixa armado para o primeiro toque. É isto que devolve a tela cheia
+       depois de recarregar a página. */
+    if (fsQuer()){ goFullscreen(); armFullscreen(); }
+    paintFsBtn();
   }
   $('#authForm').addEventListener('submit', async e => {
     e.preventDefault();
@@ -3695,10 +3699,19 @@
     grip.addEventListener('pointercancel', endDrag);
   })();
 
-  /* --- Tela cheia --- */
+  /* --- Tela cheia ---
+     O navegador SÓ entra em tela cheia com um gesto do usuário. Depois de recarregar a
+     página não dá para voltar sozinho, então o app reaproveita o PRIMEIRO toque.
+     A escolha fica gravada: se o usuário desligou no botão, não voltamos; se ele quer
+     tela cheia (o padrão), o app se recupera sozinho a cada perda — reload, volta do
+     segundo plano, rotação, troca de app. */
+  const FS_KEY = 'ghPerformance.telaCheia';
+  function fsQuer(){ try { return localStorage.getItem(FS_KEY) !== '0'; } catch(e){ return true; } }
+  function fsQuerSet(v){ try { localStorage.setItem(FS_KEY, v ? '1' : '0'); } catch(e){} }
   function isFullscreen(){ return !!(document.fullscreenElement || document.webkitFullscreenElement); }
   async function goFullscreen(){
     const el = document.documentElement;
+    fsQuerSet(true);
     try {
       if (el.requestFullscreen) await el.requestFullscreen({ navigationUI: 'hide' });
       else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
@@ -3707,7 +3720,11 @@
     try { if (screen.orientation && screen.orientation.lock) await screen.orientation.lock('any'); } catch(e){}
     paintFsBtn();
   }
+  /* Só o usuário sai: usado pelo botão de tela cheia e pelos botões dentro dos modos
+     guiados. Fechar um treino NÃO chama isto — quem estava em tela cheia continua. */
   async function exitFullscreen(){
+    fsQuerSet(false);
+    fsArmed = false;
     try {
       if (document.exitFullscreen) await document.exitFullscreen();
       else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
@@ -3720,14 +3737,27 @@
     b.textContent = isFullscreen() ? '⤡ Sair da tela cheia' : '⤢ Tela cheia';
   }
   $('#fsBtn').addEventListener('click', () => { isFullscreen() ? exitFullscreen() : goFullscreen(); });
-  ['fullscreenchange','webkitfullscreenchange'].forEach(ev => document.addEventListener(ev, paintFsBtn));
   let fsArmed = false;
   function armFullscreen(){
-    if (fsArmed || isFullscreen()) return;
+    if (fsArmed || isFullscreen() || !fsQuer()) return;
     fsArmed = true;
-    const once = () => { document.removeEventListener('pointerdown', once); if (!isFullscreen()) goFullscreen(); };
+    const once = () => {
+      document.removeEventListener('pointerdown', once);
+      fsArmed = false;
+      if (!isFullscreen() && fsQuer()) goFullscreen();
+    };
     document.addEventListener('pointerdown', once);
   }
+  /* Perdeu a tela cheia? Rearma: o próximo toque devolve. */
+  ['fullscreenchange','webkitfullscreenchange'].forEach(ev => document.addEventListener(ev, () => {
+    paintFsBtn();
+    if (!isFullscreen()) armFullscreen();
+  }));
+  /* Voltou do segundo plano (trocar de app derruba a tela cheia): tenta de novo. */
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) return;
+    if (fsQuer() && !isFullscreen()){ goFullscreen(); armFullscreen(); }
+  });
 
   /* --- Cartão de exercício com séries --- */
   function rowKind(r){ return (r && r.dataset.kind) || 'trabalho'; }
@@ -4489,7 +4519,8 @@
     const ov = $('#trOverlay');
     if (ov){ ov.hidden = true; ov.innerHTML = ''; }
     document.body.classList.remove('tr-on');
-    exitFullscreen();
+    /* NÃO sai da tela cheia: terminar o treino não é motivo para sair do modo. */
+    if (fsQuer() && !isFullscreen()) armFullscreen();
   }
   function trClose(){
     if (!trRun) return trCloseDone();
@@ -4844,7 +4875,8 @@
     const ov = $('#grOverlay');
     if (ov){ ov.hidden = true; ov.innerHTML = ''; }
     document.body.classList.remove('gr-on');
-    exitFullscreen();
+    /* NÃO sai da tela cheia: terminar o treino não é motivo para sair do modo. */
+    if (fsQuer() && !isFullscreen()) armFullscreen();
   }
   function grClose(){
     if (!grRun) return grCloseDone();
