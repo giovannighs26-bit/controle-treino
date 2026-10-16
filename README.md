@@ -213,6 +213,20 @@ A técnica e os blocos também são detectados automaticamente ao ler a ficha
 (ex.: `supino inclinado 4×(6+4) cluster 15s`).
 
 ## Financeiro — gestão das mensalidades
+
+**O que a aba mostra:** KPIs do mês (previsto, recebido, em aberto, em atraso, taxa de recebimento,
+ticket médio e **recebido no ano**), alertas acionáveis, gráfico de evolução de 6 meses, rosca da
+situação do mês e a tabela de mensalidades dos alunos.
+
+- A tabela lista **só os alunos reais** (o cadastro interno *Usuário* não entra) e traz o cabeçalho
+  **fixo** ao rolar, com linhas zebradas
+- A coluna **Plano** só aparece quando algum aluno tem plano definido — sem plano, ela não ocupa espaço
+- As ações de cada linha são **✓** registrar pagamento · **💬** cobrar no WhatsApp · **📄** abrir a
+  ficha financeira (valor, vencimento, desconto e histórico). Todas com `title` e `aria-label`
+- Ao lado do seletor de mês aparece o mês **em português** (`Outubro de 2026`) — o campo
+  `<input type="month">` é renderizado no idioma do navegador e não dá para traduzir
+- A rosca mostra apenas as categorias que existem no mês, sem linhas de "R$ 0,00 · 0%"
+
 Aba de cobrança dos alunos, mês a mês. Os dados ficam em `state.finance` (dentro do mesmo backup).
 
 **Por aluno:** mensalidade, dia de vencimento, desconto, plano, WhatsApp, observações e
