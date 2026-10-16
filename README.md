@@ -80,12 +80,22 @@ A aba **Treino em grupo** também tem um modo guiado, para conduzir **até 4 alu
 - **Seletor de técnica por exercício** — Tradicional, **Rest pause**, **Cluster set**, Drop set,
   Bi-set/Tri-set e Pirâmide. Escolhendo rest pause, cluster ou drop, o campo **Reps** dá lugar a
   **Blocos** (ex.: `8+4`), e as repetições passam a ser a soma dos blocos
-- **▶ 60s** inicia o descanso do aluno e a barra de descanso aparece no rodapé (com pausa e **+30s**)
+- **Cronômetro e descanso são de cada aluno**, não compartilhados. O relógio no cabeçalho do
+  quadrante (`00:12:34`) conta o tempo daquele aluno e **congela quando ele conclui** o treino;
+  o botão **▶ 60s** dispara o descanso **só dele** (o do vizinho não é afetado). Enquanto corre, o
+  botão vira a contagem (`00:47`); toque de novo para pausar
 - A barra do topo mostra o **progresso geral** (`12 de 85 séries preenchidas · 14%`)
 - No fim, **Concluir treino ✓** grava **uma sessão por aluno**, todas com o mesmo `groupId` e
   `groupSize` — então cada uma entra no histórico, nos recordes e na evolução do respectivo aluno
 - Sair no meio salva as séries marcadas como **sessões parciais**
 - No celular os quadrantes ficam **lado a lado** e rolam dentro de si, sem rolagem horizontal na página
+
+**Itens de orientação da ficha.** Muita ficha começa com uma linha sem prescrição — *"Bike/esteira leve
+5 min + mobilidade"*, *"Aquecimento: caminhada 3 min"*, *"Cardio — 40 min"*. Esses itens **não são
+exercício**: aparecem no quadrante como uma **NOTA** (`Item de orientação — sem séries para registrar`),
+sem campos de reps/carga/RIR, sem descanso e sem exigir preenchimento — basta ler e tocar em
+**Próximo →**. Eles também não entram na sessão gravada nem no volume. Vale igual na aba
+*Registrar treino*, onde aparecem como um cartão tracejado.
 
 ### Agenda — quadro da semana
 A aba *Agenda* mostra a semana inteira num **quadro de horários**:
