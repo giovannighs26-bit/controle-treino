@@ -40,7 +40,8 @@ Aba dedicada a montar e ajustar a ficha sem sair da tela (sem modal):
   conduz **exercício por exercício**, com **descanso em cada série** e um play para o cronômetro;
   ao concluir, o treino é gravado no histórico e entra na evolução do aluno
 - **Treino em grupo** — o mesmo modo guiado para **até 4 alunos de uma vez**, com a tela dividida em
-  quadrantes e uma sessão gravada por aluno
+  quadrantes independentes: cada aluno no seu exercício, todas as séries visíveis de uma vez,
+  e uma sessão gravada por aluno
 - A ficha também **salva sozinha** enquanto você digita; o rodapé mostra
   “alterações não salvas” / “salvo ✓”
 - **Nada que você não tocou é reescrito**
@@ -67,13 +68,24 @@ A aba **Treino em grupo** também tem um modo guiado, para conduzir **até 4 alu
 - Monte as colunas (aluno + treino do dia) e toque em **▶ Iniciar treino guiado**
 - A tela fica cheia e **dividida em até 4 quadrantes** (2×2), um por aluno, com o nome, o exercício
   atual e a linha de alvo (`4×6–8 · 40 kg · 90s descanso`)
-- Cada aluno tem **a própria série**: reps, carga e RIR, o **play do descanso** e **✓ Feita**.
-  Marcar *Feita* avança só a série daquele aluno e o descanso começa sozinho
-- **Próximo exercício →** anda para todos juntos (o cursor de cada aluno volta à 1ª série do
-  exercício novo); **Pular** avança sem marcar, **←** volta e **↷** pula uma série
+- **Cada aluno é independente**: o cursor do exercício é de cada um. Um aluno pode estar no
+  exercício 2 enquanto o outro segue no 1, e nada trava a aula de ninguém
+- **Todas as séries do exercício atual ficam visíveis de uma vez**, empilhadas embaixo do exercício —
+  não precisa ir para a próxima para registrar. Cada linha traz o selo do tipo
+  (**AQU** aquecimento · **REC** reconhecimento · **TRB** trabalho) e os campos **Reps, Carga e RIR**,
+  com a caixa de **feita** na ponta direita
+- O quadrante mostra ainda uma prévia do **próximo exercício** (nome e alvo), para o aluno já se preparar
+- **Próximo →** só libera depois que **todas as séries do exercício atual** estiverem marcadas; aí o
+  aluno avança sozinho. **←** volta um exercício e **↷** pula o exercício inteiro (exceções)
+- **Seletor de técnica por exercício** — Tradicional, **Rest pause**, **Cluster set**, Drop set,
+  Bi-set/Tri-set e Pirâmide. Escolhendo rest pause, cluster ou drop, o campo **Reps** dá lugar a
+  **Blocos** (ex.: `8+4`), e as repetições passam a ser a soma dos blocos
+- **▶ 60s** inicia o descanso do aluno e a barra de descanso aparece no rodapé (com pausa e **+30s**)
+- A barra do topo mostra o **progresso geral** (`12 de 85 séries preenchidas · 14%`)
 - No fim, **Concluir treino ✓** grava **uma sessão por aluno**, todas com o mesmo `groupId` e
   `groupSize` — então cada uma entra no histórico, nos recordes e na evolução do respectivo aluno
 - Sair no meio salva as séries marcadas como **sessões parciais**
+- No celular os quadrantes ficam **lado a lado** e rolam dentro de si, sem rolagem horizontal na página
 
 ### Agenda — quadro da semana
 A aba *Agenda* mostra a semana inteira num **quadro de horários**:
