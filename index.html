@@ -1787,10 +1787,12 @@
               </div>
             </div>
             <div class="field span12"><label>Mensagem de cobrança</label>
-              <textarea class="fin-msg" id="finCfgMsg" maxlength="700"></textarea>
+              <textarea class="fin-msg" id="finCfgMsg" maxlength="1200"></textarea>
             </div>
           </div>
-          <p class="hint">Campos disponíveis: <b>{aluno}</b> <b>{primeiro}</b> <b>{mes}</b> <b>{valor}</b> <b>{venc}</b> <b>{plano}</b> <b>{pix}</b> <b>{titular}</b></p>
+          <p class="hint">Campos disponíveis: <b>{aluno}</b> <b>{primeiro}</b> <b>{mes}</b> <b>{valor}</b>
+        <b>{venc}</b> <b>{plano}</b> <b>{titular}</b> <b>{chavepix}</b> (só a chave) e <b>{pix}</b>
+        (linha pronta: <i>PIX de Fulano: chave</i>)</p>
           <div class="actions" style="margin-top:14px">
             <button class="btn" type="submit">Salvar ajustes</button>
             <button class="btn secondary" type="button" id="finCfgResetMsg">Restaurar mensagem padrão</button>
@@ -1985,7 +1987,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '53';
+  const APP_V = '54';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -2095,7 +2097,7 @@
   };
   const FIN_FILTROS = [['todos','Todos'],['atrasado','Atrasados'],['pendente','Pendentes'],['parcial','Parciais'],
     ['pago','Pagos'],['semvalor','Sem valor'],['fora','Não cobrados'],['inativo','Inativos']];
-  const FIN_MSG_PADRAO = 'Olá, {primeiro}! Tudo bem? 😊\n\nPassando para lembrar da mensalidade de {mes} — {valor} — com vencimento em {venc}.\n{pix}Se já pagou, desconsidere. Obrigado! 💪';
+  const FIN_MSG_PADRAO = 'GH PERFORMANCE | AVISO DE VENCIMENTO\n\nPrezado(a) {primeiro},\nInformamos que a mensalidade referente à Consultoria GH Performance tem vencimento em {venc}, no valor de {valor}.\n\nDADOS PARA PAGAMENTO | PIX\nTitular: {titular}\nChave Pix: {chavepix}\nValor: {valor}\n\nApós o pagamento, solicitamos, por gentileza, o envio do comprovante para atualização do nosso controle financeiro.\nCaso o pagamento já tenha sido realizado, favor desconsiderar esta mensagem.\n\nAgradecemos pela confiança e permanecemos à disposição.\n\nAtenciosamente,\nGH PERFORMANCE\nTreine com propósito. Evolua com método.';
 
   let finMes = today().slice(0, 7);
   let finFiltro = 'todos';
@@ -2106,6 +2108,10 @@
     if (!state.finance || typeof state.finance !== 'object') state.finance = {};
     const f = state.finance;
     f.settings = Object.assign({pix:'', titular:'', diaVenc:5, valorPadrao:0, msgPadrao:''}, f.settings || {});
+    /* Dados de pagamento do GH Performance: preenchem o padrao quando ainda estao vazios,
+       para a mensagem de cobranca sair pronta. Editavel em Ajustes. */
+    if (!String(f.settings.titular || '').trim()) f.settings.titular = 'Giovanni Henrique Soares';
+    if (!String(f.settings.pix || '').trim()) f.settings.pix = 'giovanni.ghs26@gmail.com';
     if (!Array.isArray(f.payments)) f.payments = [];
     if (!f.students || typeof f.students !== 'object') f.students = {};
     return f;
@@ -2424,6 +2430,7 @@
       .replace(/\{venc\}/g, finDueLabel(mes, i.cfg.dia))
       .replace(/\{plano\}/g, i.cfg.plano || '')
       .replace(/\{pix\}/g, pix)
+      .replace(/\{chavepix\}/g, f.settings.pix || '')
       .replace(/\{titular\}/g, f.settings.titular || '');
   }
   function finCopiar(txt, cb){
