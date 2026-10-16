@@ -458,6 +458,18 @@ O app é feito para usar em tela cheia no celular, e ela **se recupera sozinha**
   volta sozinho nem depois de recarregar. Ligando pelo botão, ele volta a se recuperar
 - A escolha fica gravada no aparelho (`ghPerformance.telaCheia`)
 
+### No app instalado (atalho na tela inicial)
+O manifesto usa **`display: standalone`** — a janela abre **sem a barra do navegador** e continua
+assim em qualquer navegação ou recarregamento. O modo `fullscreen` do manifesto foi **removido de
+propósito**: no Android o Chrome não o honra no lançamento e acaba mostrando a barra de endereço.
+
+- **Sem barra do navegador**: garantido pelo `standalone`
+- **Sem a barra de status** (relógio/bateria): use o botão **⤢ Tela cheia**, que é a API de tela
+  cheia de verdade — precisa de um toque, por isso não pode ser automático
+
+> Ao mudar o modo de exibição, o Android só aplica depois de reinstalar o atalho: remova o ícone da
+> tela inicial e adicione de novo (Chrome → menu → *Instalar aplicativo*).
+
 ## Geral — sobre o app
 Aba final, informativa: o que o app é e como ele se comporta.
 
