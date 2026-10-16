@@ -227,6 +227,23 @@ situação do mês e a tabela de mensalidades dos alunos.
   `<input type="month">` é renderizado no idioma do navegador e não dá para traduzir
 - A rosca mostra apenas as categorias que existem no mês, sem linhas de "R$ 0,00 · 0%"
 
+### Mensagem de cobrança padrão
+O botão **💬** monta a cobrança para o WhatsApp com a mensagem padrão do GH Performance:
+
+> **GH PERFORMANCE | AVISO DE VENCIMENTO**
+> Prezado(a) *(nome)*, informamos que a mensalidade referente à Consultoria GH Performance tem
+> vencimento em *(dia)*, no valor de *(valor)*.
+> **DADOS PARA PAGAMENTO | PIX** — Titular, Chave Pix e Valor.
+> Pedido do comprovante, o "caso já tenha pago, desconsidere", o agradecimento e a assinatura
+> *GH PERFORMANCE — Treine com propósito. Evolua com método.*
+
+Campos disponíveis na mensagem (aba *Ajustes*): `{aluno}` · `{primeiro}` · `{mes}` · `{valor}` ·
+`{venc}` · `{plano}` · `{titular}` · `{chavepix}` (só a chave) · `{pix}` (linha pronta).
+
+O **titular** e a **chave Pix** têm padrão (Giovanni Henrique Soares · giovanni.ghs26@gmail.com) e
+podem ser trocados em **⚙ Ajustes** — o que estiver lá é o que a mensagem usa. O botão
+**Restaurar mensagem padrão** volta para o texto do GH Performance.
+
 Aba de cobrança dos alunos, mês a mês. Os dados ficam em `state.finance` (dentro do mesmo backup).
 
 **Por aluno:** mensalidade, dia de vencimento, desconto, plano, WhatsApp, observações e
