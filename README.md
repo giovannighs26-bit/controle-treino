@@ -287,6 +287,23 @@ versão em texto para colar no WhatsApp. Cada lançamento do histórico também 
 Nos dois casos abre a janela de impressão: escolha **Salvar como PDF**. No celular use
 Compartilhar → Imprimir → Salvar em PDF.
 
+## Próxima avaliação — quando voltar
+
+Cada avaliação tem o campo **Próxima avaliação**, nos *Dados básicos*. É o que responde "quando eu
+chamo esse aluno de volta".
+
+- **Ao escolher a data**, o app já sugere **+45 dias**; há atalhos de **+45 / +60 / +90 dias** e
+  **Limpar**, e ao lado do campo aparece quantos dias faltam
+- O app **recusa** uma próxima data anterior à data da avaliação
+- No **histórico**, cada avaliação ganha um selo: `próxima 30/10/2026 · em 12 dia(s)` (neutro),
+  `· atrasada há 3 dia(s)` em vermelho quando passou, ou `próxima avaliação não marcada`
+- No **resumo do aluno** (topo da aba) aparece a próxima data e quantos dias faltam — ou o atraso
+- A **Visão geral** cria um alerta **"N avaliação(ões) física(s) vencida(s)"** com os nomes e os dias
+  de atraso, e um botão para abrir a aba
+- Vale a data da **avaliação mais recente que tiver uma definida** — avaliações antigas com prazo
+  vencido não geram alerta se a última já tem a próxima marcada
+- A linha também sai no **PDF do relatório** (`Próxima avaliação`)
+
 ## Mover uma avaliação para outro aluno
 Cada avaliação no histórico da aba *Avaliação física* tem o botão **Mover**, ao lado de *Editar* e
 *Excluir*. Ele serve para corrigir uma avaliação lançada no aluno errado sem precisar digitar tudo
