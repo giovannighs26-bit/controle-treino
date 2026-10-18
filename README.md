@@ -304,6 +304,34 @@ chamo esse aluno de volta".
   vencido não geram alerta se a última já tem a próxima marcada
 - A linha também sai no **PDF do relatório** (`Próxima avaliação`)
 
+## Avaliação física — painel da próxima avaliação e gráficos
+
+A aba foi reorganizada para responder de relance "quando eu chamo esse aluno de volta" e
+"ele está evoluindo?".
+
+### Cartão Próxima avaliação
+No topo, acima do histórico, com **data grande**, quantos dias faltam, selo de situação
+(*no prazo* · *chegando* · *atrasada*) e **barra de prazo decorrido** — fica verde, âmbar ou
+vermelho conforme se aproxima. Dá para **mudar a data ali mesmo**, sem abrir o formulário:
+campo de data + atalhos **+45 / +60 / +90 dias** + **Salvar** / **Limpar**.
+
+> **Prazo padrão: 45 dias.** Toda avaliação sem data marcada ganha automaticamente
+> `avaliação + 45 dias` — a migração roda uma vez e **não sobrescreve** datas já definidas.
+
+A data vale sempre para a **avaliação mais recente**: se ela estiver sem data, não há próxima
+agendada (não cai para uma avaliação antiga).
+
+### Gráfico de Evolução
+Uma linha do tempo com **seletor de métrica** — Peso · IMC · % de gordura · Massa magra ·
+Massa gorda · Soma das dobras · Cintura · Abdômen · Quadril · Coxa direita. Tem área preenchida,
+pontos em cada avaliação, rótulo do último valor e uma legenda com **primeiro → último** e a
+**variação** (`% de gordura: 11,3 % → 19,0 %` com o delta colorido).
+
+### Variação em cada avaliação
+No histórico, cada avaliação mostra **o que mudou desde a anterior**: `peso +2,0` (neutro, porque
+depende do objetivo), `%GC -1,9` (verde quando cai) e `magra +1,2` (verde quando sobe). Diferenças
+abaixo de 0,1 não aparecem, para não poluir com "+0,0".
+
 ## Mover uma avaliação para outro aluno
 Cada avaliação no histórico da aba *Avaliação física* tem o botão **Mover**, ao lado de *Editar* e
 *Excluir*. Ele serve para corrigir uma avaliação lançada no aluno errado sem precisar digitar tudo
