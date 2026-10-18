@@ -132,7 +132,7 @@
     label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}
     .form{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
     .sess-start{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:12px}
-    .span12{grid-column:span 12}.span8{grid-column:span 8}.span6{grid-column:span 6}.span4{grid-column:span 4}
+    .span12{grid-column:span 12}.span9{grid-column:span 9}.span8{grid-column:span 8}.span6{grid-column:span 6}.span5{grid-column:span 5}.span4{grid-column:span 4}
     .span3{grid-column:span 3}.span2{grid-column:span 2}
     input,select,textarea{width:100%;border:1px solid var(--line);border-radius:11px;background:#0d1511;color:var(--text);padding:10px 11px;outline:none}
     input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px #d8a93d1c}
@@ -347,14 +347,14 @@
     @media(max-width:800px){
       .top{align-items:stretch;flex-direction:column}.student-picker{justify-content:stretch}
       .half,.third{grid-column:span 12}.summary{grid-template-columns:repeat(2,1fr)}
-      .span8,.span6,.span4,.span3,.span2{grid-column:span 6}
+      .span9,.span8,.span6,.span5,.span4,.span3,.span2{grid-column:span 6}
       .exercise-row{grid-template-columns:repeat(2,1fr)}.exercise-row .ex-name,.exercise-row .ex-note{grid-column:span 2}
       .app{padding:12px}.card{padding:14px}
     }
     @media(max-width:480px){
       .student-picker{display:grid;grid-template-columns:1fr 1fr}.student-picker label{grid-column:span 2}
       .student-picker select{grid-column:span 2}
-      .summary{grid-template-columns:1fr 1fr}.span8,.span6,.span4,.span3,.span2{grid-column:span 12}
+      .summary{grid-template-columns:1fr 1fr}.span9,.span8,.span6,.span5,.span4,.span3,.span2{grid-column:span 12}
       .actions .btn{flex:1}.metric strong{font-size:18px}
       .exercise-row{grid-template-columns:1fr 1fr}.exercise-row .remove{grid-column:span 2;width:100%}
     }
@@ -599,6 +599,10 @@
     html[data-theme="light"] .fin-table th{background:#f1f5f1}
     html[data-theme="light"] .fin-table tbody tr:nth-child(even){background:#fafcfa}
     .fin-mespt{font-size:12px;color:var(--muted);font-weight:600;white-space:nowrap}
+    .av-next{display:inline-block;margin-left:6px;font-size:10.5px;font-weight:700;padding:2px 8px;
+      border-radius:99px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+    .av-next.soon{border-color:var(--accent2);color:var(--accent2)}
+    .av-next.late{border-color:var(--danger);color:var(--danger)}
     .fin-table .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
     .fin-table .nome{font-weight:700}
     .fin-table .nome small{display:block;font-weight:400;color:var(--muted);font-size:11px}
@@ -840,6 +844,8 @@
     .tr-set{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;background:var(--panel);
       border:1px solid var(--line);border-radius:14px;padding:10px}
     .tr-set.done{border-color:var(--ok);background:linear-gradient(180deg,rgba(99,197,139,.10),transparent)}
+    .tr-nota{background:var(--panel);border:1px dashed var(--line);border-radius:14px;padding:14px 16px;
+      color:var(--muted);font-size:14px;line-height:1.5}
     .tr-set .tr-n{font-weight:800;color:var(--muted);min-width:22px;text-align:center;padding-bottom:10px}
     .tr-set .field{flex:1 1 76px;min-width:64px}
     .tr-set .field label{font-size:10px}
@@ -1448,6 +1454,15 @@
         <div class="span3"><label for="avWeight">Peso (kg)</label><input type="number" id="avWeight" min="15" max="400" step="0.1" placeholder="—"></div>
         <div class="span3"><label for="avBmi">IMC</label><input id="avBmi" readonly placeholder="—"></div>
         <div class="span3"><label for="avBmiClass">Classificação</label><input id="avBmiClass" readonly placeholder="—"></div>
+        <div class="span3"><label for="avNext">Próxima avaliação</label><input type="date" id="avNext"></div>
+        <div class="span9"><label>&nbsp;</label>
+          <div class="actions" style="align-items:center;gap:6px">
+            <button class="btn ghost small" type="button" data-avnext="45">+45 dias</button>
+            <button class="btn ghost small" type="button" data-avnext="60">+60 dias</button>
+            <button class="btn ghost small" type="button" data-avnext="90">+90 dias</button>
+            <button class="btn ghost small" type="button" id="avNextClear">Limpar</button>
+            <span class="hint" id="avNextHint" style="margin:0"></span>
+          </div></div>
       </div>
 
       <h3 style="margin-top:18px">Medidas (cm) — aceita campos vazios</h3>
@@ -1987,7 +2002,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '54';
+  const APP_V = '55';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -4307,6 +4322,7 @@
       '<span class="tr-chip">🎯 conduzido do primeiro ao último</span></div>';
   }
   function trChips(ex){
+    if (ex.free) return '<span class="tr-chip">item de orientação — só leitura</span>';
     const rMin = num(ex.repsMin) || num(ex.reps) || 0;
     const rMax = num(ex.repsMax) || rMin;
     const out = [];
@@ -4324,11 +4340,12 @@
     const exercises = (day.items.length ? day.items : ['']).map(it => {
       const p = it ? parseItem(it) : {};
       const free = !!it && !mtHasRx(it);
-      const base = { free, setsPlanned: p.sets, reps: p.reps, repsMin: p.repsMin, repsMax: p.repsMax, load: p.load, rir: p.rir, blocks: p.blocks, prepAqu: p.prepAqu, prepRec: p.prepRec };
+      const base = { free, setsPlanned: p.sets, reps: p.reps, repsMin: p.repsMin, repsMax: p.repsMax, load: p.load, rir: p.rir, blocks: p.blocks, prepAqu: free ? 0 : p.prepAqu, prepRec: free ? 0 : p.prepRec };
       return {
         name: p.name || '', free, method: p.method || '',
-        setsPlanned: num(p.sets) || 3, reps: num(p.reps), repsMin: num(p.repsMin), repsMax: num(p.repsMax),
-        load: num(p.load), rir: num(p.rir), rest: num(p.rest) || 60, note: '',
+        setsPlanned: free ? 0 : (num(p.sets) || 3),
+        reps: free ? 0 : num(p.reps), repsMin: free ? 0 : num(p.repsMin), repsMax: free ? 0 : num(p.repsMax),
+        load: free ? 0 : num(p.load), rir: free ? 0 : num(p.rir), rest: num(p.rest) || 60, note: '',
         sets: makeSets(base)
       };
     });
@@ -4366,8 +4383,10 @@
         <div class="tr-step">Exercício ${run.i + 1} de ${total}</div>
         <h2 id="trExName">${esc(ex.name || 'Exercício')}</h2>
         <div class="tr-target">${trChips(ex)}</div>
-        <div class="tr-sets" id="trSets">${ex.sets.map((s,k) => trSetHTML(s, k, num(ex.rest) || 60)).join('')}</div>
-        <div class="ex-sensor s-${sens.level}" id="trSensor"><strong>${sens.title}</strong><span>${sens.text}</span></div>
+        <div class="tr-sets" id="trSets">${ex.free
+          ? '<div class="tr-nota">📋 <b>Item de orientação da ficha</b> — não tem séries para registrar. Faça o que está descrito e toque em <b>Próximo</b> para seguir.</div>'
+          : ex.sets.map((s,k) => trSetHTML(s, k, num(ex.rest) || 60)).join('')}</div>
+        ${ex.free ? '' : `<div class="ex-sensor s-${sens.level}" id="trSensor"><strong>${sens.title}</strong><span>${sens.text}</span></div>`}
       </main>
       <footer class="tr-foot">
         <div class="tr-restbar" id="trRestBar" hidden>
@@ -4430,7 +4449,8 @@
     const run = trRun; const btn = $('#trNext'); if (!run || !btn) return;
     const ex = run.exercises[run.i];
     const ultimo = run.i >= run.exercises.length - 1;
-    const ready = ultimo ? run.exercises.some(e => e.sets.some(s => s.done)) : ex.sets.some(s => s.done);
+    /* Item de orientacao nao tem serie para marcar: libera o "Proximo" na hora. */
+    const ready = ex.free ? true : (ultimo ? run.exercises.some(e => e.sets.some(s => s.done)) : ex.sets.some(s => s.done));
     btn.disabled = !ready;
     btn.classList.toggle('ghost', !ready);
   }
@@ -6428,6 +6448,7 @@ ${corpo}
         ${lin('Altura', a.height ? avFmt(a.height, 0) + ' cm' : '—')}
         ${lin('Peso', a.weight ? avFmt(a.weight) + ' kg' : '—')}
         ${lin('Examinador', esc(a.examiner || ghOwner()))}
+        ${a.nextDate ? lin('Próxima avaliação', dateFmt(a.nextDate)) : ''}
       </div>
       <h2>Resultados</h2>
       <table><tbody>
@@ -7721,6 +7742,12 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
         if (bd && bd.slice(5, 7) === mes.slice(5, 7)) aniversarios.push({ s, dia: bd.slice(8, 10) });
       } catch (e){}
     });
+    /* Avaliações com data marcada e já vencida (usa a avaliação mais recente de cada aluno). */
+    const avVencidas = [];
+    alunos.forEach(s => {
+      try { const n = avNextInfo(s.id); if (n && n.dias < 0) avVencidas.push({ s, d: -n.dias, date: n.date }); } catch (e){}
+    });
+    avVencidas.sort((a, b) => b.d - a.d);
     parados.sort((a, b) => b.d - a.d);
     aniversarios.sort((a, b) => a.dia.localeCompare(b.dia));
     let atrasados = [];
@@ -7728,7 +7755,7 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
       atrasados = alunos.filter(s => { const i = finInfo(s.id, mes); return i.st === 'atrasado'; })
         .map(s => ({ s, falta: finInfo(s.id, mes).falta }));
     } catch (e){}
-    return { parados, semFicha, nunca, aniversarios, atrasados, mes, limite };
+    return { parados, semFicha, nunca, aniversarios, atrasados, avVencidas, mes, limite };
   }
   function dashAlertRow(icone, texto, acao, rotulo, tom){
     return `<div class="alert-row${tom ? ' ' + tom : ''}">`
@@ -7748,6 +7775,10 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
       const total = A.atrasados.reduce((n, x) => n + x.falta, 0);
       const nomes = A.atrasados.slice(0, 4).map(x => x.s.name.split(' ')[0]).join(', ');
       rows.push(dashAlertRow('💰', `<b>${A.atrasados.length} mensalidade(s) em atraso</b> — ${finBR(total)} a receber. ${esc(nomes)}${A.atrasados.length > 4 ? '…' : ''}`, 'financeiro', 'Cobrar', 'bad'));
+    }
+    if (A.avVencidas && A.avVencidas.length){
+      const nomes = A.avVencidas.slice(0, 4).map(x => `${esc(x.s.name.split(' ')[0])} (${x.d}d)`).join(', ');
+      rows.push(dashAlertRow('📅', `<b>${A.avVencidas.length} avaliação(ões) física(s) vencida(s)</b> — ${nomes}${A.avVencidas.length > 4 ? '…' : ''}`, 'aval', 'Ver avaliações', 'warn'));
     }
     if (A.parados.length){
       const nomes = A.parados.slice(0, 4).map(x => `${esc(x.s.name.split(' ')[0])} (${x.d}d)`).join(', ');
@@ -7935,11 +7966,35 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
   function avBlank(studentId){
     return { id: uid(), studentId: studentId || null, date: today(), sex: '', birthDate: '', age: null,
       height: null, weight: null, measures: {}, folds: {}, bodyFatInformed: null, notes: '', examiner: '',
-      photos: {front: [], side: [], back: []}, createdAt: new Date().toISOString(), updatedAt: null };
+      nextDate: '', photos: {front: [], side: [], back: []},
+      createdAt: new Date().toISOString(), updatedAt: null };
   }
   function avFor(id){ return avList().filter(a => a.studentId === id)
     .sort((a, b) => String(b.date || '').localeCompare(String(a.date || ''))); }
   function avFind(id){ return avList().find(a => a.id === id) || null; }
+  /* Soma dias a uma data ISO sem passar por UTC (evita o dia "pular" de fuso). */
+  function avAddDays(iso, n){
+    const d = new Date(String(iso || '') + 'T12:00:00');
+    if (isNaN(d)) return '';
+    d.setDate(d.getDate() + n);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+  /* Próxima avaliação de um aluno: vale a data da avaliação mais recente que tiver uma definida. */
+  function avNextInfo(id){
+    for (const a of avFor(id)){
+      if (!a.nextDate) continue;
+      const dias = dashDias(today(), a.nextDate);
+      return { date: a.nextDate, base: a.date, dias };
+    }
+    return null;
+  }
+  function avNextBadge(n){
+    if (!n) return '';
+    const cls = n.dias < 0 ? ' late' : (n.dias <= 7 ? ' soon' : '');
+    const txt = n.dias < 0 ? `atrasada há ${-n.dias} dia(s)`
+      : (n.dias === 0 ? 'é hoje' : `em ${n.dias} dia(s)`);
+    return `<span class="av-next${cls}">próxima ${dateFmt(n.date)} · ${txt}</span>`;
+  }
   function avLatest(id){ const l = avFor(id); return l.length ? l[0] : null; }
 
   /* ---- cálculos ---- */
@@ -8014,6 +8069,11 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
     AV_MEASURES.forEach(([k, label]) => { const v = avNum(a.measures[k]); if (v !== null && (v <= 0 || v > 300)) e.push(label + ' fora da faixa'); });
     AV_FOLDS.forEach(([k, label]) => { const v = avNum(a.folds[k]); if (v !== null && (v <= 0 || v > 120)) e.push('dobra ' + label + ' fora da faixa'); });
     if (a.bodyFatInformed !== null && (a.bodyFatInformed < 0 || a.bodyFatInformed > 70)) e.push('% gordura informado fora da faixa (0–70)');
+    if (a.nextDate){
+      const nx = new Date(a.nextDate + 'T12:00:00');
+      if (isNaN(nx)) e.push('próxima avaliação inválida');
+      else if (a.date && a.nextDate < a.date) e.push('a próxima avaliação não pode ser antes desta');
+    }
     return e;
   }
 
@@ -8108,6 +8168,14 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
     $('#avFolds').innerHTML = AV_FOLDS.map(([k, label]) =>
       `<div class="span3"><label for="avf_${k}">${esc(label)} (mm)</label><input type="number" id="avf_${k}" min="0" max="120" step="0.1" placeholder="—"></div>`).join('');
   }
+  /* Texto ao lado do campo: quantos dias faltam para a próxima avaliação. */
+  function avPaintNext(){
+    const el = $('#avNextHint'); if (!el) return;
+    const v = $('#avNext') ? $('#avNext').value : '';
+    if (!v){ el.textContent = 'Sem data marcada para a próxima avaliação.'; return; }
+    const d = dashDias(today(), v);
+    el.textContent = d < 0 ? `Atrasada há ${-d} dia(s).` : (d === 0 ? 'É hoje.' : `Faltam ${d} dia(s).`);
+  }
   function avReadForm(){
     const a = avCurrent; if (!a) return null;
     a.date = $('#avDate').value || '';
@@ -8119,12 +8187,15 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
     a.bodyFatInformed = avNum($('#avBfInf').value);
     a.examiner = $('#avExaminer').value.trim();
     a.notes = $('#avNotes').value.trim();
+    a.nextDate = $('#avNext').value || '';
     a.measures = {}; AV_MEASURES.forEach(([k]) => { a.measures[k] = avNum($('#avm_' + k).value); });
     a.folds = {}; AV_FOLDS.forEach(([k]) => { a.folds[k] = avNum($('#avf_' + k).value); });
     return a;
   }
   function avFillForm(a){
     $('#avDate').value = a.date || '';
+    $('#avNext').value = a.nextDate || '';
+    avPaintNext();
     $('#avSex').value = a.sex || '';
     $('#avBirth').value = a.birthDate || '';
     $('#avAge').value = a.age === null || a.age === undefined ? '' : a.age;
@@ -8169,7 +8240,8 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
       const c = avComposition(a);
       return `<div class="av-row${avEditing === a.id ? ' on' : ''}">
         <div><div class="d">${dateFmt(a.date)}${a.weight !== null ? ' · ' + avFmt(a.weight) + ' kg' : ''}${c.bf !== null ? ' · ' + avFmt(c.bf) + '% GC' : ''}</div>
-        <div class="m">IMC ${avFmt(avBmi(a))} · massa magra ${avFmt(c.leanMass)} kg · % gordura ${c.src || 'não calculado'}</div></div>
+        <div class="m">IMC ${avFmt(avBmi(a))} · massa magra ${avFmt(c.leanMass)} kg · % gordura ${c.src || 'não calculado'}</div>
+        <div class="m">${a.nextDate ? avNextBadge({ date: a.nextDate, dias: dashDias(today(), a.nextDate) }) : '<span class="av-next">próxima avaliação não marcada</span>'}</div></div>
         <div class="actions">
           <button class="btn secondary small" data-av-edit="${esc(a.id)}">Editar</button>
           <button class="btn secondary small" data-av-move="${esc(a.id)}" title="Mover ou copiar para outro aluno">Mover</button>
@@ -8423,9 +8495,19 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
     if (avStudentId) sel.value = avStudentId;
     const st = state.students.find(s => s.id === avStudentId);
     const list = avFor(avStudentId);
-    $('#avStudentInfo').textContent = st
-      ? `${list.length} avaliação(ões) registrada(s)${list.length ? ' · última em ' + dateFmt(list[0].date) : ''}.`
-      : 'Cadastre um aluno na aba Fichas para começar.';
+    if (!st){
+      $('#avStudentInfo').textContent = 'Cadastre um aluno na aba Fichas para começar.';
+    } else {
+      const nx = avNextInfo(avStudentId);
+      const partes = [`${list.length} avaliação(ões) registrada(s)`];
+      if (list.length) partes.push('última em ' + dateFmt(list[0].date));
+      if (nx){
+        const d = nx.dias;
+        partes.push(d < 0 ? `próxima atrasada (${dateFmt(nx.date)}, há ${-d} dia(s))`
+          : (d === 0 ? 'próxima é hoje' : `próxima em ${dateFmt(nx.date)} (${d} dia(s))`));
+      } else partes.push('próxima avaliação não marcada');
+      $('#avStudentInfo').textContent = partes.join(' · ') + '.';
+    }
     renderAvHistory(); renderAvResults(); renderAvCompare(); renderAvPhotos(); renderAvComparator();
   }
 
@@ -8674,6 +8756,23 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
     else { state.activeStudentId = avStudentId; save(); }
     renderAval();
   });
+  /* Atalhos de prazo + sugestão automática de +45 dias ao escolher a data. */
+  (function avNextInit(){
+    const nx = $('#avNext'); if (!nx) return;
+    nx.addEventListener('change', avPaintNext);
+    const dia = $('#avDate');
+    if (dia) dia.addEventListener('change', () => {
+      if (!$('#avNext').value && dia.value) $('#avNext').value = avAddDays(dia.value, 45);
+      avPaintNext();
+    });
+    $$('[data-avnext]').forEach(b => b.addEventListener('click', () => {
+      const base = $('#avDate').value || today();
+      $('#avNext').value = avAddDays(base, num(b.dataset.avnext) || 45);
+      avPaintNext();
+    }));
+    const cl = $('#avNextClear');
+    if (cl) cl.addEventListener('click', () => { $('#avNext').value = ''; avPaintNext(); });
+  })();
   $('#avNewBtn').addEventListener('click', avNew);
   $('#avCancelBtn').addEventListener('click', avCloseForm);
   $('#avSaveBtn').addEventListener('click', avSave);
