@@ -603,6 +603,28 @@
       border-radius:99px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
     .av-next.soon{border-color:var(--accent2);color:var(--accent2)}
     .av-next.late{border-color:var(--danger);color:var(--danger)}
+    .av-delta{display:inline-block;margin-left:6px;font-size:10.5px;font-weight:700;padding:2px 7px;
+      border-radius:99px;border:1px solid var(--line);white-space:nowrap}
+    .av-delta.good{border-color:var(--ok);color:var(--ok)}
+    .av-delta.bad{border-color:var(--danger);color:var(--danger)}
+    .av-delta.flat{color:var(--muted)}
+    /* Cartao de destaque da proxima avaliacao */
+    .av-nx{display:grid;grid-template-columns:1.1fr 1fr 1.6fr;gap:16px;align-items:center}
+    .av-nx-big{display:flex;flex-direction:column;gap:3px;min-width:0}
+    .av-nx-big span{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+    .av-nx-big b{font-size:26px;letter-spacing:-.02em;line-height:1.1;font-variant-numeric:tabular-nums}
+    .av-nx-big small{color:var(--muted);font-size:12px}
+    .av-nx-big.ok b{color:var(--ok)} .av-nx-big.soon b{color:var(--accent2)} .av-nx-big.late b{color:var(--danger)}
+    .av-nx-bar{height:8px;border-radius:99px;background:#1b2620;overflow:hidden;margin-top:6px}
+    .av-nx-bar i{display:block;height:100%;border-radius:99px;background:var(--gh-grad);transition:width .3s}
+    .av-nx-acts{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+    @media(max-width:900px){ .av-nx{grid-template-columns:1fr;gap:12px} }
+    /* Grafico de evolucao */
+    .av-evol-seg{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+    .av-evol-seg .btn{padding:7px 11px;font-size:11.5px}
+    .av-evol-box{position:relative;height:300px}
+    .av-evol-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:11.5px;color:var(--muted)}
+    .av-evol-legend b{color:var(--text);font-variant-numeric:tabular-nums}
     .fin-table .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
     .fin-table .nome{font-weight:700}
     .fin-table .nome small{display:block;font-weight:400;color:var(--muted);font-size:11px}
@@ -1434,6 +1456,25 @@
         <div class="span6"><label for="avStudent">Aluno</label><select id="avStudent"></select></div>
         <div class="span6"><label>Resumo</label><p class="hint" id="avStudentInfo" style="margin:0"></p></div>
       </div>
+      <article class="card" id="avNextCard" style="margin:16px 0 4px">
+        <div class="card-head"><h2>Próxima avaliação</h2><span class="badge" id="avNextBadge">—</span></div>
+        <div class="av-nx">
+          <div class="av-nx-big" id="avNextBig">
+            <span>Marcada para</span><b id="avNextDate">—</b><small id="avNextWhen">sem data marcada</small>
+            <div class="av-nx-bar"><i id="avNextFill" style="width:0%"></i></div>
+          </div>
+          <div class="field"><label for="avNextQuick">Mudar a data</label><input type="date" id="avNextQuick"></div>
+          <div class="av-nx-acts">
+            <button class="btn ghost small" type="button" data-avnextq="45">+45 dias</button>
+            <button class="btn ghost small" type="button" data-avnextq="60">+60 dias</button>
+            <button class="btn ghost small" type="button" data-avnextq="90">+90 dias</button>
+            <button class="btn small" type="button" id="avNextQuickSave">Salvar</button>
+            <button class="btn ghost small" type="button" id="avNextQuickClear">Limpar</button>
+          </div>
+        </div>
+        <p class="hint" id="avNextHint2" style="margin:10px 0 0"></p>
+      </article>
+
       <h3 style="margin:18px 0 10px">Histórico de avaliações</h3>
       <div class="list" id="avHistory"></div>
     </article>
@@ -1498,6 +1539,16 @@
     </article>
 
     <!-- 7. COMPARAÇÃO -->
+    <article class="card">
+      <div class="card-head">
+        <h2>Evolução</h2>
+        <span class="hint" id="avEvolHint" style="margin:0"></span>
+      </div>
+      <div class="av-evol-seg" id="avEvolSeg"></div>
+      <div class="av-evol-box chart-box"><canvas id="avEvolChart"></canvas></div>
+      <div class="av-evol-legend" id="avEvolLegend"></div>
+    </article>
+
     <article class="card">
       <h2>Comparação entre avaliações</h2>
       <div class="form">
@@ -2002,7 +2053,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '55';
+  const APP_V = '56';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -2856,6 +2907,7 @@
     seedIfEmpty();
     finEnsure();
     seedAssessments();
+    avSeedNext();
     renderAll();
     snapshotSave();
     clearInterval(snapTimer);
@@ -7972,6 +8024,17 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
   function avFor(id){ return avList().filter(a => a.studentId === id)
     .sort((a, b) => String(b.date || '').localeCompare(String(a.date || ''))); }
   function avFind(id){ return avList().find(a => a.id === id) || null; }
+  /* Prazo padrao: toda avaliacao sem data marcada ganha +45 dias (uma vez). */
+  function avSeedNext(){
+    if (state.avNextSeed === 1) return;
+    state.avNextSeed = 1;
+    let n = 0;
+    (state.assessments || []).forEach(a => {
+      if (!a.nextDate && a.date){ a.nextDate = avAddDays(a.date, 45); n++; }
+    });
+    if (n) try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e){}
+    return n;
+  }
   /* Soma dias a uma data ISO sem passar por UTC (evita o dia "pular" de fuso). */
   function avAddDays(iso, n){
     const d = new Date(String(iso || '') + 'T12:00:00');
@@ -7979,14 +8042,13 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
     d.setDate(d.getDate() + n);
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }
-  /* Próxima avaliação de um aluno: vale a data da avaliação mais recente que tiver uma definida. */
+  /* Próxima avaliação de um aluno: vale a data da avaliação MAIS RECENTE.
+     Se ela não tem data marcada, não há próxima agendada — não caimos para uma
+     avaliação antiga, senão limpar o campo parecia não surtir efeito. */
   function avNextInfo(id){
-    for (const a of avFor(id)){
-      if (!a.nextDate) continue;
-      const dias = dashDias(today(), a.nextDate);
-      return { date: a.nextDate, base: a.date, dias };
-    }
-    return null;
+    const a = avFor(id)[0];
+    if (!a || !a.nextDate) return null;
+    return { date: a.nextDate, base: a.date, dias: dashDias(today(), a.nextDate) };
   }
   function avNextBadge(n){
     if (!n) return '';
@@ -8168,6 +8230,72 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
     $('#avFolds').innerHTML = AV_FOLDS.map(([k, label]) =>
       `<div class="span3"><label for="avf_${k}">${esc(label)} (mm)</label><input type="number" id="avf_${k}" min="0" max="120" step="0.1" placeholder="—"></div>`).join('');
   }
+  /* ---- cartao de destaque da proxima avaliacao ---- */
+  function renderAvNextCard(){
+    const n = avStudentId ? avNextInfo(avStudentId) : null;
+    const box = $('#avNextCard'); if (!box) return;
+    const big = $('#avNextBig');
+    const hoje = today();
+    const marcada = $('#avNextQuick');
+    if (marcada && document.activeElement !== marcada) marcada.value = n ? n.date : '';
+    if (!n){
+      big.className = 'av-nx-big';
+      $('#avNextDate').textContent = '—';
+      $('#avNextWhen').textContent = 'sem data marcada';
+      $('#avNextBadge').textContent = 'sem prazo';
+      $('#avNextFill').style.width = '0%';
+      $('#avNextHint2').textContent = 'Marque uma data para o app avisar quando o aluno estiver no prazo.';
+      return;
+    }
+    const d = n.dias;
+    const cls = d < 0 ? 'late' : (d <= 7 ? 'soon' : 'ok');
+    const base = n.base || hoje;
+    const total = Math.max(1, dashDias(base, n.date));
+    const passou = Math.max(0, dashDias(base, hoje));
+    const pct = Math.min(100, Math.round((passou / total) * 100));
+    big.className = 'av-nx-big ' + cls;
+    $('#avNextDate').textContent = dateFmt(n.date);
+    $('#avNextWhen').textContent = d < 0 ? `atrasada há ${-d} dia(s)`
+      : (d === 0 ? 'é hoje' : `faltam ${d} dia(s)`);
+    $('#avNextBadge').textContent = d < 0 ? 'atrasada' : (d <= 7 ? 'chegando' : 'no prazo');
+    $('#avNextFill').style.width = pct + '%';
+    const ciclo = total;
+    $('#avNextHint2').textContent = `Prazo de ${ciclo} dia(s) desde a avaliação de ${dateFmt(base)} — `
+      + (d < 0 ? `já passou ${-d} dia(s).` : `${pct}% do prazo decorrido.`);
+  }
+  /* Salva a data digitada no cartao, na avaliacao mais recente do aluno. */
+  function avNextQuickApply(v){
+    const list = avFor(avStudentId);
+    if (!list.length) return notify('Registre uma avaliação antes de marcar a próxima.', true);
+    const a = list[0];
+    a.nextDate = v || '';
+    a.updatedAt = new Date().toISOString();
+    save(); renderAval();
+    notify(v ? 'Próxima avaliação marcada para ' + dateFmt(v) + '.' : 'Data da próxima avaliação removida.');
+  }
+  (function avNextQuickInit(){
+    const inp = $('#avNextQuick');
+    if (inp) inp.addEventListener('change', () => {
+      const v = inp.value || '';
+      const nx = $('#avNextHint'); if (nx) nx.textContent = '';
+      if (v && v < today() && avFor(avStudentId).length){
+        // permitido (reagendar para tras), mas avisa
+      }
+      renderAvNextCard();
+    });
+    $$('[data-avnextq]').forEach(b => b.addEventListener('click', () => {
+      const n = avNextInfo(avStudentId);
+      const base = (n && n.base) || today();
+      const v = avAddDays(base, num(b.dataset.avnextq) || 45);
+      const inp2 = $('#avNextQuick'); if (inp2) inp2.value = v;
+      avNextQuickApply(v);
+    }));
+    const sv = $('#avNextQuickSave');
+    if (sv) sv.addEventListener('click', () => avNextQuickApply($('#avNextQuick').value || ''));
+    const cl = $('#avNextQuickClear');
+    if (cl) cl.addEventListener('click', () => avNextQuickApply(''));
+  })();
+
   /* Texto ao lado do campo: quantos dias faltam para a próxima avaliação. */
   function avPaintNext(){
     const el = $('#avNextHint'); if (!el) return;
@@ -8236,12 +8364,12 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
   /* ---- render ---- */
   function renderAvHistory(){
     const list = avFor(avStudentId);
-    $('#avHistory').innerHTML = list.length ? list.map(a => {
+    $('#avHistory').innerHTML = list.length ? list.map((a, k) => {
       const c = avComposition(a);
       return `<div class="av-row${avEditing === a.id ? ' on' : ''}">
         <div><div class="d">${dateFmt(a.date)}${a.weight !== null ? ' · ' + avFmt(a.weight) + ' kg' : ''}${c.bf !== null ? ' · ' + avFmt(c.bf) + '% GC' : ''}</div>
         <div class="m">IMC ${avFmt(avBmi(a))} · massa magra ${avFmt(c.leanMass)} kg · % gordura ${c.src || 'não calculado'}</div>
-        <div class="m">${a.nextDate ? avNextBadge({ date: a.nextDate, dias: dashDias(today(), a.nextDate) }) : '<span class="av-next">próxima avaliação não marcada</span>'}</div></div>
+        <div class="m">${a.nextDate ? avNextBadge({ date: a.nextDate, dias: dashDias(today(), a.nextDate) }) : '<span class="av-next">próxima avaliação não marcada</span>'}${avDeltaHTML(a, list[k + 1])}</div></div>
         <div class="actions">
           <button class="btn secondary small" data-av-edit="${esc(a.id)}">Editar</button>
           <button class="btn secondary small" data-av-move="${esc(a.id)}" title="Mover ou copiar para outro aluno">Mover</button>
@@ -8251,6 +8379,26 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
     $$('[data-av-edit]').forEach(b => b.addEventListener('click', () => avEdit(b.dataset.avEdit)));
     $$('[data-av-del]').forEach(b => b.addEventListener('click', () => avDelete(b.dataset.avDel)));
     $$('[data-av-move]').forEach(b => b.addEventListener('click', () => avMoveOpen(b.dataset.avMove)));
+  }
+  /* Quanto mudou desde a avaliação anterior (a lista vem da mais nova para a mais antiga). */
+  function avDeltaHTML(a, anterior){
+    if (!anterior) return '';
+    const out = [];
+    /* `tom`: 'bom' quando cair é bom (% de gordura), 'ruim' quando subir é bom (massa magra)
+       e null quando depende do objetivo do aluno (peso) — aí fica neutro. */
+    const par = (rot, va, vb, tom) => {
+      if (va === null || vb === null || !Number.isFinite(va) || !Number.isFinite(vb)) return;
+      const d = va - vb;
+      if (Math.abs(d) < 0.1) return;
+      const cls = tom === 'bom' ? (d < 0 ? 'good' : 'bad')
+        : (tom === 'ruim' ? (d > 0 ? 'good' : 'bad') : 'flat');
+      out.push(`<span class="av-delta ${cls}">${rot} ${d > 0 ? '+' : ''}${fmtEvol(d)}</span>`);
+    };
+    const ca = avComposition(a), cb = avComposition(anterior);
+    par('peso', avNum(a.weight), avNum(anterior.weight), null);
+    par('%GC', ca.bf, cb.bf, 'bom');
+    par('magra', ca.leanMass, cb.leanMass, 'ruim');
+    return out.join('');
   }
   function renderAvResults(){
     const a = avResultsSource();
@@ -8337,6 +8485,109 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
     host.innerHTML = html;
     drawAvChart();
   }
+  /* ---------- gráfico de evolução ---------- */
+  const AV_EVOL = [
+    ['Peso', 'kg', a => avNum(a.weight)],
+    ['IMC', '', a => avBmi(a)],
+    ['% gordura', '%', a => avComposition(a).bf],
+    ['Massa magra', 'kg', a => avComposition(a).leanMass],
+    ['Massa gorda', 'kg', a => avComposition(a).fatMass],
+    ['Soma dobras', 'mm', a => avFoldSum(a)],
+    ['Cintura', 'cm', a => avNum((a.measures || {}).waist)],
+    ['Abdômen', 'cm', a => avNum((a.measures || {}).abdomen)],
+    ['Quadril', 'cm', a => avNum((a.measures || {}).hip)],
+    ['Coxa direita', 'cm', a => avNum((a.measures || {}).thighRight)]
+  ];
+  let avEvolIdx = 0;
+  function renderAvEvol(){
+    const seg = $('#avEvolSeg'); if (!seg) return;
+    seg.innerHTML = AV_EVOL.map((d, i) =>
+      `<button class="btn ${i === avEvolIdx ? '' : 'ghost'}" type="button" data-avevol="${i}">${d[0]}</button>`).join('');
+    seg.querySelectorAll('[data-avevol]').forEach(b => b.addEventListener('click', () => {
+      avEvolIdx = num(b.dataset.avevol) || 0; renderAvEvol();
+    }));
+    drawAvEvol();
+  }
+  function drawAvEvol(){
+    const cv = $('#avEvolChart'); if (!cv) return;
+    const p = prepCanvas(cv, 300); if (!p) return;
+    const { c, W, H } = p;
+    const def = AV_EVOL[avEvolIdx] || AV_EVOL[0];
+    const list = avFor(avStudentId).slice().reverse();   // mais antiga -> mais recente
+    const pts = list.map(a => ({ d: a.date, v: def[2](a) }));
+    const vals = pts.filter(x => x.v !== null && Number.isFinite(x.v));
+    const hint = $('#avEvolHint');
+    const leg = $('#avEvolLegend');
+    if (hint) hint.textContent = list.length ? `${list.length} avaliação(ões)` : '';
+    if (vals.length < 2){
+      c.fillStyle = '#9daea3'; c.font = '13px system-ui'; c.textAlign = 'center';
+      c.fillText('São necessárias pelo menos 2 avaliações com ' + def[0].toLowerCase() + '.', W / 2, H / 2);
+      if (leg) leg.innerHTML = '';
+      return;
+    }
+    const L = 46, R = 14, T = 16, B = 30;
+    const gw = W - L - R, gh = H - T - B;
+    const vs = vals.map(x => x.v);
+    let mn = Math.min(...vs), mx = Math.max(...vs);
+    if (mx === mn){ mx = mn + 1; mn = mn - 1; }
+    const folga = (mx - mn) * 0.12; mn -= folga; mx += folga;
+    const X = k => L + (pts.length === 1 ? gw / 2 : (k / (pts.length - 1)) * gw);
+    const Y = v => T + gh - ((v - mn) / (mx - mn)) * gh;
+    // grade + eixo
+    c.strokeStyle = '#22302a'; c.lineWidth = 1; c.font = '10px system-ui'; c.fillStyle = '#7d8d84'; c.textAlign = 'right';
+    for (let i = 0; i <= 4; i++){
+      const v = mn + ((mx - mn) * i) / 4, y = Y(v);
+      c.beginPath(); c.moveTo(L, y); c.lineTo(L + gw, y); c.stroke();
+      c.fillText(fmtEvol(v), L - 7, y + 3);
+    }
+    c.textAlign = 'center';
+    const passo = Math.max(1, Math.ceil(pts.length / 7));
+    pts.forEach((x, k) => { if (k % passo === 0 || k === pts.length - 1)
+      c.fillText(dateFmt(x.d).slice(0, 5), X(k), T + gh + 17); });
+    // area + linha
+    c.beginPath();
+    let abriu = false;
+    pts.forEach((x, k) => { if (x.v === null || !Number.isFinite(x.v)) return;
+      if (!abriu){ c.moveTo(X(k), Y(x.v)); abriu = true; } else c.lineTo(X(k), Y(x.v)); });
+    if (abriu){
+      const g = c.createLinearGradient(0, T, 0, T + gh);
+      g.addColorStop(0, 'rgba(216,169,61,.34)'); g.addColorStop(1, 'rgba(216,169,61,0)');
+      const base = c.getLineDash();
+      c.save();
+      c.lineTo(X(pts.length - 1), T + gh); c.lineTo(X(0), T + gh); c.closePath();
+      c.fillStyle = g; c.fill(); c.restore();
+    }
+    c.strokeStyle = '#d8a93d'; c.lineWidth = 2.5; c.beginPath();
+    abriu = false;
+    pts.forEach((x, k) => { if (x.v === null || !Number.isFinite(x.v)) return;
+      if (!abriu){ c.moveTo(X(k), Y(x.v)); abriu = true; } else c.lineTo(X(k), Y(x.v)); });
+    c.stroke();
+    // pontos + rotulo do ultimo
+    pts.forEach((x, k) => {
+      if (x.v === null || !Number.isFinite(x.v)) return;
+      c.beginPath(); c.arc(X(k), Y(x.v), 4, 0, Math.PI * 2);
+      c.fillStyle = '#0d1410'; c.fill(); c.strokeStyle = '#d8a93d'; c.lineWidth = 2; c.stroke();
+    });
+    const ult = pts[pts.length - 1];
+    if (ult.v !== null && Number.isFinite(ult.v)){
+      c.fillStyle = '#f2cf72'; c.font = '700 12px system-ui'; c.textAlign = 'right';
+      c.fillText(fmtEvol(ult.v) + (def[1] ? ' ' + def[1] : ''), L + gw, Y(ult.v) - 9);
+    }
+    // legenda: primeira -> ultima
+    if (leg){
+      const pri = vals[0].v, fim = vals[vals.length - 1].v, dif = fim - pri;
+      /* % de gordura e soma de dobras: cair e bom. As outras medidas ficam neutras. */
+      const caiBom = /gordura|dobra/i.test(def[0]);
+      const cls = Math.abs(dif) < 0.1 ? 'flat' : (caiBom ? (dif < 0 ? 'good' : 'bad') : 'flat');
+      const sinal = dif > 0 ? '+' : '';
+      leg.innerHTML = `<span>${def[0]}: <b>${fmtEvol(pri)}${def[1] ? ' ' + def[1] : ''}</b> → `
+        + `<b>${fmtEvol(fim)}${def[1] ? ' ' + def[1] : ''}</b></span>`
+        + `<span class="av-delta ${cls}">${sinal}${fmtEvol(dif)}${def[1] ? ' ' + def[1] : ''}</span>`;
+    }
+  }
+  function fmtEvol(v){ return Number.isFinite(v) ? (Math.abs(v) >= 100 ? v.toFixed(0) : v.toFixed(1)) : '—'; }
+
+  /* ---------- gráficos ---------- */
   function drawAvChart(){
     const cv = $('#avCmpChart'); if (!cv) return;
     const box = cv.parentElement;
@@ -8508,7 +8759,8 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
       } else partes.push('próxima avaliação não marcada');
       $('#avStudentInfo').textContent = partes.join(' · ') + '.';
     }
-    renderAvHistory(); renderAvResults(); renderAvCompare(); renderAvPhotos(); renderAvComparator();
+    renderAvNextCard(); renderAvHistory(); renderAvResults(); renderAvEvol();
+    renderAvCompare(); renderAvPhotos(); renderAvComparator();
   }
 
   /* ---- ações ---- */
