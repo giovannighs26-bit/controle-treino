@@ -868,6 +868,11 @@
     .tr-set.done{border-color:var(--ok);background:linear-gradient(180deg,rgba(99,197,139,.10),transparent)}
     .tr-nota{background:var(--panel);border:1px dashed var(--line);border-radius:14px;padding:14px 16px;
       color:var(--muted);font-size:14px;line-height:1.5}
+    .tr-chip.hist{border-color:#3a4a40;color:var(--text);background:#141e18}
+    .tr-chip.hist b{color:var(--accent2)}
+    .tr-chip.up{border-color:var(--ok);color:var(--ok);background:rgba(99,197,139,.12);font-weight:800}
+    .tr-chip.keep{color:var(--muted)}
+    .tr-chip.first{border-color:var(--accent2);color:var(--accent2)}
     .tr-set .tr-n{font-weight:800;color:var(--muted);min-width:22px;text-align:center;padding-bottom:10px}
     .tr-set .field{flex:1 1 76px;min-width:64px}
     .tr-set .field label{font-size:10px}
@@ -2053,7 +2058,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '56';
+  const APP_V = '57';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -4373,7 +4378,97 @@
       `<span class="tr-chip">⏱ descanso médio <b>${medio}s</b></span>` +
       '<span class="tr-chip">🎯 conduzido do primeiro ao último</span></div>';
   }
+  /* ---------- histórico de cargas + sugestão de progressão ---------- */
+  /* Últimas sessões deste exercício para este aluno (mais recente primeiro).
+     Considera apenas as séries de trabalho — aquecimento e reconhecimento não contam. */
+  function trHistoricoCarga(nome, sid){
+    const alvo = String(nome || '').trim().toLowerCase();
+    if (!alvo) return [];
+    const out = [];
+    const ses = (state.sessions || [])
+      .filter(x => x.studentId === sid)
+      .slice()
+      .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+    for (const se of ses){
+      const ex = (se.exercises || []).find(e => String(e.name || '').trim().toLowerCase() === alvo);
+      if (!ex) continue;
+      const tr = (ex.sets || []).filter(x => (x.kind || 'trabalho') === 'trabalho');
+      const cargas = tr.map(x => num(x.load)).filter(n => n > 0);
+      if (!cargas.length) continue;
+      out.push({
+        date: se.date,
+        top: Math.max.apply(null, cargas),
+        reps: tr.map(x => num(x.reps)).filter(n => n > 0),
+        week: se.week
+      });
+      if (out.length >= 3) break;
+    }
+    return out;
+  }
+  /* Sugestão: se na última vez todas as séries de trabalho bateram o topo da faixa de
+     repetições, sobe 2,5%; senão, mantém a carga e manda buscar mais reps. */
+  function trSugestaoCarga(ex, sid){
+    const h = trHistoricoCarga(ex.name, sid);
+    if (!h.length) return { tipo: 'first', txt: '1ª vez neste exercício', carga: 0 };
+    const ult = h[0];
+    const alvoMax = num(ex.repsMax) || num(ex.reps) || 0;
+    const bateu = alvoMax > 0 && ult.reps.length > 0 && ult.reps.every(r => r >= alvoMax);
+    const nova = bateu ? roundHalf(ult.top * 1.025) : ult.top;
+    return {
+      tipo: bateu ? 'up' : 'keep',
+      carga: nova,
+      ultima: ult.top,
+      txt: bateu ? `subir para ${fmt(nova)} kg (+2,5%)` : `manter ${fmt(ult.top)} kg e buscar mais reps`,
+      date: ult.date
+    };
+  }
+  /* Chips extras mostrados no alvo do exercício: última carga, histórico e sugestão. */
+  function trHistChips(ex){
+    if (!ex || ex.free) return '';
+    const sid = (typeof trRun !== 'undefined' && trRun && trRun.studentId)
+      || state.activeStudentId || (($('#trStudent') || {}).value) || null;
+    if (!sid) return '';
+    const h = trHistoricoCarga(ex.name, sid);
+    const sug = trSugestaoCarga(ex, sid);
+    const out = [];
+    if (sug.tipo === 'first') out.push('<span class="tr-chip first">1ª vez — escolha a carga</span>');
+    else {
+      const ant = h.slice(0, 3).map(x => `${dateFmt(x.date).slice(0, 5)} ${fmt(x.top)}kg`).join(' · ');
+      out.push(`<span class="tr-chip hist" title="Últimas cargas: ${esc(ant)}">última <b>${fmt(sug.ultima)} kg</b></span>`);
+      out.push(`<span class="tr-chip ${sug.tipo === 'up' ? 'up' : 'keep'}">${sug.tipo === 'up' ? '↑' : '＝'} ${esc(sug.txt)}</span>`);
+      if (h.length > 1) out.push(`<span class="tr-chip keep" title="${esc(ant)}">${h.length} últimos registros</span>`);
+    }
+    return out.join('');
+  }
   function trChips(ex){
+    return trChipsBase(ex);
+  }
+  /* O alvo do exercicio e remontado a cada passo do modo guiado. Em vez de caçar o
+     ponto de render, observamos o overlay e acrescentamos os chips de carga logo
+     depois que o alvo aparece. */
+  (function trHistObs(){ if (true) return;
+    const ov = $('#trOverlay');
+    if (!ov || typeof MutationObserver === 'undefined') return;
+    let busy = false;
+    const pinta = () => {
+      if (busy) return;
+      const t = ov.querySelector('.tr-target');
+      if (!t) return;
+      busy = true;
+      t.querySelectorAll('.tr-hchip').forEach(x => x.remove());
+      try {
+        if (trRun && trRun.exercises && trRun.exercises[trRun.i]){
+          const ex = trRun.exercises[trRun.i];
+          const html = trHistChips(ex);
+          if (html) t.insertAdjacentHTML('beforeend', html.replace(/class="tr-chip/g, 'class="tr-chip tr-hchip'));
+        }
+      } catch (e){}
+      busy = false;
+    };
+    new MutationObserver(pinta).observe(ov, {childList: true, subtree: true});
+    pinta();
+  })();
+  function trChipsBase(ex){
     if (ex.free) return '<span class="tr-chip">item de orientação — só leitura</span>';
     const rMin = num(ex.repsMin) || num(ex.reps) || 0;
     const rMax = num(ex.repsMax) || rMin;
@@ -4434,7 +4529,7 @@
       <main class="tr-body">
         <div class="tr-step">Exercício ${run.i + 1} de ${total}</div>
         <h2 id="trExName">${esc(ex.name || 'Exercício')}</h2>
-        <div class="tr-target">${trChips(ex)}</div>
+        <div class="tr-target">${trChips(ex)}${trHistChips(ex)}</div>
         <div class="tr-sets" id="trSets">${ex.free
           ? '<div class="tr-nota">📋 <b>Item de orientação da ficha</b> — não tem séries para registrar. Faça o que está descrito e toque em <b>Próximo</b> para seguir.</div>'
           : ex.sets.map((s,k) => trSetHTML(s, k, num(ex.rest) || 60)).join('')}</div>
