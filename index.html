@@ -907,6 +907,17 @@
     .ev-met{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
     .ev-met .btn{padding:6px 10px;font-size:11px}
     .ev-pr .rec{color:#9be3b8}
+    /* ---- Fichas de treino: 3 views ---- */
+    .fx-tabs{display:flex;gap:6px;flex-wrap:wrap;align-items:center;background:var(--panel2);
+      border:1px solid var(--line);border-radius:14px;padding:6px;margin-bottom:14px}
+    .fx-tabs .btn{padding:9px 16px;font-size:13px;border-radius:10px}
+    .fx-tabs .fx-now{margin-left:auto;font-size:11.5px;color:var(--muted);padding-right:8px}
+    #fichas[data-fx="treinos"] #mtEditorCard,
+    #fichas[data-fx="treinos"] #sessionCard,
+    #fichas[data-fx="editar"] #fxList,
+    #fichas[data-fx="editar"] #sessionCard,
+    #fichas[data-fx="registrar"] #fxList,
+    #fichas[data-fx="registrar"] #mtEditorCard{display:none}
     @media(max-width:900px){ .ev-grid2{grid-template-columns:1fr} }
     .tr-set .tr-n{font-weight:800;color:var(--muted);min-width:22px;text-align:center;padding-bottom:10px}
     .tr-set .field{flex:1 1 76px;min-width:64px}
@@ -1317,8 +1328,15 @@
     <article class="card"><h2>Treinos recentes</h2><div id="recentSessions" class="list"></div></article>
   </div></section>
 
-  <section class="page" id="fichas"><div class="grid">
-    <article class="card">
+  <section class="page" id="fichas" data-fx="treinos"><div class="grid">
+    <div class="fx-tabs" id="fxTabs">
+      <button class="btn" type="button" data-fx-go="treinos">📋 Treinos</button>
+      <button class="btn ghost" type="button" data-fx-go="editar">✎ Editar a ficha</button>
+      <button class="btn ghost" type="button" data-fx-go="registrar">▶ Registrar treino</button>
+      <span class="fx-now" id="fxNow"></span>
+    </div>
+
+    <article class="card" id="fxList">
       <div class="actions" style="justify-content:space-between;margin-bottom:14px">
         <h2 style="margin:0">Fichas de treino</h2>
         <div class="actions">
@@ -2141,7 +2159,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '60';
+  const APP_V = '61';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -3236,13 +3254,36 @@
   /* ---------- FICHAS ---------- */
   function plansOf(id){ return state.plans[id] || null; }
   /* Atalhos para as duas metades da aba Fichas: o registro rapido e o editor. */
+  /* ---------- Fichas: alterna entre as tres views (Treinos / Editar / Registrar) ---------- */
+  const FX_VISTAS = { treinos: 'Treinos', editar: 'Editar a ficha', registrar: 'Registrar treino' };
+  function fxSet(v){
+    const sec = $('#fichas'); if (!sec) return;
+    if (!FX_VISTAS[v]) v = 'treinos';
+    sec.dataset.fx = v;
+    $$('#fxTabs [data-fx-go]').forEach(b => b.classList.toggle('ghost', b.dataset.fxGo !== v));
+    const now = $('#fxNow');
+    if (now) now.textContent = 'você está em: ' + FX_VISTAS[v];
+    try { localStorage.setItem('ghPerformance.fxView', v); } catch (e){}
+  }
+  (function fxInit(){
+    $$('#fxTabs [data-fx-go]').forEach(b => b.addEventListener('click', () => {
+      fxSet(b.dataset.fxGo);
+      const alvo = b.dataset.fxGo === 'editar' ? $('#mtEditorCard') : (b.dataset.fxGo === 'registrar' ? $('#sessionCard') : $('#fxList'));
+      if (alvo) alvo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }));
+    let v = 'treinos';
+    try { v = localStorage.getItem('ghPerformance.fxView') || 'treinos'; } catch (e){}
+    fxSet(v);
+  })();
   function irRegistrar(){
     showPage('fichas');
+    fxSet('registrar');
     const c = $('#sessionCard');
     if (c) setTimeout(() => c.scrollIntoView({behavior:'smooth', block:'start'}), 60);
   }
   function irEditarFicha(){
     showPage('fichas');
+    fxSet('editar');
     const c = $('#mtEditorCard');
     if (c) setTimeout(() => c.scrollIntoView({behavior:'smooth', block:'start'}), 60);
   }
