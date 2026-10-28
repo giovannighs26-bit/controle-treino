@@ -880,6 +880,25 @@
     .al-pick-search::placeholder{color:var(--muted)}
     .al-pick-search:focus{outline:none;border-color:var(--accent2)}
     .al-pick-count{font-size:10px;color:var(--muted);letter-spacing:.02em;margin-top:-2px}
+    /* ---- barra do aluno ativo (substitui o botao flutuante) ---- */
+    .aluno-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;width:100%;
+      background:var(--panel);border:1px solid var(--line);border-radius:14px;
+      padding:9px 12px;margin:0 0 14px;position:relative;z-index:1}
+    .aluno-bar .aluno-fab-av{flex:0 0 32px;width:32px;height:32px;border-radius:10px;
+      display:grid;place-items:center;font-weight:900;font-size:12px;background:var(--gh-grad);color:#1c1608}
+    .aluno-bar .aluno-fab-tx{flex:0 0 auto;min-width:0;max-width:34%}
+    .aluno-bar .aluno-fab-tx b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .aluno-bar .aluno-fab-tx small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+    .aluno-bar .al-pick-host{flex:1 1 240px;min-width:0;flex-direction:row;align-items:center;gap:8px}
+    .aluno-bar .al-pick-host select{flex:1 1 180px;min-width:0}
+    .aluno-bar .al-pick-search{flex:0 1 180px;min-width:0}
+    .aluno-bar .al-pick-count{flex:0 0 auto;margin:0;white-space:nowrap}
+    @media(max-width:640px){
+      .aluno-bar{gap:8px}
+      .aluno-bar .aluno-fab-tx{max-width:100%;flex:1 1 100%}
+      .aluno-bar .al-pick-host{flex:1 1 100%;flex-wrap:wrap}
+      .aluno-bar .al-pick-search{flex:1 1 100%}
+    }
     /* ---- aba Evolucao ---- */
     .ev-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
     .ev-kpi{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:12px;min-width:0}
@@ -2159,7 +2178,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '61';
+  const APP_V = '62';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -3072,7 +3091,7 @@
     if (id === 'dashboard') { renderDashboard(); renderDashAlerts(); setTimeout(drawDashboardCharts, 30); }
     if (id === 'fichas'){ mtRender(); autoLoadToday(); }
     if (id === 'evolucao') renderEvolucao();
-    try { alunoPickerBusca(); } catch (e){}
+    try { alunoBarraFixar(); alunoPickerBusca(); } catch (e){}
     if (id === 'treino') trRender();
     if (id === 'grupo') renderGrupo();
     if (id === 'aval') { renderAval(); setTimeout(drawAvChart, 40); }
@@ -3091,6 +3110,23 @@
      busca acima. A lista de opções é fotografada quando o campo recebe o foco, para
      não depender de onde/como o <select> foi populado. O aluno ativo nunca sai da
      lista, mesmo que não case com a busca. */
+  /* O seletor de aluno era um botao flutuante no canto. Vira uma barra fixa logo
+     abaixo do topo: fica no fluxo, sempre visivel e igual em todas as abas.
+     O nó é o MESMO, então todo o resto do app continua ligado nele. */
+  function alunoBarraFixar(){
+    const fab = $('#alunoFab');
+    if (!fab) return;
+    if (fab.dataset.barra === '1') return;
+    fab.dataset.barra = '1';
+    fab.classList.remove('aluno-fab');
+    fab.classList.add('aluno-bar');
+    const topo = document.querySelector('header.top') || document.querySelector('.top');
+    const alvo = topo && topo.parentElement ? topo : null;
+    if (alvo && alvo.nextSibling !== fab){
+      try { alvo.parentElement.insertBefore(fab, alvo.nextSibling); } catch (e){}
+    }
+  }
+  alunoBarraFixar();
   function alunoPickerBusca(){
     const sel = $('#activeStudent');
     if (!sel || sel.dataset.busca === '1') return;
