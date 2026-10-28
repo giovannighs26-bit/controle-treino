@@ -899,6 +899,14 @@
     .ev-callout{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--panel2);
       border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:12.5px}
     .ev-callout b{color:var(--accent2)}
+    .ev-kpi i{display:inline-block;font-style:normal;font-size:11px;font-weight:800;padding:1px 7px;
+      border-radius:99px;border:1px solid var(--line);margin-left:6px;vertical-align:2px}
+    .ev-kpi i.up{border-color:var(--ok);color:var(--ok)}
+    .ev-kpi i.down{border-color:var(--danger);color:var(--danger)}
+    .ev-kpi i.flat{color:var(--muted)}
+    .ev-met{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+    .ev-met .btn{padding:6px 10px;font-size:11px}
+    .ev-pr .rec{color:#9be3b8}
     @media(max-width:900px){ .ev-grid2{grid-template-columns:1fr} }
     .tr-set .tr-n{font-weight:800;color:var(--muted);min-width:22px;text-align:center;padding-bottom:10px}
     .tr-set .field{flex:1 1 76px;min-width:64px}
@@ -1480,6 +1488,7 @@
       <div class="card-head"><h2>Evolução de carga</h2><span class="hint" id="evExHint" style="margin:0"></span></div>
       <div class="ev-callout" id="evCallout"></div>
       <div class="ev-seg" id="evExSeg"></div>
+      <div class="ev-met" id="evMetricaSeg"></div>
       <div class="ev-box chart-box"><canvas id="evCargaChart"></canvas></div>
     </article>
 
@@ -2132,7 +2141,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '59';
+  const APP_V = '60';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -4553,6 +4562,31 @@
     ['Séries', 'séries', se => evSerieSessao(se)]
   ];
   let evExSel = null, evMetrica = 0;
+  /* Métricas por exercício (o gráfico principal é sempre do exercício escolhido). */
+  const EV_MET = [
+    ['Carga máx', 'kg', ex => { const c = evTrabalho(ex).map(x => num(x.load)).filter(n => n > 0); return c.length ? Math.max.apply(null, c) : null; }],
+    ['Volume', 'kg', ex => { const v = evTrabalho(ex).reduce((n, x) => n + (num(x.load) || 0) * (num(x.reps) || 0), 0); return v > 0 ? v : null; }],
+    ['Reps', 'reps', ex => { const v = evTrabalho(ex).reduce((n, x) => n + (num(x.reps) || 0), 0); return v > 0 ? v : null; }],
+    ['Séries', 'séries', ex => { const v = evTrabalho(ex).filter(x => x.done).length; return v > 0 ? v : null; }]
+  ];
+  /* 1RM estimado (Epley) a partir da melhor série de trabalho da sessão. */
+  function ev1RM(ex){
+    let melhor = 0;
+    evTrabalho(ex).forEach(x => {
+      const c = num(x.load), r = num(x.reps);
+      if (c > 0 && r > 0){ const e = c * (1 + r / 30); if (e > melhor) melhor = e; }
+    });
+    return melhor || null;
+  }
+  function evMelhorSerie(ex){
+    let melhor = null;
+    evTrabalho(ex).forEach(x => {
+      const c = num(x.load), r = num(x.reps);
+      if (c <= 0 || r <= 0) return;
+      if (!melhor || c * r > melhor.load * melhor.reps) melhor = { load: c, reps: r };
+    });
+    return melhor;
+  }
   function evExercicios(sid, dias){
     const nomes = new Map();
     evSessoes(sid, dias).forEach(se => {
@@ -4664,9 +4698,25 @@
     const nPr = Object.keys(prs).length;
     const semanas = new Set(ses.map(se => evSemana(se.date))).size || 1;
     const media = ses.length / semanas;
+    /* Período anterior, para mostrar a variação de cada número. */
+    let sesAnt = [];
+    if (dias > 0){
+      const corte = avAddDays(today(), -dias), corteAnt = avAddDays(today(), -dias * 2);
+      sesAnt = (state.sessions || []).filter(x => x.studentId === s.id
+        && String(x.date || '') >= corteAnt && String(x.date || '') < corte);
+    }
+    const volAnt = sesAnt.reduce((t, se) => t + evVolumeSessao(se), 0);
+    const marc = (atual, ant, melhorCair) => {
+      if (!ant || !atual) return '';
+      const d = atual - ant;
+      if (Math.abs(d) < 0.01) return '<i class="flat">=</i>';
+      const pct = Math.round((d / ant) * 100);
+      const bom = melhorCair ? d < 0 : d > 0;
+      return `<i class="${bom ? 'up' : 'down'}">${d > 0 ? '▲' : '▼'} ${Math.abs(pct)}%</i>`;
+    };
     $('#evKpis').innerHTML =
-      `<div class="ev-kpi"><span>Treinos</span><b>${ses.length}</b><small>${dias ? 'últimos ' + dias + ' dias' : 'todo o histórico'}</small></div>` +
-      `<div class="ev-kpi"><span>Volume total</span><b>${evNum(vol)}</b><small>kg levantados (séries de trabalho)</small></div>` +
+      `<div class="ev-kpi"><span>Treinos</span><b>${ses.length}${marc(ses.length, sesAnt.length)}</b><small>${dias ? 'últimos ' + dias + ' dias' : 'todo o histórico'}</small></div>` +
+      `<div class="ev-kpi"><span>Volume total</span><b>${evNum(vol)}${marc(vol, volAnt)}</b><small>kg levantados (séries de trabalho)</small></div>` +
       `<div class="ev-kpi"><span>Séries feitas</span><b>${series}</b><small>marcadas como feitas</small></div>` +
       `<div class="ev-kpi"><span>Exercícios com recorde</span><b>${nPr}</b><small>no período</small></div>` +
       `<div class="ev-kpi"><span>Média por semana</span><b>${media.toFixed(1).replace('.', ',')}</b><small>treinos por semana</small></div>`;
@@ -4684,14 +4734,21 @@
     const segM = $('#evExHint');
     if (segM) segM.textContent = nomes.length ? `${nomes.length} exercício(s) no período` : '';
 
-    /* métrica */
+    /* métrica do gráfico principal */
     const mseg = $('#evMetricaSeg');
+    if (mseg){
+      mseg.innerHTML = EV_MET.map((m, i) =>
+        `<button class="btn ${i === evMetrica ? '' : 'ghost'}" type="button" data-evmet="${i}">${m[0]}</button>`).join('');
+      mseg.querySelectorAll('[data-evmet]').forEach(b => b.addEventListener('click', () => {
+        evMetrica = num(b.dataset.evmet) || 0; renderEvolucao();
+      }));
+    }
 
     /* série do exercício escolhido */
+    const metDef = EV_MET[evMetrica] || EV_MET[0];
     const pts = ses.map(se => {
       const ex = (se.exercises || []).find(e => String(e.name || '').trim() === evExSel);
-      const cargas = ex ? evTrabalho(ex).map(x => num(x.load)).filter(n => n > 0) : [];
-      return { d: se.date, v: cargas.length ? Math.max.apply(null, cargas) : null };
+      return { d: se.date, v: ex ? metDef[2](ex) : null };
     });
 
     /* callout: última carga x recorde */
@@ -4702,9 +4759,20 @@
       else {
         const ult = vals[vals.length - 1], rec = Math.max.apply(null, vals.map(x => x.v));
         const pri = vals[0].v, dif = ult.v - pri;
-        const sufixo = rec > 0 ? ` · recorde <b>${evNum(rec)} kg</b>` : '';
-        const delta = Math.abs(dif) >= 0.1 ? ` · <b>${dif > 0 ? '+' : ''}${evNum(dif)} kg</b> desde a primeira` : '';
-        co.innerHTML = `<span>Última: <b>${evNum(ult.v)} kg</b> em ${dateFmt(ult.d)}${sufixo}${delta}</span>`;
+        const un = metDef[1] ? ' ' + metDef[1] : '';
+        const sufixo = rec > 0 ? ` · recorde <b>${evNum(rec)}${un}</b>` : '';
+        const delta = Math.abs(dif) >= 0.1 ? ` · <b>${dif > 0 ? '+' : ''}${evNum(dif)}${un}</b> desde a primeira` : '';
+        /* 1RM estimado (Epley) e melhor série da última sessão com esse exercício */
+        let extra = '';
+        for (let i = ses.length - 1; i >= 0; i--){
+          const ex = (ses[i].exercises || []).find(e => String(e.name || '').trim() === evExSel);
+          if (!ex) continue;
+          const rm = ev1RM(ex), ms = evMelhorSerie(ex);
+          if (rm) extra = ` · 1RM est. <b>${evNum(rm)} kg</b>`;
+          if (ms) extra += ` · melhor <b>${evNum(ms.load)} kg × ${ms.reps}</b>`;
+          break;
+        }
+        co.innerHTML = `<span>Última: <b>${evNum(ult.v)}${un}</b> em ${dateFmt(ult.d)}${sufixo}${delta}${extra}</span>`;
       }
     }
     evDrawLinha($('#evCargaChart'), pts, 'kg');
@@ -4726,7 +4794,7 @@
     const rows = Object.keys(prs).sort((a, b) => prs[b] - prs[a]);
     const tb = $('#evPrTable');
     if (tb) tb.innerHTML = rows.length
-      ? `<thead><tr><th>Exercício</th><th>Recorde</th><th>Última</th><th>Vezes</th></tr></thead><tbody>` +
+      ? `<thead><tr><th>Exercício</th><th>Recorde</th><th>1RM est.</th><th>Última</th><th>Vezes</th></tr></thead><tbody>` +
         rows.map(n => {
           const serie = pts && n === evExSel ? pts : ses.map(se => {
             const ex = (se.exercises || []).find(e => String(e.name || '').trim() === n);
@@ -4735,7 +4803,17 @@
           }).filter(x => x.v !== null);
           const ult = serie.length ? serie[serie.length - 1].v : null;
           const vezes = ses.filter(se => (se.exercises || []).some(e => String(e.name || '').trim() === n)).length;
-          return `<tr><td class="nome">${esc(n)}</td><td><b>${evNum(prs[n])} kg</b></td><td>${ult ? evNum(ult) + ' kg' : '—'}</td><td class="up">${vezes}x</td></tr>`;
+          /* melhor 1RM estimado entre as sessões do período */
+          let rm = null;
+          ses.forEach(se => {
+            const ex = (se.exercises || []).find(e => String(e.name || '').trim() === n);
+            if (!ex) return;
+            const v = ev1RM(ex);
+            if (v && (!rm || v > rm)) rm = v;
+          });
+          return `<tr><td class="nome">${esc(n)}</td><td class="rec"><b>${evNum(prs[n])} kg</b></td>`
+            + `<td>${rm ? evNum(rm) + ' kg' : '—'}</td><td>${ult ? evNum(ult) + ' kg' : '—'}</td>`
+            + `<td class="up">${vezes}x</td></tr>`;
         }).join('') + '</tbody>'
       : '<tbody><tr><td>Sem registros no período.</td></tr></tbody>';
   }
