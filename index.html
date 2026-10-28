@@ -873,6 +873,26 @@
     .tr-chip.up{border-color:var(--ok);color:var(--ok);background:rgba(99,197,139,.12);font-weight:800}
     .tr-chip.keep{color:var(--muted)}
     .tr-chip.first{border-color:var(--accent2);color:var(--accent2)}
+    /* ---- aba Evolucao ---- */
+    .ev-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+    .ev-kpi{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:12px;min-width:0}
+    .ev-kpi span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700}
+    .ev-kpi b{display:block;font-size:20px;letter-spacing:-.02em;margin-top:3px;font-variant-numeric:tabular-nums}
+    .ev-kpi small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+    .ev-seg{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+    .ev-seg .btn{padding:7px 11px;font-size:11.5px}
+    .ev-box{position:relative;height:280px}
+    .ev-grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .ev-pr{width:100%;border-collapse:collapse;font-size:12.5px}
+    .ev-pr th{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);
+      text-align:left;padding:8px 10px;position:sticky;top:0;background:#101a14}
+    .ev-pr td{padding:8px 10px;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
+    .ev-pr td.nome{font-variant-numeric:normal}
+    .ev-pr .up{color:var(--ok);font-weight:700}
+    .ev-callout{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--panel2);
+      border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:12.5px}
+    .ev-callout b{color:var(--accent2)}
+    @media(max-width:900px){ .ev-grid2{grid-template-columns:1fr} }
     .tr-set .tr-n{font-weight:800;color:var(--muted);min-width:22px;text-align:center;padding-bottom:10px}
     .tr-set .field{flex:1 1 76px;min-width:64px}
     .tr-set .field label{font-size:10px}
@@ -1048,6 +1068,7 @@
     <span class="nav-sep" aria-hidden="true"></span>
     <button class="tab" data-page="treino">Carregar treino</button>
     <button class="tab" data-page="grupo">Treino em grupo</button>
+    <button class="tab" data-page="evolucao">Evolução</button>
     <!-- 5. Acompanhamento e gestão -->
     <span class="nav-sep" aria-hidden="true"></span>
     <button class="tab" data-page="history">Histórico</button>
@@ -1427,6 +1448,52 @@
 
   <div class="gr-overlay" id="grOverlay" hidden></div>
 
+
+  <section class="page" id="evolucao"><div class="grid">
+    <article class="card">
+      <div class="actions" style="justify-content:space-between;margin-bottom:14px">
+        <h2 style="margin:0">Evolução do treino</h2>
+        <div class="actions">
+          <label class="hint" style="margin:0">Período</label>
+          <select id="evPeriodo" style="min-width:130px">
+            <option value="30">Últimos 30 dias</option>
+            <option value="90" selected>Últimos 90 dias</option>
+            <option value="180">Últimos 6 meses</option>
+            <option value="365">Último ano</option>
+            <option value="0">Tudo</option>
+          </select>
+        </div>
+      </div>
+      <p class="hint" style="margin-top:0">Tudo o que é registrado em <b>Fichas de treino</b>,
+        <b>Carregar treino</b> e <b>Treino em grupo</b> cai aqui — é a mesma base de sessões.</p>
+      <div class="ev-kpis" id="evKpis"></div>
+    </article>
+
+    <article class="card">
+      <div class="card-head"><h2>Evolução de carga</h2><span class="hint" id="evExHint" style="margin:0"></span></div>
+      <div class="ev-callout" id="evCallout"></div>
+      <div class="ev-seg" id="evExSeg"></div>
+      <div class="ev-box chart-box"><canvas id="evCargaChart"></canvas></div>
+    </article>
+
+    <article class="card">
+      <div class="grid ev-grid2" style="gap:14px">
+        <div>
+          <div class="card-head"><h2 style="font-size:16px">Volume por semana</h2></div>
+          <div class="ev-box chart-box" style="height:240px"><canvas id="evVolumeChart"></canvas></div>
+        </div>
+        <div>
+          <div class="card-head"><h2 style="font-size:16px">Frequência por semana</h2></div>
+          <div class="ev-box chart-box" style="height:240px"><canvas id="evFreqChart"></canvas></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="card-head"><h2>Recordes por exercício</h2><span class="hint" style="margin:0">melhor carga de trabalho</span></div>
+      <div class="table-wrap"><table class="ev-pr" id="evPrTable"></table></div>
+    </article>
+  </div></section>
 
   <section class="page" id="history"><div class="grid">
     <article class="card"><div class="form">
@@ -2058,7 +2125,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '57';
+  const APP_V = '58';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -2970,6 +3037,7 @@
     if (id === 'alunos') alRender();
     if (id === 'dashboard') { renderDashboard(); renderDashAlerts(); setTimeout(drawDashboardCharts, 30); }
     if (id === 'fichas'){ mtRender(); autoLoadToday(); }
+    if (id === 'evolucao') renderEvolucao();
     if (id === 'treino') trRender();
     if (id === 'grupo') renderGrupo();
     if (id === 'aval') { renderAval(); setTimeout(drawAvChart, 40); }
@@ -4378,6 +4446,240 @@
       `<span class="tr-chip">⏱ descanso médio <b>${medio}s</b></span>` +
       '<span class="tr-chip">🎯 conduzido do primeiro ao último</span></div>';
   }
+  /* ================= EVOLUÇÃO — base compartilhada ================= */
+  /* Sessões de um aluno dentro do período, da mais antiga para a mais recente. */
+  function evSessoes(sid, dias){
+    let list = (state.sessions || []).filter(x => x.studentId === sid);
+    if (dias > 0){
+      const corte = avAddDays(today(), -dias);
+      list = list.filter(x => String(x.date || '') >= corte);
+    }
+    return list.sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
+  }
+  /* Só as séries de trabalho entram em volume/recorde. */
+  function evTrabalho(ex){ return (ex && ex.sets ? ex.sets : []).filter(s => (s.kind || 'trabalho') === 'trabalho'); }
+  function evVolumeSessao(se){
+    return (se.exercises || []).reduce((t, ex) => t + evTrabalho(ex).reduce((n, s) => n + (num(s.load) || 0) * (num(s.reps) || 0), 0), 0);
+  }
+  function evSerieSessao(se){
+    return (se.exercises || []).reduce((t, ex) => t + evTrabalho(ex).filter(s => s.done).length, 0);
+  }
+  /* Carga máxima de cada exercício numa sessão. */
+  function evTopos(se){
+    const out = {};
+    (se.exercises || []).forEach(ex => {
+      const nome = String(ex.name || '').trim(); if (!nome) return;
+      const cs = evTrabalho(ex).map(s => num(s.load)).filter(n => n > 0);
+      if (!cs.length) return;
+      out[nome] = Math.max(out[nome] || 0, Math.max.apply(null, cs));
+    });
+    return out;
+  }
+  /* Semana ISO (segunda a domingo) para agrupar. */
+  function evSemana(iso){
+    const d = new Date(String(iso || '') + 'T12:00:00'); if (isNaN(d)) return '';
+    const dia = (d.getDay() + 6) % 7; d.setDate(d.getDate() - dia);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+  const EV_METRICAS = [
+    ['Carga (kg)', 'kg', se => { const t = evTopos(se); const v = Object.values(t); return v.length ? Math.max.apply(null, v) : null; }],
+    ['Volume (kg)', 'kg', se => evVolumeSessao(se)],
+    ['Séries', 'séries', se => evSerieSessao(se)]
+  ];
+  let evExSel = null, evMetrica = 0;
+  function evExercicios(sid, dias){
+    const nomes = new Map();
+    evSessoes(sid, dias).forEach(se => {
+      (se.exercises || []).forEach(ex => {
+        const n = String(ex.name || '').trim();
+        if (!n) return;
+        nomes.set(n, (nomes.get(n) || 0) + 1);
+      });
+    });
+    return [...nomes.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(x => x[0]);
+  }
+
+  /* ---------- aba Evolucao: desenho ---------- */
+  function evNum(v){ return Number.isFinite(v) ? (Math.abs(v) >= 100 ? Math.round(v).toLocaleString('pt-BR') : v.toFixed(1).replace('.', ',')) : '—'; }
+
+  function evDrawLinha(cv, pts, unidade){
+    if (!cv) return;
+    const p = prepCanvas(cv, cv.parentElement ? cv.parentElement.clientHeight || 280 : 280); if (!p) return;
+    const { c, W, H } = p;
+    const val = pts.filter(x => x.v !== null && Number.isFinite(x.v));
+    if (val.length < 2){
+      c.fillStyle = '#9daea3'; c.font = '13px system-ui'; c.textAlign = 'center';
+      c.fillText('Sem dados suficientes no período.', W / 2, H / 2); return;
+    }
+    const L = 52, R = 16, T = 16, B = 30, gw = W - L - R, gh = H - T - B;
+    let mn = Math.min(...val.map(x => x.v)), mx = Math.max(...val.map(x => x.v));
+    if (mx === mn){ mx += 1; mn -= 1; }
+    const f = (mx - mn) * 0.12; mn -= f; mx += f;
+    const X = i => L + (pts.length === 1 ? gw / 2 : (i / (pts.length - 1)) * gw);
+    const Y = v => T + gh - ((v - mn) / (mx - mn)) * gh;
+    c.strokeStyle = '#22302a'; c.lineWidth = 1; c.font = '10px system-ui'; c.fillStyle = '#7d8d84'; c.textAlign = 'right';
+    for (let i = 0; i <= 4; i++){
+      const v = mn + ((mx - mn) * i) / 4, y = Y(v);
+      c.beginPath(); c.moveTo(L, y); c.lineTo(L + gw, y); c.stroke();
+      c.fillText(evNum(v), L - 7, y + 3);
+    }
+    c.textAlign = 'center';
+    const passo = Math.max(1, Math.ceil(pts.length / 8));
+    pts.forEach((x, i) => { if (i % passo === 0 || i === pts.length - 1) c.fillText(dateFmt(x.d).slice(0, 5), X(i), T + gh + 17); });
+    let abriu = false;
+    c.beginPath();
+    pts.forEach((x, i) => { if (x.v === null || !Number.isFinite(x.v)) return; if (!abriu){ c.moveTo(X(i), Y(x.v)); abriu = true; } else c.lineTo(X(i), Y(x.v)); });
+    if (abriu){
+      const g = c.createLinearGradient(0, T, 0, T + gh);
+      g.addColorStop(0, 'rgba(99,197,139,.34)'); g.addColorStop(1, 'rgba(99,197,139,0)');
+      c.save(); c.lineTo(X(pts.length - 1), T + gh); c.lineTo(X(0), T + gh); c.closePath();
+      c.fillStyle = g; c.fill(); c.restore();
+    }
+    c.strokeStyle = '#63c58b'; c.lineWidth = 2.5; c.beginPath();
+    abriu = false;
+    pts.forEach((x, i) => { if (x.v === null || !Number.isFinite(x.v)) return; if (!abriu){ c.moveTo(X(i), Y(x.v)); abriu = true; } else c.lineTo(X(i), Y(x.v)); });
+    c.stroke();
+    pts.forEach((x, i) => { if (x.v === null || !Number.isFinite(x.v)) return;
+      c.beginPath(); c.arc(X(i), Y(x.v), 3.5, 0, Math.PI * 2); c.fillStyle = '#0d1410'; c.fill();
+      c.strokeStyle = '#63c58b'; c.lineWidth = 2; c.stroke(); });
+    const ult = pts[pts.length - 1];
+    if (ult.v !== null && Number.isFinite(ult.v)){
+      c.fillStyle = '#9be3b8'; c.font = '700 12px system-ui'; c.textAlign = 'right';
+      c.fillText(evNum(ult.v) + (unidade ? ' ' + unidade : ''), L + gw, Y(ult.v) - 9);
+    }
+  }
+
+  function evDrawBarras(cv, labels, valores, cor, unidade){
+    if (!cv) return;
+    const p = prepCanvas(cv, cv.parentElement ? cv.parentElement.clientHeight || 240 : 240); if (!p) return;
+    const { c, W, H } = p;
+    if (!valores.length){ c.fillStyle = '#9daea3'; c.font = '13px system-ui'; c.textAlign = 'center'; c.fillText('Sem dados no período.', W / 2, H / 2); return; }
+    const L = 46, R = 12, T = 14, B = 28, gw = W - L - R, gh = H - T - B;
+    const mx = Math.max.apply(null, valores) || 1;
+    const bw = Math.max(4, Math.min(34, (gw / valores.length) * 0.62));
+    c.strokeStyle = '#22302a'; c.lineWidth = 1; c.font = '10px system-ui'; c.fillStyle = '#7d8d84'; c.textAlign = 'right';
+    for (let i = 0; i <= 2; i++){
+      const v = (mx * i) / 2, y = T + gh - (v / mx) * gh;
+      c.beginPath(); c.moveTo(L, y); c.lineTo(L + gw, y); c.stroke();
+      c.fillText(evNum(v), L - 6, y + 3);
+    }
+    c.textAlign = 'center';
+    valores.forEach((v, i) => {
+      const cx = L + (i + 0.5) * (gw / valores.length);
+      const h = Math.max(1, (v / mx) * gh);
+      c.fillStyle = cor;
+      c.beginPath();
+      const x0 = cx - bw / 2, y0 = T + gh - h, r = Math.min(4, bw / 2);
+      c.moveTo(x0, T + gh); c.lineTo(x0, y0 + r); c.quadraticCurveTo(x0, y0, x0 + r, y0);
+      c.lineTo(x0 + bw - r, y0); c.quadraticCurveTo(x0 + bw, y0, x0 + bw, y0 + r);
+      c.lineTo(x0 + bw, T + gh); c.closePath(); c.fill();
+      if (labels[i] && (i % Math.max(1, Math.ceil(valores.length / 7)) === 0 || i === valores.length - 1))
+        c.fillStyle = '#7d8d84', c.fillText(labels[i], cx, T + gh + 16);
+    });
+  }
+
+  function renderEvolucao(){
+    const s = active(); const box = document.body;
+    const sel = $('#evPeriodo');
+    const dias = sel ? num(sel.value) : 90;
+    if (!s){
+      $('#evKpis').innerHTML = '<div class="empty">Selecione um aluno.</div>';
+      ['#evCargaChart','#evVolumeChart','#evFreqChart'].forEach(q => { const cv = $(q); if (cv){ const c = cv.getContext('2d'); c.clearRect(0,0,cv.width,cv.height); } });
+      $('#evPrTable').innerHTML = '';
+      return;
+    }
+    const ses = evSessoes(s.id, dias);
+
+    /* KPIs */
+    const vol = ses.reduce((t, se) => t + evVolumeSessao(se), 0);
+    const series = ses.reduce((t, se) => t + evSerieSessao(se), 0);
+    const prs = {};
+    ses.forEach(se => { const t = evTopos(se); Object.keys(t).forEach(k => { prs[k] = Math.max(prs[k] || 0, t[k]); }); });
+    const nPr = Object.keys(prs).length;
+    const semanas = new Set(ses.map(se => evSemana(se.date))).size || 1;
+    const media = ses.length / semanas;
+    $('#evKpis').innerHTML =
+      `<div class="ev-kpi"><span>Treinos</span><b>${ses.length}</b><small>${dias ? 'últimos ' + dias + ' dias' : 'todo o histórico'}</small></div>` +
+      `<div class="ev-kpi"><span>Volume total</span><b>${evNum(vol)}</b><small>kg levantados (séries de trabalho)</small></div>` +
+      `<div class="ev-kpi"><span>Séries feitas</span><b>${series}</b><small>marcadas como feitas</small></div>` +
+      `<div class="ev-kpi"><span>Exercícios com recorde</span><b>${nPr}</b><small>no período</small></div>` +
+      `<div class="ev-kpi"><span>Média por semana</span><b>${media.toFixed(1).replace('.', ',')}</b><small>treinos por semana</small></div>`;
+
+    /* exercício selecionado */
+    const nomes = evExercicios(s.id, dias);
+    if (!evExSel || nomes.indexOf(evExSel) < 0) evExSel = nomes[0] || null;
+    const seg = $('#evExSeg');
+    if (seg){
+      seg.innerHTML = nomes.length
+        ? nomes.slice(0, 12).map(n => `<button class="btn ${n === evExSel ? '' : 'ghost'}" type="button" data-evex="${esc(n)}">${esc(n)}</button>`).join('')
+        : '<span class="hint">Nenhum exercício registrado no período.</span>';
+      seg.querySelectorAll('[data-evex]').forEach(b => b.addEventListener('click', () => { evExSel = b.dataset.evex; renderEvolucao(); }));
+    }
+    const segM = $('#evExHint');
+    if (segM) segM.textContent = nomes.length ? `${nomes.length} exercício(s) no período` : '';
+
+    /* métrica */
+    const mseg = $('#evMetricaSeg');
+
+    /* série do exercício escolhido */
+    const pts = ses.map(se => {
+      const ex = (se.exercises || []).find(e => String(e.name || '').trim() === evExSel);
+      const cargas = ex ? evTrabalho(ex).map(x => num(x.load)).filter(n => n > 0) : [];
+      return { d: se.date, v: cargas.length ? Math.max.apply(null, cargas) : null };
+    });
+
+    /* callout: última carga x recorde */
+    const co = $('#evCallout');
+    if (co){
+      const vals = pts.filter(x => x.v !== null);
+      if (!vals.length) co.innerHTML = '<span>Sem carga registrada para este exercício no período.</span>';
+      else {
+        const ult = vals[vals.length - 1], rec = Math.max.apply(null, vals.map(x => x.v));
+        const pri = vals[0].v, dif = ult.v - pri;
+        const sufixo = rec > 0 ? ` · recorde <b>${evNum(rec)} kg</b>` : '';
+        const delta = Math.abs(dif) >= 0.1 ? ` · <b>${dif > 0 ? '+' : ''}${evNum(dif)} kg</b> desde a primeira` : '';
+        co.innerHTML = `<span>Última: <b>${evNum(ult.v)} kg</b> em ${dateFmt(ult.d)}${sufixo}${delta}</span>`;
+      }
+    }
+    evDrawLinha($('#evCargaChart'), pts, 'kg');
+
+    /* volume e frequência por semana */
+    const porSemana = new Map();
+    ses.forEach(se => {
+      const k = evSemana(se.date);
+      const cur = porSemana.get(k) || { vol: 0, n: 0 };
+      cur.vol += evVolumeSessao(se); cur.n += 1;
+      porSemana.set(k, cur);
+    });
+    const chaves = [...porSemana.keys()].sort();
+    const lab = chaves.map(k => dateFmt(k).slice(0, 5));
+    evDrawBarras($('#evVolumeChart'), lab, chaves.map(k => porSemana.get(k).vol), '#d8a93d', 'kg');
+    evDrawBarras($('#evFreqChart'), lab, chaves.map(k => porSemana.get(k).n), '#63c58b', '');
+
+    /* recordes */
+    const rows = Object.keys(prs).sort((a, b) => prs[b] - prs[a]);
+    const tb = $('#evPrTable');
+    if (tb) tb.innerHTML = rows.length
+      ? `<thead><tr><th>Exercício</th><th>Recorde</th><th>Última</th><th>Vezes</th></tr></thead><tbody>` +
+        rows.map(n => {
+          const serie = pts && n === evExSel ? pts : ses.map(se => {
+            const ex = (se.exercises || []).find(e => String(e.name || '').trim() === n);
+            const c = ex ? evTrabalho(ex).map(x => num(x.load)).filter(v => v > 0) : [];
+            return { v: c.length ? Math.max.apply(null, c) : null };
+          }).filter(x => x.v !== null);
+          const ult = serie.length ? serie[serie.length - 1].v : null;
+          const vezes = ses.filter(se => (se.exercises || []).some(e => String(e.name || '').trim() === n)).length;
+          return `<tr><td class="nome">${esc(n)}</td><td><b>${evNum(prs[n])} kg</b></td><td>${ult ? evNum(ult) + ' kg' : '—'}</td><td class="up">${vezes}x</td></tr>`;
+        }).join('') + '</tbody>'
+      : '<tbody><tr><td>Sem registros no período.</td></tr></tbody>';
+  }
+
+  /* period select + refresh ao abrir */
+  (function evInit(){
+    const sel = $('#evPeriodo');
+    if (sel) sel.addEventListener('change', renderEvolucao);
+  })();
+
   /* ---------- histórico de cargas + sugestão de progressão ---------- */
   /* Últimas sessões deste exercício para este aluno (mais recente primeiro).
      Considera apenas as séries de trabalho — aquecimento e reconhecimento não contam. */
@@ -4423,9 +4725,9 @@
     };
   }
   /* Chips extras mostrados no alvo do exercício: última carga, histórico e sugestão. */
-  function trHistChips(ex){
+  function trHistChips(ex, sidIn){
     if (!ex || ex.free) return '';
-    const sid = (typeof trRun !== 'undefined' && trRun && trRun.studentId)
+    const sid = sidIn || (typeof trRun !== 'undefined' && trRun && trRun.studentId)
       || state.activeStudentId || (($('#trStudent') || {}).value) || null;
     if (!sid) return '';
     const h = trHistoricoCarga(ex.name, sid);
@@ -4874,6 +5176,7 @@
       </div>
       <div class="gr-tech"><select class="gr-method" title="Técnica do exercício">${TECHNIQUES.map(t => `<option value="${t.id}"${t.id === (ex.method || '') ? ' selected' : ''}>${t.label}</option>`).join('')}</select></div>
       <div class="gr-exname"><strong>${esc(ex.name || 'Exercício')}</strong><span>${esc(grAlvo(ex))}</span></div>
+      <div class="tr-chips" style="display:flex;gap:5px;flex-wrap:wrap">${trHistChips(ex, sl.studentId)}</div>
       <div class="gr-setrows">${rows}</div>
       <div class="gr-qacts">
         <button type="button" class="btn ghost small gr-back" data-slot="${i}"${cur === 0 ? ' disabled' : ''} title="Exercício anterior">←</button>
