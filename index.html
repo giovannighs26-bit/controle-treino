@@ -873,6 +873,13 @@
     .tr-chip.up{border-color:var(--ok);color:var(--ok);background:rgba(99,197,139,.12);font-weight:800}
     .tr-chip.keep{color:var(--muted)}
     .tr-chip.first{border-color:var(--accent2);color:var(--accent2)}
+    /* ---- seletor de aluno com busca ---- */
+    .al-pick-host{display:flex;flex-direction:column;gap:4px;min-width:0}
+    .al-pick-search{width:100%;padding:6px 9px;font-size:12px;border-radius:9px;border:1px solid var(--line);
+      background:var(--panel2);color:var(--text)}
+    .al-pick-search::placeholder{color:var(--muted)}
+    .al-pick-search:focus{outline:none;border-color:var(--accent2)}
+    .al-pick-count{font-size:10px;color:var(--muted);letter-spacing:.02em;margin-top:-2px}
     /* ---- aba Evolucao ---- */
     .ev-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
     .ev-kpi{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:12px;min-width:0}
@@ -2125,7 +2132,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '58';
+  const APP_V = '59';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -3038,6 +3045,7 @@
     if (id === 'dashboard') { renderDashboard(); renderDashAlerts(); setTimeout(drawDashboardCharts, 30); }
     if (id === 'fichas'){ mtRender(); autoLoadToday(); }
     if (id === 'evolucao') renderEvolucao();
+    try { alunoPickerBusca(); } catch (e){}
     if (id === 'treino') trRender();
     if (id === 'grupo') renderGrupo();
     if (id === 'aval') { renderAval(); setTimeout(drawAvChart, 40); }
@@ -3050,6 +3058,64 @@
     if ($('#fichas').classList.contains('active') && b.dataset.page !== 'fichas'){ mtSyncNow(); save(); }
     showPage(b.dataset.page);
   }));
+
+  /* ---------- seletor de aluno: busca por digitação ----------
+     O <select> nativo é mantido (o app todo depende dele), mas ganha um campo de
+     busca acima. A lista de opções é fotografada quando o campo recebe o foco, para
+     não depender de onde/como o <select> foi populado. O aluno ativo nunca sai da
+     lista, mesmo que não case com a busca. */
+  function alunoPickerBusca(){
+    const sel = $('#activeStudent');
+    if (!sel || sel.dataset.busca === '1') return;
+    sel.dataset.busca = '1';
+    const host = sel.parentElement;
+    if (!host) return;
+    host.classList.add('al-pick-host');
+    const inp = document.createElement('input');
+    inp.type = 'search';
+    inp.className = 'al-pick-search';
+    inp.placeholder = 'Buscar aluno…';
+    inp.autocomplete = 'off';
+    inp.setAttribute('aria-label', 'Buscar aluno pelo nome');
+    const cnt = document.createElement('span');
+    cnt.className = 'al-pick-count';
+    host.insertBefore(inp, sel);
+    host.appendChild(cnt);
+    let master = null;
+    const fotografa = () => {
+      const sel2 = $('#activeStudent');
+      if (!sel2) return;
+      const atual = sel2.value;
+      master = [...sel2.options].map(o => ({ v: o.value, t: o.textContent, cur: o.value === atual }));
+    };
+    const pinta = () => {
+      const sel2 = $('#activeStudent');
+      if (!sel2 || !master) return;
+      const q = String(inp.value || '').trim().toLowerCase();
+      const atual = sel2.value;
+      const lista = !q ? master : master.filter(o => o.t.toLowerCase().includes(q) || o.v === atual);
+      sel2.innerHTML = lista.map(o => `<option value="${esc(o.v)}">${esc(o.t)}</option>`).join('');
+      if (lista.some(o => o.v === atual)) sel2.value = atual;
+      cnt.textContent = q ? `${lista.length} de ${master.length} aluno(s)` : `${master.length} aluno(s)`;
+    };
+    inp.addEventListener('focus', () => { fotografa(); pinta(); });
+    inp.addEventListener('input', pinta);
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter'){
+        e.preventDefault();
+        const sel2 = $('#activeStudent');
+        if (sel2 && sel2.value) sel2.dispatchEvent(new Event('change', { bubbles: true }));
+        inp.blur();
+      } else if (e.key === 'Escape'){
+        inp.value = ''; fotografa(); pinta();
+      }
+    });
+    /* trocar de aluno à mão invalida a foto */
+    const sel2 = $('#activeStudent');
+    if (sel2) sel2.addEventListener('change', () => { master = null; cnt.textContent = ''; });
+    try { fotografa(); cnt.textContent = `${master.length} aluno(s)`; } catch (e){}
+  }
+  alunoPickerBusca();
 
   /* ---------- ALUNOS ---------- */
   function renderPicker(){
