@@ -125,9 +125,20 @@
     .al-acts .btn{padding:7px 9px;font-size:11.5px;white-space:nowrap}
     .al-row:hover{border-color:#3d4c3d}
     .al-row.on{border-color:var(--accent);background:#16211a}
+    .al-row.off{opacity:.58}
+    .al-row.off .al-nome b{text-decoration:line-through}
+    .al-badge-off{display:inline-block;font-size:9.5px;letter-spacing:.09em;background:#3a2020;color:#ff9b9b;border-radius:5px;padding:1px 6px;margin-left:6px;vertical-align:1px;font-weight:700;text-decoration:none}
+    .ag2-aula.inativo{opacity:.45;filter:grayscale(.55)}
     .al-nome{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
     .al-nome b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .al-nome small{color:var(--muted);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    /* no celular a linha quebra: senão os botões (ativar/editar/excluir) saem da tela */
+    @media (max-width:760px){
+      .al-row{flex-wrap:wrap}
+      .al-acts{width:100%;justify-content:flex-end;flex-wrap:wrap}
+      .al-acts .btn{padding:6px 10px}
+      .alv-tag{display:none}
+    }
     .card h2,.card h3{margin:0 0 14px}.card h2{font-size:18px}.card h3{font-size:15px;color:var(--accent2)}
     label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}
     .form{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
@@ -1198,7 +1209,11 @@
       <div class="actions" style="justify-content:space-between;margin-bottom:14px">
         <h2 style="margin:0">Alunos <span class="badge" id="alCount"></span></h2>
         <div class="actions">
-          <input class="fin-input" id="alBusca" type="search" placeholder="Buscar aluno…" style="width:190px">
+          <input class="fin-input" id="alBusca" type="search" placeholder="Buscar aluno…" style="width:170px">
+          <select class="fin-input" id="alFiltro" style="width:125px" title="Filtrar por situação">
+            <option value="todos">Todos</option><option value="ativos">Ativos</option><option value="inativos">Inativos</option>
+          </select>
+          <button class="btn secondary" id="alSyncBtn" type="button" title="Verificar e sincronizar cadastros">⟳ Sincronizar</button>
           <button class="btn" id="alNovoBtn" type="button">+ Aluno</button>
         </div>
       </div>
@@ -2103,6 +2118,15 @@
 </main>
 
 <!-- ================= MODAIS ================= -->
+<div class="modal" id="syncModal"><div class="modal-box">
+  <div class="modal-head"><h2>Sincronização</h2><button class="close" type="button" data-close>&times;</button></div>
+  <div id="syncBody"></div>
+  <div class="actions" style="margin-top:16px;justify-content:flex-end">
+    <button class="btn secondary" type="button" data-close>Fechar</button>
+    <button class="btn" type="button" id="syncFixBtn">Sincronizar tudo</button>
+  </div>
+</div></div>
+
 <div class="modal" id="studentModal"><div class="modal-box">
   <div class="modal-head"><h2 id="studentModalTitle">Cadastrar aluno</h2><button class="close" type="button" data-close>&times;</button></div>
   <form id="studentForm" class="form">
@@ -2180,7 +2204,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '64';
+  const APP_V = '65';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -2203,6 +2227,12 @@
   }
   function save(){ localStorage.setItem(KEY, JSON.stringify(state)); renderAll(); }
   function active(){ return state.students.find(s => s.id === state.activeStudentId) || null; }
+  /* ---------- ATIVO / INATIVO (fonte única de verdade) ----------
+     s.active !== false = ativo. Quem lista aluno (seletores, agenda, grupo, dash)
+     consulta alunoAtivo() em vez de repetir a regra. */
+  function alunoAtivo(s){ return !s || s.active !== false; }
+  function alunoLabel(s){ return (s && s.name ? s.name : '') + (s && alunoAtivo(s) ? '' : ' (inativo)'); }
+  function alunosCadastrados(){ return state.students.filter(s => (s.name || '').trim() && s.id !== 'usuario'); }
   function notify(msg, error){
     const t = $('#toast'); t.textContent = msg; t.className = 'toast show' + (error ? ' error' : '');
     clearTimeout(notify.timer); notify.timer = setTimeout(() => t.className = 'toast', 3000);
@@ -3196,7 +3226,7 @@
   function renderPicker(){
     const sel = $('#activeStudent');
     sel.innerHTML = state.students.length
-      ? state.students.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('')
+      ? state.students.map(s => `<option value="${s.id}">${esc(alunoLabel(s))}</option>`).join('')
       : '<option value="">Nenhum aluno cadastrado</option>';
     if (active()) sel.value = state.activeStudentId;
     sel.disabled = !state.students.length;
@@ -3236,6 +3266,12 @@
   }
   function closeStudent(){ $('#studentModal').classList.remove('open'); }
   const nbBtn = $('#newStudentBtn'); if (nbBtn) nbBtn.addEventListener('click', () => openStudent(null));
+  const syncFix = $('#syncFixBtn');
+  if (syncFix) syncFix.addEventListener('click', () => {
+    const r = syncFixAll();
+    syncModal(); alRenderLista();
+    notify(r.depois ? `Ajustado, mas restam ${r.depois} pendência(s).` : `Tudo sincronizado (${r.antes} ajuste(s)).`);
+  });
   $$('[data-close]').forEach(b => b.addEventListener('click', () => {
     $('#studentModal').classList.remove('open'); $('#mtCopyModal').classList.remove('open');
     ['#finPayModal','#finAlunoModal','#finAjustesModal'].forEach(x => { const el = $(x); if (el) el.classList.remove('open'); });
@@ -3261,6 +3297,85 @@
     else state.students.push(data);
     state.activeStudentId = data.id; closeStudent(); save(); notify(id ? 'Aluno atualizado.' : 'Aluno cadastrado.');
   });
+
+  /* ---------- ATIVAR / DESATIVAR + SINCRONIZAÇÃO ---------- */
+  function alunoTagMarca(s){
+    const t = String(s.tag || '').trim();
+    if (!/^(in)?ativo\b/i.test(t)) return;          /* só mexe em etiqueta que já fala de situação */
+    const resto = t.replace(/^(in)?ativo\b/i, '').replace(/^[\s·•|\/-]+/, '').trim();
+    s.tag = (alunoAtivo(s) ? 'ATIVO' : 'INATIVO') + (resto ? ' · ' + resto : '');
+  }
+  /* Aplica a situação em TODOS os módulos que guardam o aluno. */
+  function sincronizarAluno(id, ativo){
+    const s = state.students.find(x => x.id === id);
+    if (!s) return null;
+    s.active = !!ativo;
+    alunoTagMarca(s);
+    const fin = (state.finance && state.finance.students) ? state.finance.students[id] : null;
+    if (fin && fin.ativo !== undefined) fin.ativo = !!ativo;      /* mensalidade e cobrança */
+    if (!ativo && state.group && Array.isArray(state.group.slots)){ /* treino em grupo */
+      state.group.slots.forEach(sl => { if (sl.studentId === id){ sl.studentId = ''; sl.exercises = []; } });
+    }
+    return s;
+  }
+  function alunoToggle(id){
+    const s = state.students.find(x => x.id === id);
+    if (!s) return;
+    const novo = !alunoAtivo(s);
+    sincronizarAluno(id, novo);
+    save();
+    notify(`${(s.name || 'Aluno').split(' ')[0]} ${novo ? 'ativado' : 'desativado'} — agenda, financeiro e seletores sincronizados.`);
+  }
+  /* Varredura: lista tudo que está fora de sincronia. */
+  function syncIssues(){
+    const out = [];
+    const ids = new Set(state.students.map(s => s.id));
+    alunosCadastrados().forEach(s => {
+      const ativo = alunoAtivo(s);
+      const fin = (state.finance && state.finance.students) ? state.finance.students[s.id] : null;
+      if (fin && fin.ativo !== undefined && !!fin.ativo !== ativo)
+        out.push({ tipo: 'Financeiro', aluno: s.name, det: 'cadastro ' + (ativo ? 'ativo' : 'inativo') + ' × mensalidade ' + (fin.ativo ? 'ativa' : 'inativa') });
+      const t = String(s.tag || '');
+      if (/^(in)?ativo\b/i.test(t) && (/^ativo/i.test(t) !== ativo))
+        out.push({ tipo: 'Etiqueta', aluno: s.name, det: 'etiqueta "' + t + '" não bate com o cadastro' });
+      if (!ativo && state.group && Array.isArray(state.group.slots) && state.group.slots.some(sl => sl.studentId === s.id))
+        out.push({ tipo: 'Treino em grupo', aluno: s.name, det: 'aluno inativo ainda ocupa um slot' });
+    });
+    const orf = { 'avaliações': 0, 'sessões': 0, 'fichas': 0 };
+    (state.assessments || []).forEach(a => { if (a.studentId && !ids.has(a.studentId)) orf['avaliações']++; });
+    (state.sessions || []).forEach(x => { if (x.studentId && !ids.has(x.studentId)) orf['sessões']++; });
+    Object.keys(state.plans || {}).forEach(k => { if (!ids.has(k)) orf['fichas']++; });
+    Object.keys(orf).forEach(k => { if (orf[k]) out.push({ tipo: 'Órfãos', aluno: '—', det: orf[k] + ' registro(s) de ' + k + ' sem cadastro' }); });
+    if (state.activeStudentId && !ids.has(state.activeStudentId))
+      out.push({ tipo: 'Foco', aluno: '—', det: 'o aluno selecionado não existe mais' });
+    return out;
+  }
+  function syncFixAll(){
+    const antes = syncIssues().length;
+    alunosCadastrados().forEach(s => sincronizarAluno(s.id, alunoAtivo(s)));
+    if (state.activeStudentId && !state.students.some(s => s.id === state.activeStudentId))
+      state.activeStudentId = (state.students[0] || {}).id || null;
+    save();
+    return { antes, depois: syncIssues().length };
+  }
+  function syncModal(){
+    const corpo = $('#syncBody'); if (!corpo) return;
+    const todos = alunosCadastrados(), nAtivos = todos.filter(alunoAtivo).length;
+    const issues = syncIssues();
+    corpo.innerHTML =
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">' +
+        '<div class="item"><div><div class="item-title">' + todos.length + ' aluno(s)</div><div class="item-meta">' +
+          nAtivos + ' ativo(s) · ' + (todos.length - nAtivos) + ' inativo(s)</div></div></div>' +
+        '<div class="item"><div><div class="item-title">' + (issues.length ? issues.length + ' pendência(s)' : 'Tudo sincronizado') +
+          '</div><div class="item-meta">' + (issues.length ? 'use “Sincronizar tudo”' : 'nenhuma inconsistência') + '</div></div></div>' +
+      '</div>' +
+      (issues.length
+        ? '<div style="max-height:300px;overflow:auto">' + issues.map(i =>
+            '<div class="item"><div><div class="item-title">' + esc(i.tipo) + '</div><div class="item-meta">' +
+            esc(i.aluno) + ' — ' + esc(i.det) + '</div></div></div>').join('') + '</div>'
+        : '<p class="hint">Cadastro, etiqueta, financeiro, treino em grupo, fichas, avaliações e sessões estão consistentes.</p>');
+    $('#syncModal').classList.add('open');
+  }
 
   /* ---------- EXCLUIR ALUNO ----------
      Apaga TUDO do aluno: cadastro, ficha, avaliacoes (+fotos), sessoes, financeiro,
@@ -5698,7 +5813,7 @@
       <p class="grp-vol hint"></p>`;
     const sel = col.querySelector('.grp-student');
     sel.innerHTML = '<option value="">— escolher aluno —</option>' +
-      state.students.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
+      state.students.filter(alunoAtivo).map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
     sel.value = slot.studentId || '';
     grpFillDays(col, i);
     col.querySelector('.grp-hint').textContent = grpHintText(i);
@@ -8641,8 +8756,10 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
   }
   function alLista(){
     const q = (($('#alBusca') && $('#alBusca').value) || '').trim().toLowerCase();
+    const f = (($('#alFiltro') && $('#alFiltro').value) || 'todos');
     return state.students
       .filter(s => (s.name || '').trim() && s.id !== 'usuario')
+      .filter(s => f === 'ativos' ? alunoAtivo(s) : f === 'inativos' ? !alunoAtivo(s) : true)
       .filter(s => !q || (s.name || '').toLowerCase().includes(q)
         || String(s.goal || '').toLowerCase().includes(q)
         || String(s.level || '').toLowerCase().includes(q))
@@ -8651,9 +8768,10 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
   function alRenderLista(){
     const box = $('#alLista'); if (!box) return;
     const lista = alLista();
-    const total = state.students.filter(s => (s.name || '').trim() && s.id !== 'usuario').length;
+    const todos = alunosCadastrados();
+    const nAtivos = todos.filter(alunoAtivo).length;
     const cnt = $('#alCount');
-    if (cnt) cnt.textContent = lista.length === total ? String(total) : `${lista.length}/${total}`;
+    if (cnt) cnt.textContent = `${lista.length}/${todos.length} · ${nAtivos} ativo(s) · ${todos.length - nAtivos} inativo(s)`;
     if (!lista.length){ box.innerHTML = '<div class="empty">Nenhum aluno encontrado.</div>'; return; }
     const atual = active();
     box.innerHTML = lista.map(s => {
@@ -8662,13 +8780,15 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
       const ss = state.sessions.filter(x => x.studentId === s.id);
       const ult = ss.map(x => String(x.date || '')).sort().pop() || '';
       const on = !!(atual && atual.id === s.id);
-      return `<div class="al-row${on ? ' on' : ''}">
+      const ativo = alunoAtivo(s);
+      return `<div class="al-row${on ? ' on' : ''}${ativo ? '' : ' off'}">
         <button class="al-pick" type="button" data-al="${esc(s.id)}" aria-pressed="${on}">
           <span class="alv-card">${esc(alIniciais(s.name))}</span>
-          <span class="al-nome"><b>${esc(s.name)}</b><small>${nT ? nT + ' treino(s)' : 'sem ficha'} · ${ss.length} sessão(ões)${ult ? ' · último ' + dateFmt(ult) : ''}</small></span>
+          <span class="al-nome"><b>${esc(s.name)}${ativo ? '' : '<span class="al-badge-off">INATIVO</span>'}</b><small>${nT ? nT + ' treino(s)' : 'sem ficha'} · ${ss.length} sessão(ões)${ult ? ' · último ' + dateFmt(ult) : ''}</small></span>
           <span class="alv-tag">${esc(s.level || '')}</span>
         </button>
         <span class="al-acts">
+          <button class="btn ${ativo ? 'secondary' : ''}" type="button" data-al-toggle="${esc(s.id)}" title="${ativo ? 'Desativar aluno' : 'Reativar aluno'}">${ativo ? 'Desativar' : '▶ Ativar'}</button>
           <button class="btn secondary" type="button" data-al-edit="${esc(s.id)}" title="Editar cadastro">✎ Editar</button>
           <button class="btn danger" type="button" data-al-del="${esc(s.id)}" title="Excluir aluno">🗑</button>
         </span>
@@ -8798,9 +8918,15 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
     if (busca && !busca.dataset.wired){ busca.dataset.wired = '1'; busca.addEventListener('input', alRenderLista); }
     const novo = $('#alNovoBtn');
     if (novo && !novo.dataset.wired){ novo.dataset.wired = '1'; novo.addEventListener('click', () => openStudent(null)); }
+    const filtro = $('#alFiltro');
+    if (filtro && !filtro.dataset.wired){ filtro.dataset.wired = '1'; filtro.addEventListener('change', alRenderLista); }
+    const syncBtn = $('#alSyncBtn');
+    if (syncBtn && !syncBtn.dataset.wired){ syncBtn.dataset.wired = '1'; syncBtn.addEventListener('click', syncModal); }
     const box = $('#alLista');
     if (box && !box.dataset.wired){ box.dataset.wired = '1';
       box.addEventListener('click', e => {
+        const tg = e.target.closest('[data-al-toggle]');
+        if (tg){ alunoToggle(tg.dataset.alToggle); return; }
         const ed = e.target.closest('[data-al-edit]');
         if (ed){ const st = state.students.find(x => x.id === ed.dataset.alEdit); if (st) openStudent(st); return; }
         const dl = e.target.closest('[data-al-del]');
@@ -8825,7 +8951,7 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
   function dashAlerts(){
     const hoje = today();
     const mes = hoje.slice(0, 7);
-    const alunos = state.students.filter(s => (s.name || '').trim() && s.id !== 'usuario');
+    const alunos = state.students.filter(s => (s.name || '').trim() && s.id !== 'usuario' && alunoAtivo(s));
     const limite = dashLimite();
     const parados = [], semFicha = [], nunca = [], aniversarios = [];
     alunos.forEach(s => {
@@ -9788,7 +9914,7 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
     const sel = $('#avStudent');
     const keep = avStudentId;
     sel.innerHTML = state.students.length
-      ? state.students.map(s => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('')
+      ? state.students.map(s => `<option value="${esc(s.id)}">${esc(alunoLabel(s))}</option>`).join('')
       : '<option value="">Nenhum aluno cadastrado</option>';
     /* a aba Avaliacao acompanha o aluno ativo do app (mesma pessoa em todas as abas) */
     const global = state.activeStudentId;
@@ -10247,6 +10373,8 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
     a.evitar = [];
     a.aulas = (a.aulas || []).filter(x => !x.seedAulas);
     AG_SEED_AULAS.forEach((row, i) => {
+      const _st = state.students.find(x => x.id === row[0]);
+      if (_st && !alunoAtivo(_st)) return;                  /* inativo não recebe aula nova */
       a.aulas.push({id:'ags' + i, studentId:row[0], nome:row[1], dia:row[2], ini:row[3],
         fim:agHM(agMin(row[3]) + 60), desde:today(), ate:null, obs:'Aula semanal',
         cor:'', ativo:true, seedAulas:true});
@@ -10463,7 +10591,9 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
       lista.forEach((x, i) => {
         const s0 = agMin(x.ini), e0 = s0 + agDurMin(x.ini, x.fim);
         const L = lanes[i] || {i:0, total:1}, w = 100/L.total;
-        h += '<div class="ag2-aula" data-dia="' + d + '" data-t="' + s0 + '" style="top:' + y(s0) +
+        const stA = x.studentId ? state.students.find(z => z.id === x.studentId) : null;
+        const offA = !!(stA && !alunoAtivo(stA));
+        h += '<div class="ag2-aula' + (offA ? ' inativo' : '') + '" data-dia="' + d + '" data-t="' + s0 + '" style="top:' + y(s0) +
           'px;height:' + Math.max(24, Math.round((e0 - s0)/60*PXH) - 4) + 'px;left:calc(' + (L.i*w) +
           '% + 3px);width:calc(' + w + '% - 6px);--c:' + agCor(x) + '" title="' + esc(agNomeAula(x)) + ' · ' +
           AG_DIAS_L[d] + ' ' + x.ini + '-' + x.fim + '"><b>' + esc(agNomeCurto(x, L.total > 1)) + '</b><span>' + x.ini + '-' + x.fim + '</span></div>';
