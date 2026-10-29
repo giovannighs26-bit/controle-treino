@@ -1571,7 +1571,8 @@
         <h2 style="margin:0">Avaliação física</h2>
         <div class="actions">
           <button class="btn" id="avApresentar">▶ Apresentar ao aluno</button>
-          <button class="btn secondary" id="avPrintBtn">🖨 PDF do relatório</button>
+          <button class="btn secondary" id="avDownloadBtn">⬇ Baixar PDF</button>
+          <button class="btn secondary" id="avPrintBtn">🖨 Imprimir</button>
           <button class="btn secondary" id="avImportBtn">Importar avaliações</button>
           <input type="file" id="avImportFile" accept="application/json,.json" class="hidden">
           <button class="btn" id="avNewBtn">+ Nova avaliação</button>
@@ -2178,7 +2179,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '62';
+  const APP_V = '63';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -2804,7 +2805,8 @@
   const prFicha = $('#printFichaBtn'); if (prFicha) prFicha.addEventListener('click', printFicha);
   const dAd = $('#dashAlertaDias');
   if (dAd) dAd.addEventListener('change', () => { const n = num(dAd.value); state.alertaDias = n >= 1 ? Math.round(n) : 7; save(); });
-  const prAval = $('#avPrintBtn'); if (prAval) prAval.addEventListener('click', () => printAvaliacao());
+  const avDl = $('#avDownloadBtn'); if (avDl) avDl.addEventListener('click', () => baixarAvaliacaoPDF());
+  const prAval = $('#avPrintBtn'); if (prAval) prAval.addEventListener('click', () => imprimirAvaliacaoPDF());
   const fRec = $('#finAlunoRecibo'); if (fRec) fRec.addEventListener('click', () => finEditId && finRecibo(finEditId, finMes));
   const fRecC = $('#finAlunoReciboCopiar'); if (fRecC) fRecC.addEventListener('click', () => finEditId && finCopiarRecibo(finEditId, finMes));
   const shF = $('#shareFichaBtn'); if (shF) shF.addEventListener('click', () => alunoGerarLink(true));
@@ -7040,12 +7042,25 @@
 ${corpo}
 <div class="ft">${esc(ghOwner())} · documento gerado em ${new Date().toLocaleString('pt-BR')}</div>
 </body></html>`;
+    /* Abre o documento por Blob URL: a janela sobre about:blank + document.write
+       costuma sair em branco na impressão de celulares. Com URL real o navegador
+       renderiza antes de imprimir. */
+    let url = null;
+    try { url = URL.createObjectURL(new Blob([html], { type: 'text/html' })); } catch (e){ url = null; }
     let w = null;
-    try { w = window.open('', '_blank'); } catch (e){ w = null; }
-    if (!w) return notify('Libere as janelas pop-up para gerar o PDF.', true);
-    try { w.document.open(); w.document.write(html); w.document.close(); } catch (e){ return notify('Não foi possível montar o documento.', true); }
-    try { w.focus(); } catch (e){}
-    setTimeout(() => { try { w.print(); } catch (e){} }, 700);
+    try { w = window.open(url || '', '_blank'); } catch (e){ w = null; }
+    if (!w){
+      if (url) { try { URL.revokeObjectURL(url); } catch (e){} }
+      return notify('Libere as janelas pop-up para gerar o PDF.', true);
+    }
+    if (!url){
+      try { w.document.open(); w.document.write(html); w.document.close(); } catch (e){ return notify('Não foi possível montar o documento.', true); }
+    }
+    let feito = false;
+    const imprimir = () => { if (feito) return; feito = true; try { w.focus(); } catch (e){} try { w.print(); } catch (e){} };
+    w.addEventListener('load', () => setTimeout(imprimir, 350));
+    setTimeout(imprimir, 1600);
+    if (url) setTimeout(() => { try { URL.revokeObjectURL(url); } catch (e){} }, 180000);
   }
 
   /* ---------- PDF: ficha de treino ---------- */
@@ -7137,6 +7152,354 @@ ${corpo}
       <p style="font-size:10.5px;color:#777;margin-top:14px">% de gordura por Jackson &amp; Pollock (7 dobras) e equação de Siri, quando todas as dobras estão preenchidas.</p>`;
     printDoc(`Avaliação física — ${s ? s.name : ''} ${dateFmt(a.date)}`, corpo);
   }
+
+  /* ================= PDF REAL — download no dispositivo =================
+     Gera um arquivo .pdf de verdade (sem depender da janela de impressão,
+     que sai em branco em vários celulares). Escrito à mão em PDF 1.4:
+     Helvetica embutida no leitor, texto selecionável e paginação A4.      */
+  const PDFW = {
+    ' ':278, ',':278, '.':278, '/':278, '-':333, '+':584, '(':333, ')':333, '%':889,
+    'x':500, 'X':667, 'k':500, 'g':556, 'm':833, '°':400, '$':556, ':':278, ';':278,
+    'R':722, 'A':667, 'G':778, 'H':722, 'P':667, 'D':722, 'M':833, 'F':611, 'T':611
+  };
+  function pdfMeasure(str, size){
+    let t = 0;
+    String(str == null ? '' : str).split('').forEach(ch => {
+      let w;
+      if (ch >= '0' && ch <= '9') w = 556;
+      else if (PDFW[ch] != null) w = PDFW[ch];
+      else w = (ch >= 'A' && ch <= 'Z') ? 667 : 500;
+      t += w;
+    });
+    return t * size / 1000;
+  }
+  function pdfClean(s){
+    return String(s == null ? '' : s)
+      .replace(/[\u00d7]/g, 'x').replace(/[\u2013\u2014]/g, '-').replace(/[\u2018\u2019]/g, "'")
+      .replace(/[\u201c\u201d]/g, '"').replace(/[\u00b7\u2022]/g, '-')
+      .replace(/[\u2192]/g, '->').replace(/[\u2264]/g, '<=').replace(/[\u2265]/g, '>=')
+      .replace(/[^\x20-\x7E\xA0-\xFF]/g, '');
+  }
+  function pdfEsc(s){ return pdfClean(s).replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)'); }
+
+  function PDFDoc(){
+    this.W = 595.28; this.H = 841.89; this.M = 42;
+    this.pages = []; this.ops = []; this.imgs = [];
+    this.y = this.H - this.M - 20;
+  }
+  PDFDoc.prototype.hex = function (h){
+    const n = parseInt(String(h).replace('#', ''), 16);
+    return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
+  };
+  PDFDoc.prototype.fill = function (x, y, w, h, hex){
+    const c = this.hex(hex);
+    this.ops.push(`${c[0].toFixed(3)} ${c[1].toFixed(3)} ${c[2].toFixed(3)} rg ${x.toFixed(2)} ${y.toFixed(2)} ${w.toFixed(2)} ${h.toFixed(2)} re f`);
+  };
+  PDFDoc.prototype.line = function (x1, y1, x2, y2, hex, w){
+    const c = this.hex(hex || '#d8d2c4');
+    this.ops.push(`${c[0].toFixed(3)} ${c[1].toFixed(3)} ${c[2].toFixed(3)} RG ${(w || 0.7).toFixed(2)} w ${x1.toFixed(2)} ${y1.toFixed(2)} m ${x2.toFixed(2)} ${y2.toFixed(2)} l S`);
+  };
+  PDFDoc.prototype.txt = function (x, y, size, bold, str, hex){
+    const c = this.hex(hex || '#141a16');
+    this.ops.push(`${c[0].toFixed(3)} ${c[1].toFixed(3)} ${c[2].toFixed(3)} rg BT /${bold ? 'F2' : 'F1'} ${size} Tf 1 0 0 1 ${x.toFixed(2)} ${y.toFixed(2)} Tm (${pdfEsc(str)}) Tj ET`);
+  };
+  PDFDoc.prototype.txtR = function (xr, y, size, bold, str, hex){
+    this.txt(xr - pdfMeasure(str, size), y, size, bold, str, hex);
+  };
+  PDFDoc.prototype.img = function (idx, x, y, w, h){
+    this.ops.push(`q ${w.toFixed(2)} 0 0 ${h.toFixed(2)} ${x.toFixed(2)} ${y.toFixed(2)} cm /Im${idx} Do Q`);
+  };
+  PDFDoc.prototype.newPage = function (){
+    if (this.ops.length) this.pages.push(this.ops);
+    this.ops = [];
+    this.y = this.H - this.M - (this.pages.length ? 46 : 24);
+  };
+  PDFDoc.prototype.gap = function (h){ this.y -= h; };
+  PDFDoc.prototype.need = function (h){
+    if (this.y - h < 62){
+      this.newPage();
+      if (this.fino) this.fino();
+      return true;
+    }
+    return false;
+  };
+  /* documento montado → bytes */
+  function pdfAssemble(doc){
+    const enc = (s) => { const a = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) a[i] = s.charCodeAt(i) & 0xFF; return a; };
+    if (doc.ops.length) doc.pages.push(doc.ops);
+    const pages = doc.pages, imgs = doc.imgs;
+    const parts = []; let pos = 0;
+    const put = (d) => { const u = (typeof d === 'string') ? enc(d) : d; parts.push(u); pos += u.length; };
+    put('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n');
+    const off = {};
+    const open = (id) => { off[id] = pos; put(id + ' 0 obj\n'); };
+    const close = () => put('endobj\n');
+    const pageIds = pages.map((_, k) => 5 + imgs.length + k * 2);
+    const contIds = pages.map((_, k) => 5 + imgs.length + k * 2 + 1);
+
+    open(1); put('<< /Type /Catalog /Pages 2 0 R >>\n'); close();
+    open(2); put('<< /Type /Pages /Kids [' + pageIds.map(i => i + ' 0 R').join(' ') + '] /Count ' + pages.length + ' >>\n'); close();
+    open(3); put('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>\n'); close();
+    open(4); put('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>\n'); close();
+    imgs.forEach((im, i) => {
+      open(5 + i);
+      put('<< /Type /XObject /Subtype /Image /Width ' + im.w + ' /Height ' + im.h +
+          ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' + im.bytes.length + ' >>\nstream\n');
+      put(im.bytes); put('\nendstream\n'); close();
+    });
+    pages.forEach((ops, k) => {
+      const xo = imgs.length ? ' /XObject << ' + imgs.map((_, i) => '/Im' + i + ' ' + (5 + i) + ' 0 R').join(' ') + ' >>' : '';
+      open(pageIds[k]);
+      put('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R >>' + xo + ' >> /Contents ' + contIds[k] + ' 0 R >>\n');
+      close();
+      const st = enc(ops.join('\n'));
+      open(contIds[k]);
+      put('<< /Length ' + st.length + ' >>\nstream\n'); put(st); put('\nendstream\n'); close();
+    });
+    const total = 4 + imgs.length + pages.length * 2;
+    const xref = pos;
+    put('xref\n0 ' + (total + 1) + '\n0000000000 65535 f \n');
+    for (let id = 1; id <= total; id++) put(String(off[id] || 0).padStart(10, '0') + ' 00000 n \n');
+    put('trailer\n<< /Size ' + (total + 1) + ' /Root 1 0 R >>\nstartxref\n' + xref + '\n%%EOF\n');
+    let size = 0; parts.forEach(p => { size += p.length; });
+    const out = new Uint8Array(size); let o = 0;
+    parts.forEach(p => { out.set(p, o); o += p.length; });
+    return out;
+  }
+
+  /* foto → JPEG (para embutir no PDF) */
+  function pdfFoto(blob, maxW){
+    return new Promise((resolve) => {
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const scale = Math.min(1, (maxW || 520) / (img.naturalWidth || maxW || 520));
+          const cv = document.createElement('canvas');
+          cv.width = Math.max(1, Math.round((img.naturalWidth || 300) * scale));
+          cv.height = Math.max(1, Math.round((img.naturalHeight || 300) * scale));
+          cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+          const b64 = cv.toDataURL('image/jpeg', 0.8).split(',')[1] || '';
+          const bin = atob(b64);
+          const bytes = new Uint8Array(bin.length);
+          for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+          URL.revokeObjectURL(url);
+          resolve({ bytes, w: cv.width, h: cv.height });
+        } catch (e){ URL.revokeObjectURL(url); resolve(null); }
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+      img.src = url;
+    });
+  }
+
+  /* ---------- monta o relatório de avaliação física ---------- */
+  async function avaliacaoPDFBlob(a, s){
+    const doc = new PDFDoc();
+    const W = doc.W, H = doc.H, M = doc.M;
+    const owner = ghOwner();
+    const c = avComposition(a), bmi = avBmi(a), sum = avFoldSum(a);
+    const CW = (W - M * 2 - 26) / 2;
+
+    const cabecalho = () => {
+      doc.fill(0, H - 86, W, 86, '#0d1410');
+      doc.fill(0, H - 86, 5, 86, '#c9971f');
+      doc.fill(M, H - 66, 36, 36, '#18231b');
+      doc.txt(M + 9, H - 52, 13, true, 'GH', '#f2cf72');
+      doc.txt(M + 50, H - 46, 13, true, owner, '#ffffff');
+      doc.txt(M + 50, H - 60, 7.2, false, 'GH PERFORMANCE · ENGENHARIA DO ESTÍMULO REAL', '#c9971f');
+      doc.txtR(W - M, H - 46, 8.6, true, 'AVALIAÇÃO FÍSICA', '#f2cf72');
+      doc.txtR(W - M, H - 60, 8, false, dateFmt(a.date), '#bdb5a2');
+      doc.y = H - 118;
+    };
+    const cabecalhoFino = () => {
+      doc.fill(0, H - 34, W, 34, '#0d1410');
+      doc.fill(0, H - 34, 5, 34, '#c9971f');
+      doc.txt(M, H - 22, 9, true, owner, '#ffffff');
+      doc.txtR(W - M, H - 22, 8, false, 'Avaliação física · ' + dateFmt(a.date), '#f2cf72');
+      doc.y = H - 52;
+    };
+    doc.fino = cabecalhoFino;
+    const secao = (t) => {
+      doc.need(56);
+      doc.gap(16);
+      doc.txt(M, doc.y, 8.6, true, String(t).toUpperCase(), '#5c5442');
+      doc.gap(6);
+      doc.line(M, doc.y, W - M, doc.y, '#d8d2c4', 0.8);
+      doc.gap(13);
+    };
+    const kv = (label, value, x, w, zebra) => {
+      if (zebra) doc.fill(x, doc.y - 4.6, w, 15.6, '#f6f4ec');
+      doc.txt(x, doc.y, 9.4, false, label, '#3d3d38');
+      const v = String(value == null ? '—' : value);
+      doc.txtR(x + w, doc.y, 9.4, true, v.length > 46 ? v.slice(0, 45) + '...' : v, '#141a16');
+      doc.y -= 16;
+    };
+
+    doc.newPage(); cabecalho();
+
+    doc.txt(M, doc.y, 19, true, 'Relatório de avaliação física', '#141a16');
+    doc.gap(17);
+    doc.txt(M, doc.y, 10.5, false, (s ? s.name : 'Aluno') + (s && s.goal ? '  ·  ' + s.goal : ''), '#5c5442');
+    doc.gap(8);
+
+    /* identificação em duas colunas */
+    const meta = [
+      ['Data', dateFmt(a.date)],
+      ['Idade', avAgeAt(a) === null ? '—' : avAgeAt(a) + ' anos'],
+      ['Sexo', a.sex === 'F' ? 'Feminino' : a.sex === 'M' ? 'Masculino' : (a.sex || '—')],
+      ['Altura', a.height ? avFmt(a.height, 0) + ' cm' : '—'],
+      ['Peso', a.weight ? avFmt(a.weight) + ' kg' : '—'],
+      ['IMC', bmi === null ? '—' : avFmt(bmi) + ' ' + avBmiClass(bmi)],
+      ['Examinador', a.examiner || owner],
+      ['Próxima avaliação', a.nextDate ? dateFmt(a.nextDate) : '—']
+    ];
+    secao('Identificação');
+    for (let i = 0; i < meta.length; i += 2){
+      const y0 = doc.y;
+      kv(meta[i][0], meta[i][1], M, CW, i % 4 === 0);
+      if (meta[i + 1]){ doc.y = y0; kv(meta[i + 1][0], meta[i + 1][1], M + CW + 26, CW, i % 4 === 0); }
+      doc.y = y0 - 16;
+    }
+
+    /* resultados */
+    secao('Composição corporal');
+    doc.gap(2);
+    const res = [
+      ['% de gordura', c.bf === null ? '—' : avFmt(c.bf) + ' %' + (c.src ? '  (' + c.src + ')' : '')],
+      ['Massa gorda', c.fatMass === null ? '—' : avFmt(c.fatMass) + ' kg'],
+      ['Massa magra', c.leanMass === null ? '—' : avFmt(c.leanMass) + ' kg'],
+      ['Soma das 7 dobras', sum === null ? '—' : avFmt(sum, 0) + ' mm']
+    ];
+    if (c.jp) res.push(['Densidade corporal', avFmt(c.jp.density, 5)]);
+    res.forEach((r, i) => kv(r[0], r[1], M, W - M * 2, i % 2 === 0));
+
+    /* perimetria */
+    const med = AV_MEASURES.map(([k, label]) => [label, avNum((a.measures || {})[k])]).filter(x => x[1] !== null);
+    if (med.length){
+      secao('Perimetria');
+      for (let i = 0; i < med.length; i += 2){
+        doc.need(20);
+        const y0 = doc.y;
+        kv(med[i][0], avFmt(med[i][1]) + ' cm', M, CW, i % 4 === 0);
+        if (med[i + 1]){ doc.y = y0; kv(med[i + 1][0], avFmt(med[i + 1][1]) + ' cm', M + CW + 26, CW, i % 4 === 0); }
+        doc.y = y0 - 16;
+      }
+    }
+
+    /* dobras */
+    const dob = AV_FOLDS.map(([k, label]) => [label, avNum((a.folds || {})[k])]).filter(x => x[1] !== null);
+    if (dob.length){
+      secao('Dobras cutâneas');
+      for (let i = 0; i < dob.length; i += 2){
+        doc.need(20);
+        const y0 = doc.y;
+        kv(dob[i][0], avFmt(dob[i][1]) + ' mm', M, CW, i % 4 === 0);
+        if (dob[i + 1]){ doc.y = y0; kv(dob[i + 1][0], avFmt(dob[i + 1][1]) + ' mm', M + CW + 26, CW, i % 4 === 0); }
+        doc.y = y0 - 16;
+      }
+    }
+
+    /* observações */
+    if (a.notes){
+      secao('Observações');
+      const linhas = [];
+      let atual = '';
+      pdfClean(a.notes).split(/\s+/).forEach(pal => {
+        if (pdfMeasure(atual + ' ' + pal, 9.6) > (W - M * 2)) { linhas.push(atual); atual = pal; }
+        else atual = atual ? atual + ' ' + pal : pal;
+      });
+      if (atual) linhas.push(atual);
+      linhas.forEach(l => { doc.need(16); doc.txt(M, doc.y, 9.6, false, l, '#2c2c28'); doc.gap(13); });
+    }
+
+    /* fotos */
+    const refs = [];
+    (AV_ANGLES || []).forEach(([k, label]) => (((a.photos || {})[k]) || []).forEach(r => refs.push({ r, label })));
+    if (refs.length){
+      const fotos = [];
+      for (const item of refs.slice(0, 9)){
+        try {
+          const blob = await avPhotoGet(item.r.id);
+          if (!blob) continue;
+          const im = await pdfFoto(blob, 520);
+          if (im) fotos.push({ im, label: item.label });
+        } catch (e){}
+      }
+      if (fotos.length){
+        const cw = (W - M * 2 - 20) / 3, ch = 168;
+        doc.need(ch + 96);            /* título e 1ª linha de fotos na mesma página */
+        secao('Registro fotográfico');
+        for (let i = 0; i < fotos.length; i += 3){
+          doc.need(ch + 24);
+          const linha = fotos.slice(i, i + 3);
+          const yTop = doc.y;
+          linha.forEach((f, j) => {
+            const idx = doc.imgs.length;
+            doc.imgs.push(f.im);
+            const scale = Math.min(cw / f.im.w, (ch - 16) / f.im.h);
+            const w = f.im.w * scale, h = f.im.h * scale;
+            const x = M + j * (cw + 10);
+            doc.img(idx, x + (cw - w) / 2, yTop - h, w, h);
+            doc.txt(x + cw / 2 - pdfMeasure(f.label, 8) / 2, yTop - ch - 2, 8, false, f.label, '#77776e');
+          });
+          doc.y = yTop - ch - 18;
+        }
+      }
+    }
+
+    /* rodapé */
+    const totalP = doc.pages.length + (doc.ops.length ? 1 : 0);
+    const stamp = new Date().toLocaleString('pt-BR');
+    const todas = doc.ops.length ? doc.pages.concat([doc.ops]) : doc.pages;
+    todas.forEach((ops, i) => {
+      ops.push('0.84 0.82 0.76 RG 0.6 w ' + M + ' 46 m ' + (W - M) + ' 46 l S');
+      doc.ops = ops;
+      doc.txt(M, 36, 7.6, false, owner + ' · documento gerado em ' + stamp, '#8a8a80');
+      doc.txtR(W - M, 36, 7.6, false, 'página ' + (i + 1) + ' de ' + todas.length, '#8a8a80');
+    });
+
+    return new Blob([pdfAssemble(doc)], { type: 'application/pdf' });
+  }
+
+  function nomeArquivoPDF(a, s){
+    const quem = (s ? s.name : 'aluno').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '').toLowerCase().slice(0, 28) || 'aluno';
+    return 'avaliacao-' + quem + '-' + String(a.date || today()).slice(0, 10) + '.pdf';
+  }
+
+  async function baixarAvaliacaoPDF(){
+    const a = avResultsSource();
+    if (!a) return notify('Selecione uma avaliação.', true);
+    const s = state.students.find(x => x.id === a.studentId);
+    notify('Gerando o PDF...');
+    try {
+      const blob = await avaliacaoPDFBlob(a, s);
+      const nome = nomeArquivoPDF(a, s);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url; link.download = nome; link.rel = 'noopener';
+      document.body.appendChild(link); link.click(); link.remove();
+      setTimeout(() => { try { URL.revokeObjectURL(url); } catch (e){} }, 60000);
+      notify('PDF pronto: ' + nome + ' (veja os downloads do aparelho).');
+    } catch (e){
+      notify('Não foi possível gerar o PDF.', true);
+    }
+  }
+
+  async function imprimirAvaliacaoPDF(){
+    const a = avResultsSource();
+    if (!a) return notify('Selecione uma avaliação.', true);
+    const s = state.students.find(x => x.id === a.studentId);
+    notify('Preparando o PDF...');
+    try {
+      const blob = await avaliacaoPDFBlob(a, s);
+      const url = URL.createObjectURL(blob);
+      const w = window.open(url, '_blank');
+      if (!w) { notify('Libere as janelas pop-up para imprimir.', true); return; }
+      setTimeout(() => { try { URL.revokeObjectURL(url); } catch (e){} }, 120000);
+    } catch (e){ notify('Não foi possível abrir o PDF.', true); }
+  }
+
 
   /* ---------- RECIBO de pagamento ---------- */
   function finRecibo(id, mes, pagId){
