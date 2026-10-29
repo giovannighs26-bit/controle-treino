@@ -1571,6 +1571,7 @@
         <h2 style="margin:0">Avaliação física</h2>
         <div class="actions">
           <button class="btn" id="avApresentar">▶ Apresentar ao aluno</button>
+          <button class="btn secondary" id="avWhatsBtn">📲 WhatsApp</button>
           <button class="btn secondary" id="avDownloadBtn">⬇ Baixar PDF</button>
           <button class="btn secondary" id="avPrintBtn">🖨 Imprimir</button>
           <button class="btn secondary" id="avImportBtn">Importar avaliações</button>
@@ -2179,7 +2180,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '63';
+  const APP_V = '64';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -2806,6 +2807,15 @@
   const dAd = $('#dashAlertaDias');
   if (dAd) dAd.addEventListener('change', () => { const n = num(dAd.value); state.alertaDias = n >= 1 ? Math.round(n) : 7; save(); });
   const avDl = $('#avDownloadBtn'); if (avDl) avDl.addEventListener('click', () => baixarAvaliacaoPDF());
+  const avWa = $('#avWhatsBtn');
+  if (avWa){
+    avWa.addEventListener('click', () => enviarAvaliacaoWhats());
+    /* adianta a geração no toque: o compartilhamento nativo exige gesto recente */
+    avWa.addEventListener('pointerdown', () => {
+      const a = avResultsSource();
+      if (a) avPdfPronto(a, state.students.find(x => x.id === a.studentId)).catch(() => {});
+    });
+  }
   const prAval = $('#avPrintBtn'); if (prAval) prAval.addEventListener('click', () => imprimirAvaliacaoPDF());
   const fRec = $('#finAlunoRecibo'); if (fRec) fRec.addEventListener('click', () => finEditId && finRecibo(finEditId, finMes));
   const fRecC = $('#finAlunoReciboCopiar'); if (fRecC) fRecC.addEventListener('click', () => finEditId && finCopiarRecibo(finEditId, finMes));
@@ -7498,6 +7508,65 @@ ${corpo}
       if (!w) { notify('Libere as janelas pop-up para imprimir.', true); return; }
       setTimeout(() => { try { URL.revokeObjectURL(url); } catch (e){} }, 120000);
     } catch (e){ notify('Não foi possível abrir o PDF.', true); }
+  }
+
+  /* ---------- enviar a avaliação no WhatsApp ---------- */
+  let avPdfCache = null;   /* { key, blob, file } */
+  function avTelAluno(id){
+    try {
+      const cfg = (typeof finCfg === 'function') ? finCfg(id) : null;
+      const tel = String((cfg && cfg.tel) || '').replace(/\D/g, '');
+      if (tel.length < 10) return '';
+      return tel.length <= 11 ? '55' + tel : tel;
+    } catch (e){ return ''; }
+  }
+  async function avPdfPronto(a, s){
+    const key = a.id + '|' + (a.updatedAt || a.createdAt || '0');
+    if (avPdfCache && avPdfCache.key === key) return avPdfCache;
+    const blob = await avaliacaoPDFBlob(a, s);
+    const file = new File([blob], nomeArquivoPDF(a, s), { type: 'application/pdf' });
+    avPdfCache = { key, blob, file };
+    return avPdfCache;
+  }
+  function avMsgWhats(a, s){
+    const nome = (s && s.name) ? s.name.split(' ')[0] : '';
+    return 'Olá' + (nome ? ', ' + nome : '') + '! Segue sua avaliação física de ' + dateFmt(a.date) +
+      (a.nextDate ? ' — próxima avaliação em ' + dateFmt(a.nextDate) : '') +
+      '. Qualquer dúvida me chama. — ' + ghOwner();
+  }
+  async function enviarAvaliacaoWhats(){
+    const a = avResultsSource();
+    if (!a) return notify('Selecione uma avaliação.', true);
+    const s = state.students.find(x => x.id === a.studentId);
+    notify('Preparando o PDF...');
+    let pack = null;
+    try { pack = await avPdfPronto(a, s); }
+    catch (e){ return notify('Não foi possível gerar o PDF.', true); }
+
+    const txt = avMsgWhats(a, s);
+    /* 1ª opção: compartilhamento nativo (o WhatsApp aparece na lista) */
+    try {
+      if (navigator.canShare && navigator.canShare({ files: [pack.file] })){
+        await navigator.share({ files: [pack.file], title: 'Avaliação física', text: txt });
+        return notify('Escolha o WhatsApp na lista de aplicativos.');
+      }
+    } catch (err){
+      if (err && err.name === 'AbortError') return;   /* usuário cancelou */
+    }
+    /* 2ª opção: baixa o PDF e abre a conversa do aluno */
+    try {
+      const url = URL.createObjectURL(pack.blob);
+      const link = document.createElement('a');
+      link.href = url; link.download = pack.file.name; link.rel = 'noopener';
+      document.body.appendChild(link); link.click(); link.remove();
+      setTimeout(() => { try { URL.revokeObjectURL(url); } catch (e){} }, 60000);
+    } catch (e){}
+    const tel = avTelAluno(a.studentId);
+    try {
+      window.open((tel ? 'https://wa.me/' + tel : 'https://wa.me/') +
+        '?text=' + encodeURIComponent(txt + '\n\n(PDF baixado no aparelho — anexe em 📎 antes de enviar.)'), '_blank', 'noopener');
+    } catch (e){}
+    notify('PDF baixado. Anexe o arquivo (📎) na conversa do WhatsApp.');
   }
 
 
