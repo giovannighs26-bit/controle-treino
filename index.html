@@ -119,6 +119,9 @@
     .al-shell{display:grid;grid-template-columns:minmax(270px,340px) 1fr;gap:14px;align-items:start}
     /* .card tem grid-column:span 12 (herança do grid de 12 colunas) — anula aqui */
     .al-shell > *{grid-column:auto;min-width:0}
+    .al-ficha-dono{font-size:12px;color:var(--muted);margin-bottom:10px;padding:7px 11px;border-radius:9px;
+      background:#0d1410;border:1px dashed var(--line)}
+    .al-ficha-dono b{color:var(--accent2)}
     .al-side{position:sticky;top:12px;max-height:calc(100vh - 130px);display:flex;flex-direction:column;gap:10px}
     .al-side-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
     .al-side-head h2{margin:0;font-size:18px}
@@ -2193,7 +2196,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '67';
+  const APP_V = '68';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -3350,6 +3353,9 @@
         d.items.forEach(it => { const k = String(it).toLowerCase(); if (v.has(k)) dupes++; else v.add(k); });
       });
     });
+    try {
+      fichasAudit().forEach(a => out.push({ tipo: 'Fichas · ' + a.tipo, aluno: (a.alunos || []).join(', '), det: a.det }));
+    } catch (e){}
     if (fichasRuins) out.push({ tipo: 'Fichas', aluno: '—', det: fichasRuins + ' estrutura(s) de ficha para reparar' });
     if (dupes) out.push({ tipo: 'Fichas', aluno: '—', det: dupes + ' exercício(s) repetido(s) nas fichas' });
     if (state.activeStudentId && !ids.has(state.activeStudentId))
@@ -3358,6 +3364,7 @@
   }
   function syncFixAll(){
     const antes = syncIssues().length;
+    try { fichasCorrigir(); } catch (e){}
     alunosCadastrados().forEach(s => sincronizarAluno(s.id, alunoAtivo(s)));
     if (state.activeStudentId && !state.students.some(s => s.id === state.activeStudentId))
       state.activeStudentId = (state.students[0] || {}).id || null;
@@ -3545,6 +3552,7 @@
     box.innerHTML = `<div class="ficha">
       <div class="ficha-head">
         <div><div class="t">${esc(plan.title || 'Ficha de treino')}</div>
+          <div class="s" style="color:var(--accent2);font-weight:600">${esc(s.name)}</div>
           <div class="s">${plan.days.length} treino(s) · ${plan.days.reduce((n,d)=>n+d.items.length,0)} exercícios</div></div>
         <div class="actions"><button class="btn secondary small" data-rename="1">Renomear</button>
           <button class="btn danger small" data-delplan="1">Excluir</button></div>
@@ -3761,6 +3769,7 @@
       return;
     }
     box.innerHTML = `
+      <div class="al-ficha-dono">Ficha de <b>${esc(s.name)}</b> · ${(plan.days || []).length} treino(s)</div>
       <div class="field span12" style="margin-bottom:12px"><label>Nome da ficha</label>
         <input id="mtPlanTitle" class="mt-plan-title" maxlength="120" value="${esc(plan.title || 'Ficha de treino')}"></div>
       ${plan.days.map((d, i) => mtDayHTML(d, i)).join('')}
@@ -4609,6 +4618,8 @@
   function autoLoadToday(){
     renderSessionStudents();
     renderSessionDays();
+    /* O formulário manual de registro saiu junto com a aba Fichas: sem ele, nada a carregar. */
+    if (!$('#sessionDaySelect') || !$('#exerciseCards')) return;
     const cards = $$('#exerciseCards .ex-card');
     const onlyBlank = cards.length === 1 && !cards[0].querySelector('.ex-name').value.trim()
       && ![...cards[0].querySelectorAll('.s-done')].some(c => c.checked);
@@ -8979,12 +8990,117 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
     try {
       const bruto = localStorage.getItem(key);
       if (!bruto) return notify('O backup do reparo não está mais disponível.', true);
-      state.plans = JSON.parse(bruto);
+      const bkp = JSON.parse(bruto);
+      if (bkp && bkp.plans){ state.plans = bkp.plans; if (Array.isArray(bkp.students)) state.students = bkp.students; }
+      else state.plans = bkp;   /* backup antigo: só as fichas */
       save(); fecharFichaModal();
       notify('Fichas restauradas como estavam antes do reparo.');
     } catch (e){ notify('Não foi possível desfazer.', true); }
   }
   function fecharFichaModal(){ const m = $('#fichaModal'); if (m) m.classList.remove('open'); }
+  /* ---------- AUDITORIA: nomes trocados / id compartilhado ---------- */
+  function fichasAudit(){
+    const out = [];
+    const alunos = alunosCadastrados();
+    /* 1) dois cadastros com o mesmo id -> a ficha é a mesma para os dois */
+    const porId = {};
+    alunos.forEach(s => { (porId[s.id] = porId[s.id] || []).push(s); });
+    Object.keys(porId).forEach(id => {
+      if (porId[id].length > 1)
+        out.push({ tipo: 'id duplicado', nivel: 'erro', alunos: porId[id].map(x => x.name),
+          det: 'dois cadastros usam o mesmo id — os dois mostram a MESMA ficha' });
+    });
+    /* 2) título da ficha citando outro aluno.
+       Só considera primeiro nome EXCLUSIVO (se dois alunos se chamam Giovanna, não é troca). */
+    const primeiro = {};
+    alunos.forEach(s => {
+      const f = String(s.name || '').trim().split(' ')[0].toLowerCase();
+      if (f.length > 2) (primeiro[f] = primeiro[f] || []).push(s);
+    });
+    alunos.forEach(s => {
+      const p = state.plans[s.id];
+      if (!p || !p.title) return;
+      const t = String(p.title).toLowerCase();
+      const meu = String(s.name || '').trim().split(' ')[0].toLowerCase();
+      if (meu && t.includes(meu)) return;                     /* título cita o próprio dono: ok */
+      const achou = Object.keys(primeiro).find(f => primeiro[f].length === 1 && t.includes(f));
+      if (!achou) return;
+      const outro = primeiro[achou][0];
+      out.push({ tipo: 'título trocado', nivel: 'erro', alunos: [s.name],
+        det: 'a ficha de ' + s.name + ' está com o título "' + p.title + '" (nome de ' + outro.name + ')' });
+    });
+    /* 3) fichas idênticas em alunos diferentes (cópia sem trocar o conteúdo) */
+    const fp = {};
+    alunos.forEach(s => {
+      const p = plansOf(s.id);
+      if (!p || !p.days.length) return;
+      const itens = p.days.reduce((a, d) => a + d.items.length, 0);
+      if (!itens) return;
+      const k = JSON.stringify(p.days.map(d => [d.title, d.items]));
+      (fp[k] = fp[k] || []).push(s.name);
+    });
+    Object.keys(fp).forEach(k => {
+      if (fp[k].length > 1)
+        out.push({ tipo: 'ficha idêntica', nivel: 'aviso', alunos: fp[k],
+          det: fp[k].length + ' alunos com exatamente os mesmos treinos e nomes' });
+    });
+    /* 4) cadastros parecidos (mesma pessoa cadastrada duas vezes) */
+    const norm = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+      .replace(/[^a-z ]/g, ' ').split(/\s+/).filter(Boolean);
+    for (let i = 0; i < alunos.length; i++){
+      const a1 = norm(alunos[i].name);
+      for (let j = i + 1; j < alunos.length; j++){
+        const a2 = norm(alunos[j].name);
+        if (!a1.length || !a2.length) continue;
+        const menor = a1.length <= a2.length ? a1 : a2, maior = a1.length <= a2.length ? a2 : a1;
+        if (menor.length >= 2 && menor.every(t => maior.includes(t)))
+          out.push({ tipo: 'cadastro parecido', nivel: 'aviso', alunos: [alunos[i].name, alunos[j].name],
+            det: 'parecem a mesma pessoa em dois cadastros — confira qual tem a ficha' });
+      }
+    }
+    /* 5) ficha sem dono (aluno excluído) */
+    Object.keys(state.plans || {}).forEach(id => {
+      if (!state.students.some(s => s.id === id))
+        out.push({ tipo: 'ficha órfã', nivel: 'aviso', alunos: ['—'], det: 'ficha guardada para um aluno que não existe mais' });
+    });
+    return out;
+  }
+  /* Conserta o que dá para consertar sem perder treino. */
+  function fichasCorrigir(){
+    const antes = JSON.stringify({ plans: state.plans || {}, students: state.students || [] });
+    const feitos = [];
+    /* ids duplicados: o segundo cadastro ganha id novo e uma CÓPIA da ficha */
+    const vistos = new Set();
+    alunosCadastrados().forEach(s => {
+      if (!vistos.has(s.id)){ vistos.add(s.id); return; }
+      const novo = uid();
+      if (state.plans[s.id]) state.plans[novo] = JSON.parse(JSON.stringify(state.plans[s.id]));
+      s.id = novo;
+      if (state.activeStudentId === s.id) state.activeStudentId = novo;
+      feitos.push('id novo para ' + s.name);
+    });
+    /* título com nome de outro aluno: volta para o dono (mesma regra: nome exclusivo) */
+    const alunosAll = alunosCadastrados();
+    const primeiro = {};
+    alunosAll.forEach(x => {
+      const f = String(x.name || '').trim().split(' ')[0].toLowerCase();
+      if (f.length > 2) (primeiro[f] = primeiro[f] || []).push(x);
+    });
+    alunosAll.forEach(s => {
+      const p = state.plans[s.id];
+      if (!p || !p.title) return;
+      const t = String(p.title).toLowerCase();
+      const meu = String(s.name || '').trim().split(' ')[0].toLowerCase();
+      if (meu && t.includes(meu)) return;
+      const achou = Object.keys(primeiro).find(f => primeiro[f].length === 1 && t.includes(f));
+      if (achou){ p.title = 'Ficha — ' + (s.name || 'Aluno'); feitos.push('título da ficha de ' + s.name); }
+    });
+    if (!feitos.length) return { mudou: false, feitos };
+    const key = fichaSnapshot(antes);
+    if (key) state.fichaBkpKey = key;
+    save();
+    return { mudou: true, feitos, key };
+  }
   function fichaModal(){
     const m = $('#fichaModal'), corpo = $('#fichaBody'); if (!m || !corpo) return;
     const plans = state.plans || {};
@@ -9002,15 +9118,32 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
         if (rep) ruins++;
       });
     });
+    const aud = fichasAudit();
+    const listaAud = aud.length
+      ? '<div style="margin-top:14px"><div class="ap-sec" style="margin-bottom:6px">Nomes e vínculos</div>' +
+        aud.map(a => '<div class="item"><div><div class="item-title">' + esc(a.tipo) + ' · ' + esc((a.alunos || []).join(', ')) +
+          '</div><div class="item-meta">' + esc(a.det) + '</div></div><span class="badge' + (a.nivel === 'erro' ? ' off' : '') + '">' +
+          (a.nivel === 'erro' ? 'corrigir' : 'conferir') + '</span></div>').join('') + '</div>'
+      : '<div class="item" style="margin-top:14px"><div><div class="item-title">Nomes e vínculos conferidos</div>' +
+        '<div class="item-meta">nenhuma ficha com nome de outro aluno ou id compartilhado</div></div></div>';
     corpo.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">' +
       '<div class="item"><div><div class="item-title">' + ids.length + ' ficha(s)</div><div class="item-meta">' + dias + ' treino(s) · ' + ex + ' exercício(s)</div></div></div>' +
       '<div class="item"><div><div class="item-title">' + (ruins ? ruins + ' ponto(s) de atenção' : 'Sem inconsistências') + '</div><div class="item-meta">' +
         (ruins ? 'clique em “Reparar agora”' : 'estrutura das fichas está íntegra') + '</div></div></div></div>' +
       '<p class="hint" style="margin-top:12px">O reparo organiza a estrutura (dias, exercícios, duplicados e restos de dados antigos), ' +
       'faz um backup automático antes de gravar e nunca apaga exercícios: só remove repetições idênticas e campos vazios.</p>' +
+      listaAud +
       '<div class="actions" style="justify-content:flex-end;margin-top:14px">' +
-      '<button class="btn" type="button" id="fichaRepararAgora">Reparar agora</button></div>';
+      '<button class="btn" type="button" id="fichaCorrigirAgora"' + (aud.some(a => a.nivel === 'erro') ? '' : ' disabled') + '>Corrigir nomes</button>' +
+      '<button class="btn secondary" type="button" id="fichaRepararAgora">Reparar estrutura</button></div>';
     m.classList.add('open');
+    const bc = $('#fichaCorrigirAgora');
+    if (bc) bc.addEventListener('click', () => {
+      const r = fichasCorrigir();
+      if (!r.mudou){ notify('Nada para corrigir.'); return; }
+      notify('Corrigido: ' + r.feitos.join(' · '));
+      fecharFichaModal(); alRenderEditor(); renderPlans(); alRender();
+    });
     const b = $('#fichaRepararAgora');
     if (b) b.addEventListener('click', () => {
       const r = repararFichas(true);
