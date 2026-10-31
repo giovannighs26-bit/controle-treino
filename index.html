@@ -1117,9 +1117,6 @@
     <span class="nav-sep" aria-hidden="true"></span>
     <button class="tab" data-page="alunos">Alunos</button>
     <button class="tab" data-page="aval">Avaliação física</button>
-    <!-- 3. Montagem do treino -->
-    <span class="nav-sep" aria-hidden="true"></span>
-    <button class="tab" data-page="fichas">Fichas de treino</button>
     <!-- 4. Execução do treino -->
     <span class="nav-sep" aria-hidden="true"></span>
     <button class="tab" data-page="treino">Carregar treino</button>
@@ -1243,7 +1240,6 @@
       <div class="hero-actions">
         <button class="btn" id="qaSession">▶ Registrar treino</button>
         <button class="btn secondary" id="qaLoadDay">↻ Carregar treino do dia</button>
-        <button class="btn secondary" id="qaFicha">🗒 Ver ficha</button>
         <button class="btn ghost" id="qaGroup">👥 Treino em grupo</button>
       </div>
       <div class="summary" id="kpiStrip">
@@ -1362,89 +1358,6 @@
     <article class="card"><h2>Treinos recentes</h2><div id="recentSessions" class="list"></div></article>
   </div></section>
 
-  <section class="page" id="fichas" data-fx="treinos"><div class="grid">
-    <div class="fx-tabs" id="fxTabs">
-      <button class="btn" type="button" data-fx-go="treinos">📋 Treinos</button>
-      <button class="btn ghost" type="button" data-fx-go="editar">✎ Editar a ficha</button>
-      <button class="btn ghost" type="button" data-fx-go="registrar">▶ Registrar treino</button>
-      <span class="fx-now" id="fxNow"></span>
-    </div>
-
-    <article class="card" id="fxList">
-      <div class="actions" style="justify-content:space-between;margin-bottom:14px">
-        <h2 style="margin:0">Fichas de treino</h2>
-        <div class="actions">
-          <button class="btn secondary" id="printFichaBtn">🖨 PDF da ficha</button>
-          <button class="btn" id="shareFichaBtn">🔗 Compartilhar com o aluno</button>
-          <button class="btn secondary" id="importFichaBtn">Importar ficha</button>
-          <button class="btn" id="newPlanBtn">+ Nova ficha</button>
-        </div>
-      </div>
-      <p class="hint" style="margin-top:0">Toque em <strong>Registrar</strong> para anotar as séries de hoje,
-        em <strong>Guiado</strong> para conduzir o treino exercício por exercício, ou em <strong>Editar</strong>
-        para mudar a prescrição.</p>
-      <div id="planList"></div>
-    </article>
-
-    <article class="card" id="mtEditorCard">
-      <div class="actions" style="justify-content:space-between;margin-bottom:14px">
-        <h2 style="margin:0">Editar ficha</h2>
-        <div class="actions">
-          <button class="btn secondary" id="mtNovaFicha">+ Nova ficha</button>
-          <button class="btn secondary" id="mtNovoTreino">+ Novo treino</button>
-          <button class="btn secondary" id="mtBaseBtn" title="Aplicar na ficha deste aluno o treino que está na base">↧ Trazer da base</button>
-          <button class="btn" id="mtSalvar">Salvar treino</button>
-        </div>
-      </div>
-      <p class="hint" style="margin-top:0">Edite direto nesta tela — salva sozinho. No campo do exercício,
-        escolha um nome que você já usa. Cada linha traz o preparo (aquecimento/reconhecimento) e as séries
-        de trabalho.</p>
-      <div id="mtFicha"></div>
-      <datalist id="mtExList"></datalist>
-    </article>
-
-    <article class="card" id="sessionCard">
-      <div class="actions" style="justify-content:space-between;margin-bottom:14px">
-        <h2 style="margin:0">Registro rápido</h2>
-        <span class="hint" style="margin:0">A ficha toda numa tela — marque as séries e salve</span>
-      </div>
-      <form id="sessionForm">
-        <div class="form sess-start">
-          <div class="field span4"><label>Aluno</label><select id="sessionStudent"></select></div>
-          <div class="field span4"><label>Treino do dia — ficha do aluno</label><select id="sessionDaySelect"></select></div>
-          <div class="field span2"><label>&nbsp;</label><button type="button" class="btn" id="sessionStartBtn" style="width:100%">▶ Iniciar treino</button></div>
-          <div class="field span2"><label>&nbsp;</label><button type="button" class="btn secondary" id="loadDayBtn" style="width:100%">↻ Recarregar</button></div>
-        </div>
-        <div class="form">
-          <div class="field span3"><label>Data</label><input type="date" id="sessionDate" required></div>
-          <div class="field span3"><label>Semana do ciclo</label><input type="number" id="sessionWeek" min="1" value="1"></div>
-          <div class="field span2"><label>Duração (min)</label><input type="number" id="sessionDuration" min="0" placeholder="60"></div>
-          <div class="field span4"><label>Descanso padrão</label>
-            <div class="timer-presets">
-              <button type="button" class="btn ghost" data-rest="30">30s</button>
-              <button type="button" class="btn ghost" data-rest="45">45s</button>
-              <button type="button" class="btn ghost" data-rest="60">60s</button>
-              <button type="button" class="btn ghost" data-rest="90">90s</button>
-              <button type="button" class="btn ghost" data-rest="120">120s</button>
-            </div>
-          </div>
-          <div class="field span12"><label>Nome da sessão</label><input id="sessionName" placeholder="Carregado da ficha do aluno" required></div>
-        </div>
-        <p class="hint" id="sessionPeriodHint"></p>
-        <h3 style="margin-top:16px">Exercícios — marque as séries feitas e ajuste carga, reps e RIR</h3>
-        <div id="sessionSync" class="sync-bar" hidden>
-          <span id="sessionSyncText"></span>
-          <button class="btn small" type="button" id="sessionSyncBtn">↻ Recarregar da ficha</button>
-        </div>
-        <div id="exerciseCards"></div>
-        <div class="actions" style="margin-top:14px">
-          <button type="button" class="btn secondary" id="addExercise">+ Exercício</button>
-          <button type="submit" class="btn">Salvar sessão</button>
-          <button type="button" class="btn ghost" id="clearSession">Limpar</button>
-        </div>
-      </form>
-    </article>
-  </div></section>
 
   <section class="page" id="treino"><div class="grid">
     <article class="card">
@@ -2201,10 +2114,12 @@
   const AUTHED = 'ghPerformance.authed';
   const $ = s => document.querySelector(s);
   const $$ = s => [...document.querySelectorAll(s)];
+  /* Liga um listener só se o elemento existir (a aba Fichas foi removida). */
+  const on = (sel, ev, fn) => { const el = $(sel); if (el) el.addEventListener(ev, fn); };
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '65';
+  const APP_V = '66';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -3131,19 +3046,20 @@
     if (id === 'agenda') agRender();
     if (id === 'alunos') alRender();
     if (id === 'dashboard') { renderDashboard(); renderDashAlerts(); setTimeout(drawDashboardCharts, 30); }
-    if (id === 'fichas'){ mtRender(); autoLoadToday(); }
+    /* aba Fichas removida */
     if (id === 'evolucao') renderEvolucao();
     try { alunoBarraFixar(); alunoPickerBusca(); } catch (e){}
     if (id === 'treino') trRender();
     if (id === 'grupo') renderGrupo();
     if (id === 'aval') { renderAval(); setTimeout(drawAvChart, 40); }
-    if (id === 'fichas') renderPlans();
+
 
     if (id === 'financeiro'){ finRender(); setTimeout(() => { finDrawEvol(); finDrawDonut(); }, 40); }
     if (id === 'geral') geralRender();
   }
   $$('.tab').forEach(b => b.addEventListener('click', () => {
-    if ($('#fichas').classList.contains('active') && b.dataset.page !== 'fichas'){ mtSyncNow(); save(); }
+    const secF = $('#fichas');
+    if (secF && secF.classList.contains('active') && b.dataset.page !== 'fichas'){ mtSyncNow(); save(); }
     showPage(b.dataset.page);
   }));
 
@@ -3438,18 +3354,9 @@
     try { v = localStorage.getItem('ghPerformance.fxView') || 'treinos'; } catch (e){}
     fxSet(v);
   })();
-  function irRegistrar(){
-    showPage('fichas');
-    fxSet('registrar');
-    const c = $('#sessionCard');
-    if (c) setTimeout(() => c.scrollIntoView({behavior:'smooth', block:'start'}), 60);
-  }
-  function irEditarFicha(){
-    showPage('fichas');
-    fxSet('editar');
-    const c = $('#mtEditorCard');
-    if (c) setTimeout(() => c.scrollIntoView({behavior:'smooth', block:'start'}), 60);
-  }
+  /* A aba Fichas saiu: registrar/editar agora vive no modo guiado. */
+  function irRegistrar(){ showPage('treino'); notify('Use “Carregar treino” para registrar a sessão.'); }
+  function irEditarFicha(){ showPage('data'); notify('Fichas vêm da base: use “Aplicar base de fichas” em Dados e backup.'); }
   /* Tipos de série: aquecimento (ativação, sem fadiga) · reconhecimento de carga · trabalho */
   const SET_KINDS = [
     {id:'aquecimento', label:'Aquecimento', short:'AQU', cls:'k-aqu'},
@@ -3522,6 +3429,7 @@
   }
   function renderPlans(){
     const s = active(), box = $('#planList');
+    if (!box) return;                       /* aba Fichas removida */
     if (!s){ box.innerHTML = '<div class="empty">Selecione um aluno para ver as fichas.</div>'; return; }
     const alunoId = s.id;
     const plan = plansOf(s.id);
@@ -3591,13 +3499,13 @@
       plan.days.push({title:'Novo treino', items:[]}); save(); notify('Treino adicionado.');
     });
   }
-  $('#newPlanBtn').addEventListener('click', () => {
+  on('#newPlanBtn', 'click', () => {
     const s = active(); if (!s) return notify('Selecione um aluno primeiro.', true);
     if (!state.plans[s.id]) state.plans[s.id] = {title:`Ficha — ${s.name.split(' ')[0]}`, days:[]};
     state.plans[s.id].days.push({title:'Treino A', items:[]});
     save(); notify('Ficha criada. Adicione os exercícios.');
   });
-  $('#importFichaBtn').addEventListener('click', () => {
+  on('#importFichaBtn', 'click', () => {
     const s = active(); if (!s) return notify('Selecione um aluno primeiro.', true);
     const txt = prompt('Cole a ficha (um exercício por linha, ou separe por “;”):');
     if (!txt) return;
@@ -3928,7 +3836,7 @@
     mtWrite(); save();
     notify(`Treino copiado para ${nome}.`);
   });
-  $('#mtNovaFicha').addEventListener('click', () => {
+  on('#mtNovaFicha', 'click', () => {
     const s = active(); if (!s) return;
     if (state.plans[s.id] && state.plans[s.id].days && state.plans[s.id].days.length && !confirm('Este aluno já tem ficha. Criar uma ficha nova por cima?')) return;
     state.plans[s.id] = {title: `Ficha — ${s.name.split(' ')[0]}`, days: [{title: 'Treino A', items: []}]};
@@ -3968,10 +3876,10 @@
     save(); mtRender();
     notify(`${novos.length} treino(s) ${(!tem || subst) ? 'aplicados' : 'acrescentados'} na ficha de ${s.name.split(' ')[0]}.`);
   }
-  $('#mtBaseBtn').addEventListener('click', mtTrazerBase);
-  $('#mtNovoTreino').addEventListener('click', mtAddDay);
-  $('#mtSalvar').addEventListener('click', mtSalvarAgora);
-  $('#mtFicha').addEventListener('input', () => mtSave());
+  on('#mtBaseBtn', 'click', mtTrazerBase);
+  on('#mtNovoTreino', 'click', mtAddDay);
+  on('#mtSalvar', 'click', mtSalvarAgora);
+  on('#mtFicha', 'input', () => mtSave());
   function mtFocusDay(i){
     irEditarFicha();
     setTimeout(() => {
@@ -4581,7 +4489,7 @@
     loadDayIntoSession(idx, true);
     sessionCheckSync();
   }
-  $('#sessionSyncBtn').addEventListener('click', () => {
+  on('#sessionSyncBtn', 'click', () => {
     sessionReload();
     notify('Treino recarregado da ficha.');
   });
@@ -4605,7 +4513,8 @@
     sessionCheckSync();
   }
   function clearSession(){
-    $('#sessionDate').value = today();
+    const d = $('#sessionDate'); if (!d) return;   /* aba Fichas removida */
+    d.value = today();
     $('#sessionName').value = '';
     $('#sessionWeek').value = 1;
     $('#sessionDuration').value = '';
@@ -4614,8 +4523,8 @@
     renderSessionDays();
     updateSessionHint();
   }
-  $('#loadDayBtn').addEventListener('click', () => loadDayIntoSession(num($('#sessionDaySelect').value) || 0));
-  $('#sessionDaySelect').addEventListener('change', () => loadDayIntoSession(num($('#sessionDaySelect').value) || 0));
+  on('#loadDayBtn', 'click', () => loadDayIntoSession(num($('#sessionDaySelect').value) || 0));
+  on('#sessionDaySelect', 'change', () => loadDayIntoSession(num($('#sessionDaySelect').value) || 0));
   const sessAluno = $('#sessionStudent');
   if (sessAluno) sessAluno.addEventListener('change', () => {
     const id = sessAluno.value;
@@ -4643,8 +4552,8 @@
     $$('#exerciseCards .ex-rest').forEach(i => { i.value = sec; });
     notify(`Descanso padrão definido em ${sec}s.`);
   }));
-  $('#addExercise').addEventListener('click', () => addExerciseCard({}));
-  $('#clearSession').addEventListener('click', clearSession);
+  on('#addExercise', 'click', () => addExerciseCard({}));
+  on('#clearSession', 'click', clearSession);
   function startFromDay(plan, dayIndex){
     const day = plan.days[dayIndex]; if (!day) return;
     irRegistrar();
@@ -4653,7 +4562,7 @@
     loadDayIntoSession(dayIndex, true);
     notify(`“${day.title}” carregado. Ajuste as cargas e salve.`);
   }
-  $('#sessionForm').addEventListener('submit', e => {
+  on('#sessionForm', 'submit', e => {
     e.preventDefault();
     if (!active()) return notify('Cadastre ou selecione um aluno.', true);
     const exercises = $$('#exerciseCards .ex-card').map(readExerciseCard).filter(Boolean);
@@ -6061,9 +5970,15 @@
     $('#activeFichaCard').innerHTML = (plan && plan.days.length)
       ? `<div class="item"><div><div class="item-title">${esc(plan.title || 'Ficha')}</div>
           <div class="item-meta">${plan.days.length} treino(s) · ${plan.days.reduce((n,d)=>n+d.items.length,0)} exercícios</div></div>
-          <button class="btn secondary small" id="goFichas">Abrir</button></div>`
+          <span class="actions" style="gap:6px">
+            <button class="btn secondary small" id="alFichaPdf" type="button" title="Baixar/imprimir a ficha em PDF">PDF</button>
+            <button class="btn secondary small" id="alFichaLink" type="button" title="Gerar o link da ficha para o aluno">Link</button>
+            <button class="btn secondary small" id="goFichas" type="button">Carregar treino</button>
+          </span></div>`
       : 'Nenhuma ficha cadastrada.';
-    const gf = $('#goFichas'); if (gf) gf.addEventListener('click', () => showPage('fichas'));
+    const gf = $('#goFichas'); if (gf) gf.addEventListener('click', () => showPage('treino'));
+    const afp = $('#alFichaPdf'); if (afp) afp.addEventListener('click', printFicha);
+    const afl = $('#alFichaLink'); if (afl) afl.addEventListener('click', () => alunoGerarLink(true));
 
     $('#recentSessions').innerHTML = sessions.length
       ? sessions.slice(0,4).map(x => `<div class="item"><div><div class="item-title">${esc(x.name)}</div>
@@ -6220,7 +6135,7 @@
   }
 
   /* ---------- BUSCA GLOBAL ---------- */
-  const GS_PAGES = [['dashboard','Visão geral'],['fichas','Fichas de treino'],
+  const GS_PAGES = [['dashboard','Visão geral'],
     ['alunos','Alunos'],['agenda','Agenda'],['aval','Avaliação física'],['financeiro','Financeiro'],['history','Histórico'],['grupo','Treino em grupo'],['data','Dados e backup'],['geral','Sobre o app']];
   function gsOpen(){
     const m = $('#gsModal'); if (!m) return;
@@ -6846,7 +6761,7 @@
     if (b) showPage(b.dataset.goto);
   });
   const qaSession = $('#qaSession'); if (qaSession) qaSession.addEventListener('click', () => irRegistrar());
-  const qaFicha = $('#qaFicha'); if (qaFicha) qaFicha.addEventListener('click', () => showPage('fichas'));
+
   const qaGroup = $('#qaGroup'); if (qaGroup) qaGroup.addEventListener('click', () => showPage('grupo'));
   const qaLoadDay = $('#qaLoadDay');
   if (qaLoadDay) qaLoadDay.addEventListener('click', () => {
@@ -9019,7 +8934,7 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
     }
     if (A.semFicha.length){
       const nomes = A.semFicha.slice(0, 4).map(x => esc(x.name.split(' ')[0])).join(', ');
-      rows.push(dashAlertRow('📝', `<b>${A.semFicha.length} aluno(s) sem ficha cadastrada</b> — ${nomes}${A.semFicha.length > 4 ? '…' : ''}`, 'fichas', 'Montar ficha', ''));
+      rows.push(dashAlertRow('📝', `<b>${A.semFicha.length} aluno(s) sem ficha cadastrada</b> — ${nomes}${A.semFicha.length > 4 ? '…' : ''}`, 'alunos', 'Ver aluno', ''));
     }
     if (A.aniversarios.length){
       const nomes = A.aniversarios.map(x => `${esc(x.s.name.split(' ')[0])} (dia ${x.dia})`).join(', ');
@@ -10287,7 +10202,6 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
   const GERAL_ABAS = [
     ['alunos','Alunos','Lista com busca, cadastro, perfil, ficha ativa, financeiro e últimos treinos'],
     ['dashboard','Visão geral','Indicadores, evolução, composição das séries e sensor de progressão'],
-    ['fichas','Fichas de treino','Criar e editar a ficha, registrar as séries feitas, imprimir em PDF e compartilhar'],
     ['grupo','Treino em grupo','Registrar a sessão de vários alunos de uma vez'],
     ['history','Histórico','Todas as sessões do aluno, com volume e séries'],
     ['aval','Avaliação física','Medidas, dobras, fotos e relatório em PDF'],
@@ -10954,7 +10868,7 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
     if ($('#treino') && $('#treino').classList.contains('active')) trRender();
     if ($('#montar') && $('#montar').classList.contains('active')) mtRender();
     finRender(); }
-  $('#sessionDate').value = today();
+  const sessDateBoot = $('#sessionDate'); if (sessDateBoot) sessDateBoot.value = today();
   clearSession();
   // Modo aluno: renderiza a visao do aluno e nunca abre o app do treinador.
   // (a quebra de linha abaixo em renderAuth() e usada pelas suites de teste)
