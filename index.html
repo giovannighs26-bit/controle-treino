@@ -1126,7 +1126,7 @@
     </div>
   </header>
   <div hidden aria-hidden="true" style="display:none">
-    <select id="activeStudent" tabindex="-1"></select>
+    <select id="activeStudent" tabindex="-1" aria-label="Aluno ativo (trocar aluno)"></select>
     <button type="button" id="newStudentBtn" tabindex="-1">+ Aluno</button>
   </div>
   <div class="chrono" id="chrono" role="group" aria-label="Cronometro">
@@ -1241,7 +1241,7 @@
         <button class="btn" id="alNovoBtn" type="button">+ Aluno</button>
       </div>
       <div class="al-filtros">
-        <input class="fin-input" id="alBusca" type="search" placeholder="Buscar aluno…">
+        <input class="fin-input" id="alBusca" type="search" placeholder="Buscar aluno…" aria-label="Buscar aluno">
         <select class="fin-input" id="alFiltro" style="width:118px" title="Filtrar por situação">
           <option value="todos">Todos</option><option value="ativos">Ativos</option><option value="inativos">Inativos</option>
         </select>
@@ -2196,7 +2196,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '68';
+  const APP_V = '69';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -6037,7 +6037,9 @@
       }
       if (e.target.classList.contains('grp-add')){
         grpReadCol(i);
-        col.querySelector('.grp-cards').append(exCard({studentId: slot.studentId}));
+        const gNow = grpEnsure();
+        const slNow = gNow.slots[i] || {};
+        col.querySelector('.grp-cards').append(exCard({studentId: slNow.studentId || ''}));
         grpReadCol(i);
         grpUpdateFoot(col);
         grpPersist();
@@ -9384,7 +9386,17 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
           : 'Nenhuma foto de avaliação guardada neste aparelho.';
       }).catch(() => {});
     }
-    $('#storageInfo').textContent = `${state.students.length} aluno(s), ${state.sessions.length} sessão(ões), aproximadamente ${fmt(bytes/1024)} KB.`;
+    let ultBkp = 'nunca';
+    let diasBkp = null;
+    try {
+      if (state.lastExportAt){
+        ultBkp = new Date(state.lastExportAt).toLocaleDateString('pt-BR');
+        diasBkp = Math.floor((Date.now() - state.lastExportAt) / 86400000);
+      }
+    } catch (e){}
+    const avisoBkp = diasBkp === null ? ' · faça o primeiro backup'
+      : diasBkp >= 7 ? ` · último backup há ${diasBkp} dias (recomendado: exportar)` : '';
+    $('#storageInfo').textContent = `${state.students.length} aluno(s), ${state.sessions.length} sessão(ões), aproximadamente ${fmt(bytes/1024)} KB · último backup: ${ultBkp}${avisoBkp}.`;
     const act = active();
     const mine = act ? state.sessions.filter(x => x.studentId === act.id).length : 0;
     $('#historyCount').textContent = act
@@ -10615,6 +10627,7 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
   });
 
   /* ---------- GERAL (sobre o app) ---------- */
+  const GH_VERSAO = 'v' + APP_V;
   const GERAL_ABAS = [
     ['alunos','Alunos','Lista com busca, cadastro, perfil, ficha ativa, financeiro e últimos treinos'],
     ['dashboard','Visão geral','Indicadores, evolução, composição das séries e sensor de progressão'],
@@ -10634,7 +10647,12 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
       `<div class="item" data-goto="${pg}" style="cursor:pointer"><div><div class="item-title">${esc(t)}</div>
         <div class="item-meta">${esc(d)}</div></div><span class="badge">abrir</span></div>`).join('');
     const v = $('#geralVersao');
-    if (v) v.textContent = `${state.students.length} aluno(s) · ${state.sessions.length} treino(s) · ${state.plans ? Object.keys(state.plans).length : 0} ficha(s)`;
+    if (v){
+      let ultimo = 'nunca';
+      try { if (state.lastExportAt) ultimo = new Date(state.lastExportAt).toLocaleDateString('pt-BR'); } catch (e){}
+      v.textContent = `v${APP_V} · ${state.students.length} aluno(s) · ${state.sessions.length} treino(s) · ` +
+        `${state.plans ? Object.keys(state.plans).length : 0} ficha(s) · backup: ${ultimo}`;
+    }
     const ir = $('#geralIrDados');
     if (ir && !ir.dataset.wired){ ir.dataset.wired = '1'; ir.addEventListener('click', () => showPage('data')); }
   }
@@ -11279,8 +11297,26 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
     once('#agAulaNome', 'input', () => { const a = $('#agAulaAluno'); if (a && $('#agAulaNome').value.trim()) a.value = ''; });
   }
 
+  /* ---------- ACESSIBILIDADE: nome acessível em campos sem <label for> ---------- */
+  function a11yLabels(){
+    let n = 0;
+    document.querySelectorAll('input:not([type=hidden]), select, textarea').forEach(el => {
+      if (el.getAttribute('aria-label')) return;
+      if (el.id && document.querySelector('label[for="' + el.id + '"]')) return;
+      if (el.closest('label')) return;
+      const box = el.closest('.field, .form, td, .grp-col, .mt-cell, .item, .al-side-head, .al-filtros');
+      let txt = '';
+      if (box){ const l = box.querySelector('label'); if (l) txt = l.textContent; }
+      if (!txt) txt = el.getAttribute('placeholder') || el.title || '';
+      if (!txt && el.id) txt = el.id.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/[_-]+/g, ' ');
+      txt = String(txt).replace(/\s+/g, ' ').trim();
+      if (txt){ el.setAttribute('aria-label', txt.slice(0, 70)); n++; }
+    });
+    return n;
+  }
+
   /* ---------- RENDER ---------- */
-  function renderAll(){ agRender(); renderPicker(); alWire(); alunoPickWire(); alRender(); renderAlunoFab(); geralRender(); renderDashboard(); renderDashAlerts(); renderPlans(); renderHistory(); renderData(); renderSessionStudents(); renderSessionDays(); updateSessionHint(); renderAval(); renderGrupo();
+  function renderAll(){ agRender(); renderPicker(); alWire(); alunoPickWire(); alRender(); renderAlunoFab(); a11yLabels(); geralRender(); renderDashboard(); renderDashAlerts(); renderPlans(); renderHistory(); renderData(); renderSessionStudents(); renderSessionDays(); updateSessionHint(); renderAval(); renderGrupo();
     if ($('#treino') && $('#treino').classList.contains('active')) trRender();
     if ($('#montar') && $('#montar').classList.contains('active')) mtRender();
     finRender(); }
@@ -11294,6 +11330,20 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
   if (ALUNO_HASH || ALUNO_APRES_HASH){ /* visao do aluno: nao ha mais nada a inicializar */ }
   else if (state.auth && localStorage.getItem(AUTHED)) enterApp();
   else showLogin();
+
+  /* ---------- Robustez: armazenamento persistente e proteção da ficha ---------- */
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e){}
+  window.addEventListener('beforeunload', e => {
+    if (typeof mtDirty !== 'undefined' && mtDirty){ e.preventDefault(); e.returnValue = ''; }
+  });
+  document.addEventListener('keydown', e => {
+    if (!(e.ctrlKey || e.metaKey) || e.key.toLowerCase() !== 's') return;
+    const al = $('#alunos');
+    if (al && al.classList.contains('active')){
+      e.preventDefault();
+      try { mtSalvarAgora(); } catch (err){}
+    }
+  });
 
   /* ---------- PWA ---------- */
   const installBtn = $('#installBtn');
