@@ -115,6 +115,35 @@
     .card{grid-column:span 12;background:linear-gradient(160deg,var(--panel2),var(--panel));border:1px solid var(--line);
       border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
     .half{grid-column:span 6}.third{grid-column:span 4}
+    /* ---------- ABA ALUNOS: layout em duas colunas + abas internas ---------- */
+    .al-shell{display:grid;grid-template-columns:minmax(270px,340px) 1fr;gap:14px;align-items:start}
+    /* .card tem grid-column:span 12 (herança do grid de 12 colunas) — anula aqui */
+    .al-shell > *{grid-column:auto;min-width:0}
+    .al-side{position:sticky;top:12px;max-height:calc(100vh - 130px);display:flex;flex-direction:column;gap:10px}
+    .al-side-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+    .al-side-head h2{margin:0;font-size:18px}
+    .al-side-head .btn{white-space:nowrap;flex:none}
+    .al-filtros{display:flex;gap:8px}
+    .al-filtros input{flex:1;min-width:0}
+    .al-side .al-list{overflow:auto;max-height:none;flex:1}
+    .al-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+    .al-tab{border:1px solid var(--line);background:#101813;color:var(--muted);border-radius:10px;padding:8px 14px;font:inherit;font-size:13px;cursor:pointer}
+    .al-tab.on{background:#16211a;border-color:var(--accent);color:var(--text);font-weight:600}
+    .al-pane{display:none}
+    .al-pane.on{display:block}
+    .al-resumo-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .al-info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:8px;margin-top:12px}
+    .al-info{background:#0d1410;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+    .al-info span{display:block;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+    .al-info b{font-size:13px;display:block;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    @media (max-width:980px){
+      .al-shell{grid-template-columns:1fr}
+      .al-side{position:static;max-height:none}
+      .al-side .al-list{max-height:44vh}
+      .al-resumo-grid{grid-template-columns:1fr}
+      #mtEditorCard .card-head .actions{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}
+      #mtEditorCard .card-head .actions .btn{white-space:nowrap;flex:none}
+    }
     /* ---------- ABA ALUNOS ---------- */
     .al-list{display:grid;gap:8px;max-height:min(56vh,540px);overflow:auto;padding-right:2px}
     .al-row{display:flex;align-items:center;gap:11px;width:100%;text-align:left;font:inherit;
@@ -1201,28 +1230,64 @@
 
   </div></section>
 
-  <section class="page" id="alunos"><div class="grid">
-    <article class="card">
-      <div class="actions" style="justify-content:space-between;margin-bottom:14px">
-        <h2 style="margin:0">Alunos <span class="badge" id="alCount"></span></h2>
-        <div class="actions">
-          <input class="fin-input" id="alBusca" type="search" placeholder="Buscar aluno…" style="width:170px">
-          <select class="fin-input" id="alFiltro" style="width:125px" title="Filtrar por situação">
-            <option value="todos">Todos</option><option value="ativos">Ativos</option><option value="inativos">Inativos</option>
-          </select>
-          <button class="btn secondary" id="alSyncBtn" type="button" title="Verificar e sincronizar cadastros">⟳ Sincronizar</button>
-          <button class="btn" id="alNovoBtn" type="button">+ Aluno</button>
-        </div>
+  <section class="page" id="alunos"><div class="al-shell">
+
+    <aside class="card al-side">
+      <div class="al-side-head">
+        <h2>Alunos <span class="badge" id="alCount"></span></h2>
+        <button class="btn" id="alNovoBtn" type="button">+ Aluno</button>
       </div>
+      <div class="al-filtros">
+        <input class="fin-input" id="alBusca" type="search" placeholder="Buscar aluno…">
+        <select class="fin-input" id="alFiltro" style="width:118px" title="Filtrar por situação">
+          <option value="todos">Todos</option><option value="ativos">Ativos</option><option value="inativos">Inativos</option>
+        </select>
+      </div>
+      <button class="btn secondary small" id="alSyncBtn" type="button" title="Verificar e sincronizar cadastros">⟳ Sincronizar tudo</button>
       <div class="al-list" id="alLista"></div>
-    </article>
-    <article class="card half"><h2>Perfil</h2><div id="studentCard" class="empty">Nenhum aluno selecionado.</div></article>
-    <article class="card half">
-      <div class="card-head"><h2>Financeiro</h2><span class="hint" id="alFinMes"></span></div>
-      <div class="list" id="alFinanceiro"></div>
-    </article>
-    <article class="card half"><h2>Ficha ativa</h2><div id="activeFichaCard" class="empty">Nenhuma ficha cadastrada.</div></article>
-    <article class="card half"><h2>Últimos treinos</h2><div class="list" id="alRecentes"></div></article>
+    </aside>
+
+    <div class="al-main">
+      <div class="al-tabs" role="tablist">
+        <button class="al-tab on" type="button" data-al-pane="resumo">Resumo</button>
+        <button class="al-tab" type="button" data-al-pane="treino">Treino</button>
+        <button class="al-tab" type="button" data-al-pane="fin">Financeiro</button>
+      </div>
+
+      <article class="card al-pane on" data-al-box="resumo">
+        <div class="al-resumo-grid">
+          <div><h3>Perfil do aluno</h3><div id="studentCard" class="empty">Nenhum aluno selecionado.</div></div>
+          <div><h3>Ficha ativa</h3><div id="activeFichaCard" class="empty">Nenhuma ficha cadastrada.</div></div>
+        </div>
+        <h3 style="margin-top:18px">Últimos treinos</h3>
+        <div class="list" id="alRecentes"></div>
+      </article>
+
+      <article class="card al-pane" data-al-box="treino" id="mtEditorCard">
+        <div class="card-head" style="flex-wrap:wrap;gap:8px">
+          <h3 style="margin:0">Ficha de treino</h3>
+          <div class="actions" style="gap:6px;flex-wrap:wrap">
+            <button class="btn secondary small" id="mtNovaFicha" type="button">+ Nova ficha</button>
+            <button class="btn secondary small" id="mtNovoTreino" type="button">+ Novo treino</button>
+            <button class="btn secondary small" id="mtBaseBtn" type="button" title="Aplicar na ficha deste aluno o treino que está na base">↧ Base</button>
+            <button class="btn secondary small" id="alFichaPdf2" type="button" title="Baixar/imprimir a ficha em PDF">PDF</button>
+            <button class="btn secondary small" id="alFichaLink2" type="button" title="Gerar o link da ficha para o aluno">Link</button>
+            <button class="btn ghost small" id="alReparar" type="button" title="Verificar e corrigir os dados das fichas">🛠 Reparar</button>
+            <button class="btn" id="mtSalvar" type="button">Salvar treino</button>
+          </div>
+        </div>
+        <p class="hint" style="margin-top:0">Edite direto aqui — salva sozinho. Cada linha tem exercício,
+          séries, repetições, carga, RIR, descanso e o preparo (aquecimento/reconhecimento).</p>
+        <div id="planList" style="margin-bottom:14px"></div>
+        <div id="mtFicha"></div>
+        <datalist id="mtExList"></datalist>
+      </article>
+
+      <article class="card al-pane" data-al-box="fin">
+        <div class="card-head"><h3 style="margin:0">Financeiro</h3><span class="hint" id="alFinMes"></span></div>
+        <div class="list" id="alFinanceiro"></div>
+      </article>
+    </div>
   </div></section>
 
   <section class="page active" id="dashboard"><div class="grid">
@@ -2031,6 +2096,15 @@
 </main>
 
 <!-- ================= MODAIS ================= -->
+<div class="modal" id="fichaModal"><div class="modal-box">
+  <div class="modal-head"><h2>Dados das fichas</h2><button class="close" type="button" data-close>&times;</button></div>
+  <div id="fichaBody"></div>
+  <div class="actions" style="margin-top:16px;justify-content:flex-end">
+    <button class="btn ghost" type="button" id="fichaUndo">Desfazer último reparo</button>
+    <button class="btn secondary" type="button" data-close>Fechar</button>
+  </div>
+</div></div>
+
 <div class="modal" id="syncModal"><div class="modal-box">
   <div class="modal-head"><h2>Sincronização</h2><button class="close" type="button" data-close>&times;</button></div>
   <div id="syncBody"></div>
@@ -2119,7 +2193,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '66';
+  const APP_V = '67';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -2140,7 +2214,11 @@
     try { const p = JSON.parse(localStorage.getItem(KEY)); if (p && Array.isArray(p.students)) return Object.assign(blank(), p); } catch(e){}
     return blank();
   }
-  function save(){ localStorage.setItem(KEY, JSON.stringify(state)); renderAll(); }
+  function save(){
+    try { localStorage.setItem(KEY, JSON.stringify(state)); }
+    catch (e){ notify('Não foi possível salvar: armazenamento cheio. Exporte um backup em Dados e backup.', true); return; }
+    renderAll();
+  }
   function active(){ return state.students.find(s => s.id === state.activeStudentId) || null; }
   /* ---------- ATIVO / INATIVO (fonte única de verdade) ----------
      s.active !== false = ativo. Quem lista aluno (seletores, agenda, grupo, dash)
@@ -3153,6 +3231,7 @@
     localStorage.setItem(KEY, JSON.stringify(state));
     save();
     autoLoadToday();
+    alRenderEditor();
   });
   /* Sexo/nascimento/altura ficam no cadastro do aluno; se ele ainda nao tiver,
      herda da ultima avaliacao (que era onde esses dados viviam antes). */
@@ -3262,6 +3341,17 @@
     (state.sessions || []).forEach(x => { if (x.studentId && !ids.has(x.studentId)) orf['sessões']++; });
     Object.keys(state.plans || {}).forEach(k => { if (!ids.has(k)) orf['fichas']++; });
     Object.keys(orf).forEach(k => { if (orf[k]) out.push({ tipo: 'Órfãos', aluno: '—', det: orf[k] + ' registro(s) de ' + k + ' sem cadastro' }); });
+    let fichasRuins = 0, dupes = 0;
+    Object.keys(state.plans || {}).forEach(id => {
+      const p = state.plans[id]; if (!p || !Array.isArray(p.days)){ fichasRuins++; return; }
+      p.days.forEach(d => {
+        if (!d || !Array.isArray(d.items)){ fichasRuins++; return; }
+        const v = new Set();
+        d.items.forEach(it => { const k = String(it).toLowerCase(); if (v.has(k)) dupes++; else v.add(k); });
+      });
+    });
+    if (fichasRuins) out.push({ tipo: 'Fichas', aluno: '—', det: fichasRuins + ' estrutura(s) de ficha para reparar' });
+    if (dupes) out.push({ tipo: 'Fichas', aluno: '—', det: dupes + ' exercício(s) repetido(s) nas fichas' });
     if (state.activeStudentId && !ids.has(state.activeStudentId))
       out.push({ tipo: 'Foco', aluno: '—', det: 'o aluno selecionado não existe mais' });
     return out;
@@ -3331,7 +3421,22 @@
   }
 
   /* ---------- FICHAS ---------- */
-  function plansOf(id){ return state.plans[id] || null; }
+  /* Leitura sempre segura: fichas antigas/corrompidas não podem derrubar as abas.
+     Nunca muta o estado — quem conserta de verdade é repararFichas(). */
+  function planSanitize(p){
+    if (!p || typeof p !== 'object') return null;
+    const days = Array.isArray(p.days) ? p.days.filter(d => d && typeof d === 'object').map(d => ({
+      title: String(d.title || 'Treino'),
+      items: Array.isArray(d.items) ? d.items.filter(x => typeof x === 'string' && x.trim()) : []
+    })) : [];
+    return { title: String(p.title || 'Ficha de treino'), days: days };
+  }
+  function plansOf(id){ return planSanitize(state.plans[id]); }
+  function planoIntegro(id){
+    const p = state.plans[id];
+    if (!p || typeof p !== 'object' || !Array.isArray(p.days)) return false;
+    return p.days.every(d => d && typeof d === 'object' && Array.isArray(d.items));
+  }
   /* Atalhos para as duas metades da aba Fichas: o registro rapido e o editor. */
   /* ---------- Fichas: alterna entre as tres views (Treinos / Editar / Registrar) ---------- */
   const FX_VISTAS = { treinos: 'Treinos', editar: 'Editar a ficha', registrar: 'Registrar treino' };
@@ -3583,9 +3688,9 @@
     const set = new Set();
     state.sessions.forEach(s => (s.exercises || []).forEach(e => { const n = String(e.name || '').trim(); if (n) set.add(n); }));
     Object.keys(state.plans || {}).forEach(id => {
-      const p = state.plans[id]; if (!p) return;
-      (p.days || []).forEach(d => (d.items || []).forEach(it => {
-        if (mtHasRx(it)){ const n = mtSplitItem(it).name; if (n) set.add(n); }
+      const p = state.plans[id]; if (!p || !Array.isArray(p.days)) return;
+      p.days.forEach(d => (Array.isArray(d && d.items) ? d.items : []).forEach(it => {
+        if (typeof it === 'string' && mtHasRx(it)){ const n = mtSplitItem(it).name; if (n) set.add(n); }
       }));
     });
     EX_LIBRARY.forEach(n => set.add(n));
@@ -3649,6 +3754,7 @@
     mtFillCatalog();
     const s = active();
     if (!s){ box.innerHTML = '<div class="empty">Selecione um aluno na barra do topo.</div>'; return; }
+    if (state.plans[s.id] && !planoIntegro(s.id)) repararFichas(false);   /* estrutura quebrada: conserta com backup */
     const plan = state.plans[s.id];
     if (!plan || !plan.days || !plan.days.length){
       box.innerHTML = '<div class="empty">Nenhuma ficha para este aluno. Use “+ Nova ficha”.</div>';
@@ -3703,7 +3809,8 @@
   }
   function mtStatus(txt){ const st = $('#mtStatus'); if (st) st.textContent = txt; }
   function mtPersist(){
-    localStorage.setItem(KEY, JSON.stringify(state));
+    try { localStorage.setItem(KEY, JSON.stringify(state)); }
+    catch (e){ mtStatus('não foi possível salvar'); notify('Armazenamento cheio — exporte um backup.', true); return; }
     mtDirty = false;
     mtStatus('salvo ✓');
   }
@@ -3729,6 +3836,7 @@
     const treinos = plan ? plan.days.length : 0;
     const n = plan ? plan.days.reduce((a, d) => a + (d.items || []).length, 0) : 0;
     notify(`Ficha salva — ${treinos} treino(s), ${n} exercício(s).`);
+    save();   /* propaga para Resumo, modo guiado, grupo, evolução e histórico */
   }
   function mtWire(box){
     box.querySelectorAll('[data-addex]').forEach(b => b.addEventListener('click', () => {
@@ -3879,6 +3987,10 @@
   on('#mtBaseBtn', 'click', mtTrazerBase);
   on('#mtNovoTreino', 'click', mtAddDay);
   on('#mtSalvar', 'click', mtSalvarAgora);
+  on('#alFichaPdf2', 'click', printFicha);
+  on('#alFichaLink2', 'click', () => alunoGerarLink(true));
+  on('#alReparar', 'click', fichaModal);
+  on('#fichaUndo', 'click', desfazerReparo);
   on('#mtFicha', 'input', () => mtSave());
   function mtFocusDay(i){
     irEditarFicha();
@@ -5959,11 +6071,7 @@
     $('#mLast').textContent = sessions[0] ? dateFmt(sessions[0].date) : '—';
 
     $('#studentCard').className = s ? '' : 'empty';
-    $('#studentCard').innerHTML = s
-      ? `<div class="item"><div><div class="item-title">${esc(s.name)}</div>
-          <div class="item-meta">${esc(s.goal || '—')} · ${esc(s.level || '—')}</div></div>
-          <button class="btn secondary small" id="editCurrent">Editar</button></div>`
-      : 'Nenhum aluno selecionado.';
+    $('#studentCard').innerHTML = s ? alunoInfoHTML(s) : 'Nenhum aluno selecionado.';
     const ec = $('#editCurrent'); if (ec) ec.addEventListener('click', () => openStudent(s));
 
     $('#activeFichaCard').className = (plan && plan.days.length) ? '' : 'empty';
@@ -5974,10 +6082,12 @@
             <button class="btn secondary small" id="alFichaPdf" type="button" title="Baixar/imprimir a ficha em PDF">PDF</button>
             <button class="btn secondary small" id="alFichaLink" type="button" title="Gerar o link da ficha para o aluno">Link</button>
             <button class="btn secondary small" id="goFichas" type="button">Carregar treino</button>
+            <button class="btn secondary small" id="goEditarFicha" type="button">Editar</button>
           </span></div>`
       : 'Nenhuma ficha cadastrada.';
     const gf = $('#goFichas'); if (gf) gf.addEventListener('click', () => showPage('treino'));
     const afp = $('#alFichaPdf'); if (afp) afp.addEventListener('click', printFicha);
+    const gef = $('#goEditarFicha'); if (gef) gef.addEventListener('click', () => { alPane('treino'); mtFocusDay(0); });
     const afl = $('#alFichaLink'); if (afl) afl.addEventListener('click', () => alunoGerarLink(true));
 
     $('#recentSessions').innerHTML = sessions.length
@@ -6161,7 +6271,11 @@
       const pg = GS_PAGES.filter(p => noAccent(p[1]).includes(t));
       if (pg.length){ out.push('<div class="ap-sec">Páginas</div>'); pg.forEach(([id, l]) => out.push(`<button class="ap-row" data-gs-page="${id}"><span>${esc(l)}</span></button>`)); }
       const ex = new Set();
-      Object.keys(state.plans || {}).forEach(pid => ((state.plans[pid] || {}).days || []).forEach(d => (d.items || []).forEach(it => { const n = shortName(it); if (n) ex.add(n); })));
+      Object.keys(state.plans || {}).forEach(pid => {
+        const pl = state.plans[pid];
+        if (!pl || !Array.isArray(pl.days)) return;
+        pl.days.forEach(d => (Array.isArray(d && d.items) ? d.items : []).forEach(it => { const n = typeof it === 'string' ? shortName(it) : ''; if (n) ex.add(n); }));
+      });
       EX_LIBRARY.forEach(n => ex.add(n));
       const exs = [...ex].filter(n => noAccent(n).includes(t)).sort((a,b) => a.localeCompare(b,'pt-BR')).slice(0, 8);
       if (exs.length){ out.push('<div class="ap-sec">Exercícios</div>'); exs.forEach(n => out.push(`<button class="ap-row" data-gs-ex="${esc(n)}"><span>${esc(n)}</span></button>`)); }
@@ -8746,7 +8860,167 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
           <span class="badge">Semana ${x.week || 1}</span></div>`).join('')
       : '<div class="empty">Nenhum treino registrado para este aluno.</div>';
   }
-  function alRender(){ alRenderLista(); alRenderFinanceiro(); alRenderRecentes(); }
+  /* ---------- ABA ALUNOS: abas internas (Resumo / Treino / Financeiro) ---------- */
+  function alPaneAtual(){ try { return localStorage.getItem('ghPerformance.alPane') || 'resumo'; } catch (e){ return 'resumo'; } }
+  function alPane(v){
+    const sec = $('#alunos'); if (!sec) return;
+    if (v !== 'treino'){ /* descarrega o editor antes de sair */
+      const box = $('#mtFicha');
+      if (box && box.children.length && !box.querySelector('.empty')){ try { mtSyncNow(); mtWrite(); } catch (e){} }
+    }
+    sec.querySelectorAll('[data-al-pane]').forEach(b => b.classList.toggle('on', b.dataset.alPane === v));
+    sec.querySelectorAll('[data-al-box]').forEach(p => p.classList.toggle('on', p.dataset.alBox === v));
+    try { localStorage.setItem('ghPerformance.alPane', v); } catch (e){}
+    if (v === 'treino'){ alRenderEditor(); renderPlans(); }
+  }
+  /* Re-renderiza o editor sem roubar o foco de quem está digitando. */
+  function alRenderEditor(){
+    const box = $('#mtFicha'); if (!box) return;
+    const pane = document.querySelector('#alunos [data-al-box="treino"]');
+    if (!pane || !pane.classList.contains('on')) return;
+    if (box.contains(document.activeElement)) return;
+    mtRender();
+  }
+  /* ---------- DADOS DO ALUNO (cartão do resumo) ---------- */
+  function alunoInfoHTML(s){
+    const grid = [];
+    const push = (rot, val) => grid.push('<div class="al-info"><span>' + rot + '</span><b>' + esc(val == null || val === '' ? '—' : val) + '</b></div>');
+    push('Objetivo', s.goal || '—');
+    push('Nível', s.level || '—');
+    const an = (typeof alunoAntropo === 'function') ? alunoAntropo(s.id) : {birthDate:'', height:0};
+    let idade = '';
+    if (an && an.birthDate){
+      const d = new Date(an.birthDate + 'T12:00:00'), h = new Date();
+      let a = h.getFullYear() - d.getFullYear();
+      if (h.getMonth() - d.getMonth() < 0 || (h.getMonth() === d.getMonth() && h.getDate() < d.getDate())) a--;
+      if (a > 0 && a < 120) idade = a + ' anos';
+    }
+    push('Idade', idade);
+    let peso = '', bf = '';
+    try {
+      const av = (typeof avLatest === 'function') ? avLatest(s.id) : null;
+      if (av){
+        if (av.weight) peso = fmt(av.weight) + ' kg';
+        if (typeof avComposition === 'function'){
+          const c = avComposition(av);
+          if (c && c.bf !== null && c.bf !== undefined) bf = fmt(c.bf) + ' % gordura';
+        }
+        push('Última avaliação', dateFmt(av.date));
+      }
+    } catch (e){}
+    push('Altura / peso', (an && an.height ? an.height + ' cm' : '—') + (peso ? ' · ' + peso : ''));
+    if (bf) push('Composição', bf);
+    const ss = (state.sessions || []).filter(x => x.studentId === s.id);
+    push('Sessões', String(ss.length));
+    const mes = today().slice(0, 7);
+    push('Treinos no mês', String(ss.filter(x => String(x.date || '').slice(0, 7) === mes).length));
+    const plan = plansOf(s.id);
+    push('Ficha', plan && plan.days ? plan.days.length + ' treino(s)' : 'sem ficha');
+    try {
+      const cf = finCfg(s.id), inf = finInfo(s.id, mes);
+      const rot = { pago:'Pago', pendente:'Em aberto', atrasado:'Atrasado', parcial:'Parcial', semvalor:'Sem valor', inativo:'Inativo', previsto:'Previsto', fora:'Não cobrado' };
+      push('Mensalidade', cf.valor ? finBR(cf.valor) + ' · ' + (rot[inf.st] || inf.st) : 'não cobrada');
+      if (cf.tel) push('WhatsApp', cf.tel);
+    } catch (e){}
+    return '<div class="item"><div><div class="item-title">' + esc(s.name) + '</div>' +
+      '<div class="item-meta">' + (alunoAtivo(s) ? 'Ativo' : 'Inativo') + ' · desde ' + (s.createdAt ? dateFmt(String(s.createdAt).slice(0,10)) : '—') + '</div></div>' +
+      '<button class="btn secondary small" id="editCurrent">Editar</button></div>' +
+      '<div class="al-info-grid">' + grid.join('') + '</div>';
+  }
+
+  /* ---------- FICHAS: verificar, reparar e desfazer ---------- */
+  function fichaSnapshot(conteudo){
+    const d = new Date(), p = n => String(n).padStart(2, '0');
+    const key = 'ghPerformance.fichas.bkp.' + d.getFullYear() + p(d.getMonth()+1) + p(d.getDate()) + '-' + p(d.getHours()) + p(d.getMinutes()) + p(d.getSeconds());
+    try { localStorage.setItem(key, conteudo === undefined ? JSON.stringify(state.plans || {}) : conteudo); } catch (e){ return ''; }
+    return key;
+  }
+  function repararFichas(dedupe){
+    const plans = state.plans || {};
+    const antes = JSON.stringify(plans);
+    const rel = { planos: 0, dias: 0, itens: 0, duplicados: 0, vazios: 0 };
+    Object.keys(plans).forEach(id => {
+      const p = plans[id];
+      if (!p || typeof p !== 'object'){ delete plans[id]; rel.planos++; return; }
+      if (!Array.isArray(p.days)){ p.days = []; rel.planos++; }
+      if (typeof p.title !== 'string' || !p.title.trim()) p.title = 'Ficha de treino';
+      p.days = p.days.filter(d => d && typeof d === 'object');
+      p.days.forEach(d => {
+        if (!Array.isArray(d.items)){ d.items = []; rel.dias++; }
+        if (typeof d.title !== 'string' || !d.title.trim()) d.title = 'Treino';
+        const vistos = new Set(), out = [];
+        d.items.forEach(it => {
+          let v = it;
+          if (v && typeof v === 'object'){
+            v = mtBuildItem(v.name || v.exercise || 'Exercício', num(v.sets) || 3, v.reps || '10',
+              num(v.load) || 0, v.rir === undefined ? 2 : num(v.rir), v.note || '');
+            rel.itens++;
+          }
+          if (typeof v !== 'string'){ rel.vazios++; return; }
+          v = v.replace(/\s+/g, ' ').trim();
+          if (!v){ rel.vazios++; return; }
+          const k = v.toLowerCase();
+          if (vistos.has(k)){ if (dedupe === false){ out.push(v); } else { rel.duplicados++; } return; }
+          vistos.add(k); out.push(v);
+        });
+        d.items = out;
+      });
+    });
+    const depois = JSON.stringify(plans);
+    if (antes === depois) return { mudou: false, rel };
+    const key = fichaSnapshot(antes);
+    if (key) state.fichaBkpKey = key;
+    save();
+    return { mudou: true, rel, key };
+  }
+  function desfazerReparo(){
+    const key = state.fichaBkpKey;
+    if (!key) return notify('Nenhum reparo recente para desfazer.', true);
+    try {
+      const bruto = localStorage.getItem(key);
+      if (!bruto) return notify('O backup do reparo não está mais disponível.', true);
+      state.plans = JSON.parse(bruto);
+      save(); fecharFichaModal();
+      notify('Fichas restauradas como estavam antes do reparo.');
+    } catch (e){ notify('Não foi possível desfazer.', true); }
+  }
+  function fecharFichaModal(){ const m = $('#fichaModal'); if (m) m.classList.remove('open'); }
+  function fichaModal(){
+    const m = $('#fichaModal'), corpo = $('#fichaBody'); if (!m || !corpo) return;
+    const plans = state.plans || {};
+    const ids = Object.keys(plans);
+    let dias = 0, ex = 0, ruins = 0;
+    ids.forEach(id => {
+      const p = plans[id]; if (!p || !Array.isArray(p.days)){ ruins++; return; }
+      p.days.forEach(d => {
+        dias++;
+        if (!d || !Array.isArray(d.items)){ ruins++; return; }
+        ex += d.items.length;
+        if (!d.items.length) ruins++;
+        const vistos = new Set(); let rep = 0;
+        d.items.forEach(it => { const k = String(it).toLowerCase(); if (vistos.has(k)) rep++; else vistos.add(k); });
+        if (rep) ruins++;
+      });
+    });
+    corpo.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">' +
+      '<div class="item"><div><div class="item-title">' + ids.length + ' ficha(s)</div><div class="item-meta">' + dias + ' treino(s) · ' + ex + ' exercício(s)</div></div></div>' +
+      '<div class="item"><div><div class="item-title">' + (ruins ? ruins + ' ponto(s) de atenção' : 'Sem inconsistências') + '</div><div class="item-meta">' +
+        (ruins ? 'clique em “Reparar agora”' : 'estrutura das fichas está íntegra') + '</div></div></div></div>' +
+      '<p class="hint" style="margin-top:12px">O reparo organiza a estrutura (dias, exercícios, duplicados e restos de dados antigos), ' +
+      'faz um backup automático antes de gravar e nunca apaga exercícios: só remove repetições idênticas e campos vazios.</p>' +
+      '<div class="actions" style="justify-content:flex-end;margin-top:14px">' +
+      '<button class="btn" type="button" id="fichaRepararAgora">Reparar agora</button></div>';
+    m.classList.add('open');
+    const b = $('#fichaRepararAgora');
+    if (b) b.addEventListener('click', () => {
+      const r = repararFichas(true);
+      if (!r.mudou){ notify('As fichas já estavam íntegras.'); fecharFichaModal(); return; }
+      notify('Fichas organizadas — ' + r.rel.duplicados + ' duplicado(s) e ' + r.rel.vazios + ' vazio(s) removidos.');
+      fecharFichaModal(); alRenderEditor(); renderPlans();
+    });
+  }
+
+  function alRender(){ alRenderLista(); alRenderFinanceiro(); alRenderRecentes(); alRenderEditor(); }
   /* ---------- ALUNO ATIVO: BOTAO FLUTUANTE + SELETOR ----------
      O botao fica suspenso no canto, visivel em todas as abas; abre um seletor com busca,
      a ficha de cada aluno e a situacao do mes no financeiro. */
@@ -8837,6 +9111,15 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
     if (filtro && !filtro.dataset.wired){ filtro.dataset.wired = '1'; filtro.addEventListener('change', alRenderLista); }
     const syncBtn = $('#alSyncBtn');
     if (syncBtn && !syncBtn.dataset.wired){ syncBtn.dataset.wired = '1'; syncBtn.addEventListener('click', syncModal); }
+    const secAl = $('#alunos');
+    if (secAl && !secAl.dataset.wiredPanes){
+      secAl.dataset.wiredPanes = '1';
+      secAl.addEventListener('click', e => {
+        const b = e.target.closest('[data-al-pane]');
+        if (b) alPane(b.dataset.alPane);
+      });
+      alPane(alPaneAtual());
+    }
     const box = $('#alLista');
     if (box && !box.dataset.wired){ box.dataset.wired = '1';
       box.addEventListener('click', e => {
