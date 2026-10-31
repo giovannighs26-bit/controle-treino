@@ -1,0 +1,12 @@
+{
+  "name": "controle-treino-tests",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Suítes de varredura do app GH Performance (Playwright).",
+  "scripts": {
+    "test": "node run-all.cjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
+  }
+}
