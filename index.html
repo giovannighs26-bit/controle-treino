@@ -1005,6 +1005,16 @@
     .avp-barra{height:5px;border-radius:99px;background:#1b2620;overflow:hidden;margin-top:5px;min-width:60px}
     .avp-barra i{display:block;height:100%;border-radius:99px;background:var(--gh-grad)}
     .avp-vazio{padding:14px;color:var(--muted);font-size:13px}
+    /* ---- aba Alunos reorganizada ---- */
+    .al-nav{display:flex;gap:6px;flex-wrap:wrap;align-items:center;background:var(--panel2);
+      border:1px solid var(--line);border-radius:14px;padding:6px;margin-bottom:14px}
+    .al-nav .btn{padding:8px 13px;font-size:12.5px;border-radius:10px}
+    .al-nav .al-now{margin-left:auto;font-size:11.5px;color:var(--muted);padding-right:8px;
+      max-width:46%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    #alunos .card{scroll-margin-top:14px}
+    .al-sec-titulo{display:flex;align-items:center;gap:8px;margin:0 0 10px}
+    .al-sec-titulo i{font-style:normal;font-size:15px}
+    .al-sec-titulo small{font-size:11px;color:var(--muted);font-weight:600}
     @media(max-width:700px){ .avp-table td:nth-child(3), .avp-table th:nth-child(3){display:none} }
     /* ---- Fichas de treino: 3 views ---- */
     .fx-tabs{display:flex;gap:6px;flex-wrap:wrap;align-items:center;background:var(--panel2);
@@ -2257,7 +2267,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '63';
+  const APP_V = '64';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -3190,7 +3200,7 @@
     if (id === 'dashboard') { renderDashboard(); renderDashAlerts(); setTimeout(drawDashboardCharts, 30); }
     /* aba Fichas removida */
     if (id === 'evolucao') renderEvolucao();
-    try { alunoBarraFixar(); alunoPickerBusca(); } catch (e){}
+    try { alunoBarraFixar(); alunoPickerBusca(); alunosBarra(); } catch (e){}
     if (id === 'treino') trRender();
     if (id === 'grupo') renderGrupo();
     if (id === 'aval') { renderAval(); setTimeout(drawAvChart, 40); }
@@ -3279,6 +3289,47 @@
     try { fotografa(); cnt.textContent = `${master.length} aluno(s)`; } catch (e){}
   }
   alunoPickerBusca();
+
+  /* ---------- barra de navegação das seções da aba Alunos ----------
+     A aba empilha vários cartões (perfil, ficha, financeiro, treinos). Em vez de
+     reescrever o HTML, montamos um índice no topo que leva direto a cada cartão. */
+  function alunosBarra(){
+    const sec = document.querySelector('#alunos');
+    if (!sec) return;
+    if (sec.dataset.nav === '1'){
+      const now = sec.querySelector('#alNow');
+      const s = active();
+      if (now) now.textContent = s ? 'aluno ativo: ' + s.name : 'nenhum aluno selecionado';
+      return;
+    }
+    const cards = [...sec.querySelectorAll('article.card')];
+    if (cards.length < 2) return;
+    sec.dataset.nav = '1';
+    const bar = document.createElement('div');
+    bar.className = 'al-nav';
+    bar.id = 'alNav';
+    const ICONES = ['👤', '📋', '💰', '🏋️', '📅', '📊'];
+    bar.innerHTML = cards.map((c, i) => {
+      const h = c.querySelector('h2');
+      const t = h ? h.textContent.trim() : 'Seção ' + (i + 1);
+      const ic = ICONES[i] || '•';
+      return `<button class="btn ghost" type="button" data-alsec="${i}">${ic} ${t}</button>`;
+    }).join('') + '<span class="al-now" id="alNow"></span>';
+    const first = cards[0];
+    first.parentElement.insertBefore(bar, first);
+    bar.querySelectorAll('[data-alsec]').forEach(b => b.addEventListener('click', () => {
+      const c = cards[num(b.dataset.alsec)];
+      if (!c) return;
+      c.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      c.animate([{ boxShadow: '0 0 0 0 rgba(216,169,61,0)' },
+        { boxShadow: '0 0 0 3px rgba(216,169,61,.45)' },
+        { boxShadow: '0 0 0 0 rgba(216,169,61,0)' }], { duration: 1100 });
+    }));
+    const s = active();
+    const now = bar.querySelector('#alNow');
+    if (now) now.textContent = s ? 'aluno ativo: ' + s.name : 'nenhum aluno selecionado';
+  }
+  alunosBarra();
 
   /* ---------- ALUNOS ---------- */
   function renderPicker(){
