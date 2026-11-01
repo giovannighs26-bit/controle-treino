@@ -984,6 +984,28 @@
     .ev-met{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
     .ev-met .btn{padding:6px 10px;font-size:11px}
     .ev-pr .rec{color:#9be3b8}
+    /* ---- painel de vencimentos da avaliacao ---- */
+    .avp-wrap{display:grid;gap:10px}
+    .avp-chips{display:flex;gap:6px;flex-wrap:wrap}
+    .avp-chips .btn{padding:7px 11px;font-size:11.5px}
+    .avp-table{width:100%;border-collapse:collapse;font-size:12.5px}
+    .avp-table th{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);
+      text-align:left;padding:8px 10px;position:sticky;top:0;background:#101a14}
+    .avp-table td{padding:9px 10px;border-top:1px solid var(--line);vertical-align:middle}
+    .avp-table tr{cursor:pointer}
+    .avp-table tbody tr:hover{background:#152019}
+    .avp-table td.al{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
+    .avp-table td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+    .avp-st{display:inline-block;font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:99px;
+      border:1px solid var(--line);white-space:nowrap}
+    .avp-st.ok{border-color:var(--ok);color:var(--ok);background:rgba(99,197,139,.10)}
+    .avp-st.soon{border-color:var(--accent2);color:var(--accent2);background:rgba(216,169,61,.10)}
+    .avp-st.late{border-color:var(--danger);color:var(--danger);background:rgba(224,90,90,.10)}
+    .avp-st.never{color:var(--muted)}
+    .avp-barra{height:5px;border-radius:99px;background:#1b2620;overflow:hidden;margin-top:5px;min-width:60px}
+    .avp-barra i{display:block;height:100%;border-radius:99px;background:var(--gh-grad)}
+    .avp-vazio{padding:14px;color:var(--muted);font-size:13px}
+    @media(max-width:700px){ .avp-table td:nth-child(3), .avp-table th:nth-child(3){display:none} }
     /* ---- Fichas de treino: 3 views ---- */
     .fx-tabs{display:flex;gap:6px;flex-wrap:wrap;align-items:center;background:var(--panel2);
       border:1px solid var(--line);border-radius:14px;padding:6px;margin-bottom:14px}
@@ -1575,7 +1597,19 @@
       <tbody id="historyBody"></tbody></table></div></article>
   </div></section>
 
-  <section class="page" id="aval"><div class="grid">
+  <section class="page" id="aval">
+  <article class="card" id="avPainelCard" style="margin-bottom:14px">
+    <div class="actions" style="justify-content:space-between;margin-bottom:12px">
+      <h2 style="margin:0">Avaliações dos alunos</h2>
+      <span class="hint" style="margin:0" id="avPainelResumo"></span>
+    </div>
+    <div class="avp-wrap">
+      <div class="avp-chips" id="avPainelChips"></div>
+      <div class="table-wrap">
+        <table class="avp-table" id="avPainel"></table>
+      </div>
+    </div>
+  </article><div class="grid">
 
     <!-- 1. ALUNO + HISTÓRICO -->
     <article class="card">
@@ -2223,7 +2257,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '70';
+  const APP_V = '63';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -9857,6 +9891,88 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
     $('#avFolds').innerHTML = AV_FOLDS.map(([k, label]) =>
       `<div class="span3"><label for="avf_${k}">${esc(label)} (mm)</label><input type="number" id="avf_${k}" min="0" max="120" step="0.1" placeholder="—"></div>`).join('');
   }
+  /* ================= PAINEL DE VENCIMENTOS (todos os alunos) ================= */
+  let avPainelFiltro = 'todos';
+  /* Situação de cada aluno: a última avaliação, a próxima data e quantos dias faltam. */
+  function avPainelDados(){
+    const alunos = (state.students || []).filter(x => (x.name || '').trim() && x.id !== 'usuario');
+    return alunos.map(x => {
+      const lista = avFor(x.id);               // mais recente primeiro
+      const ult = lista[0] || null;
+      const nx = avNextInfo(x.id);
+      let estado = 'never', dias = null;
+      if (nx){ dias = nx.dias; estado = dias < 0 ? 'late' : (dias <= 7 ? 'soon' : 'ok'); }
+      else if (ult) estado = 'semdata';
+      return { s: x, ult, nx, dias, estado, total: lista.length };
+    }).sort((a, b) => {
+      const peso = { late: 0, soon: 1, ok: 2, semdata: 3, never: 4 };
+      const d = (peso[a.estado] ?? 9) - (peso[b.estado] ?? 9);
+      if (d) return d;
+      if (a.estado === 'late' && b.estado === 'late') return (a.dias - b.dias); // mais atrasada primeiro
+      if (a.estado === 'ok' && b.estado === 'ok') return (a.dias - b.dias);
+      return String(a.s.name || '').localeCompare(String(b.s.name || ''));
+    });
+  }
+  function avPainelRender(){
+    const tb = $('#avPainel'); if (!tb) return;
+    const todos = avPainelDados();
+    const conta = { late: 0, soon: 0, ok: 0, semdata: 0, never: 0 };
+    todos.forEach(x => conta[x.estado] = (conta[x.estado] || 0) + 1);
+    const resumo = $('#avPainelResumo');
+    if (resumo) resumo.textContent = `${conta.late} vencida(s) · ${conta.soon} chegando · ${conta.ok} em dia · ${conta.never + conta.semdata} sem prazo`;
+    const chips = $('#avPainelChips');
+    if (chips){
+      const defs = [['todos', `Todos (${todos.length})`], ['late', `Vencidas (${conta.late})`],
+        ['soon', `Chegando (${conta.soon})`], ['ok', `Em dia (${conta.ok})`],
+        ['sem', `Sem data (${conta.never + conta.semdata})`]];
+      chips.innerHTML = defs.map(([k, rot]) =>
+        `<button class="btn ${avPainelFiltro === k ? '' : 'ghost'}" type="button" data-avpf="${k}">${rot}</button>`).join('');
+      chips.querySelectorAll('[data-avpf]').forEach(b => b.addEventListener('click', () => {
+        avPainelFiltro = b.dataset.avpf; avPainelRender();
+      }));
+    }
+    const linhas = todos.filter(x => avPainelFiltro === 'todos' ? true
+      : (avPainelFiltro === 'sem' ? (x.estado === 'never' || x.estado === 'semdata') : x.estado === avPainelFiltro));
+    if (!linhas.length){
+      tb.innerHTML = `<tbody><tr><td class="avp-vazio">${todos.length ? 'Nenhum aluno neste filtro.' : 'Cadastre um aluno para começar.'}</td></tr></tbody>`;
+      return;
+    }
+    tb.innerHTML = `<thead><tr><th>Aluno</th><th>Última avaliação</th><th>Próxima</th><th>Situação</th><th></th></tr></thead><tbody>` +
+      linhas.map(x => {
+        const quando = x.estado === 'late' ? `vencida há ${-x.dias} dia(s)`
+          : x.estado === 'soon' ? (x.dias === 0 ? 'vence hoje' : `vence em ${x.dias} dia(s)`)
+          : x.estado === 'ok' ? `em ${x.dias} dia(s)` : '—';
+        const stTxt = x.estado === 'late' ? 'Vencida' : x.estado === 'soon' ? 'Chegando'
+          : x.estado === 'ok' ? 'Em dia' : (x.ult ? 'Sem data' : 'Nunca avaliado');
+        const base = x.nx ? x.nx.base : null;
+        let pct = 0;
+        if (x.nx && base){
+          const total = Math.max(1, dashDias(base, x.nx.date));
+          pct = Math.min(100, Math.round((Math.max(0, dashDias(base, today())) / total) * 100));
+        }
+        return `<tr data-avp="${esc(x.s.id)}">
+          <td class="al">${esc(x.s.name)}</td>
+          <td class="num">${x.ult ? dateFmt(x.ult.date) : '—'}<br><small style="color:var(--muted)">${x.total} avaliação(ões)</small></td>
+          <td class="num">${x.nx ? dateFmt(x.nx.date) : '—'}
+            ${x.nx ? `<div class="avp-barra"><i style="width:${pct}%"></i></div>` : ''}</td>
+          <td><span class="avp-st ${x.estado === 'semdata' ? 'never' : x.estado}">${stTxt}</span>
+            <br><small style="color:var(--muted)">${esc(quando)}</small></td>
+          <td><button class="btn ghost small" type="button" data-avpgo="${esc(x.s.id)}">Abrir</button></td>
+        </tr>`;
+      }).join('') + '</tbody>';
+    tb.querySelectorAll('[data-avp]').forEach(tr => tr.addEventListener('click', () => {
+      const id = tr.dataset.avp;
+      state.activeStudentId = id;
+      try { const sel = $('#activeStudent'); if (sel && [...sel.options].some(o => o.value === id)) sel.value = id; } catch (e){}
+      save();
+      avStudentId = id; avEditing = null;
+      renderAval();
+      const card = $('#avHistory');
+      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      notify('Abrindo a avaliação de ' + (state.students.find(z => z.id === id) || {}).name + '.');
+    }));
+  }
+
   /* ---- cartao de destaque da proxima avaliacao ---- */
   function renderAvNextCard(){
     const n = avStudentId ? avNextInfo(avStudentId) : null;
@@ -10386,7 +10502,7 @@ body{margin:0;background:radial-gradient(1200px 520px at 82% -12%,#16281c 0,tran
       } else partes.push('próxima avaliação não marcada');
       $('#avStudentInfo').textContent = partes.join(' · ') + '.';
     }
-    renderAvNextCard(); renderAvHistory(); renderAvResults(); renderAvEvol();
+    renderAvNextCard(); avPainelRender(); renderAvHistory(); renderAvResults(); renderAvEvol();
     renderAvCompare(); renderAvPhotos(); renderAvComparator();
   }
 
