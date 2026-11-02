@@ -1015,6 +1015,19 @@
     .al-sec-titulo{display:flex;align-items:center;gap:8px;margin:0 0 10px}
     .al-sec-titulo i{font-style:normal;font-size:15px}
     .al-sec-titulo small{font-size:11px;color:var(--muted);font-weight:600}
+    /* ---- Carregar treino organizado ---- */
+    .tr-passo{display:flex;align-items:center;gap:10px;margin:2px 0 10px}
+    .tr-passo i{font-style:normal;width:24px;height:24px;border-radius:8px;display:grid;place-items:center;
+      background:var(--gh-grad);color:#1c1608;font-weight:900;font-size:12px;flex:0 0 24px}
+    .tr-passo b{font-size:13.5px}
+    .tr-passo small{font-size:11.5px;color:var(--muted)}
+    .tr-busca{width:100%;padding:9px 11px;font-size:13px;border-radius:10px;border:1px solid var(--line);
+      background:var(--panel2);color:var(--text);margin-bottom:8px}
+    .tr-busca:focus{outline:none;border-color:var(--accent2)}
+    #trStart.btn{padding:14px 18px;font-size:15px;font-weight:800;width:100%;border-radius:12px}
+    .tr-ctx{display:flex;gap:14px;flex-wrap:wrap;margin:10px 0 2px;font-size:11.5px;color:var(--muted)}
+    .tr-ctx b{color:var(--text);font-variant-numeric:tabular-nums}
+    .tr-ctx span{background:var(--panel2);border:1px solid var(--line);border-radius:99px;padding:3px 10px}
     @media(max-width:700px){ .avp-table td:nth-child(3), .avp-table th:nth-child(3){display:none} }
     /* ---- Fichas de treino: 3 views ---- */
     .fx-tabs{display:flex;gap:6px;flex-wrap:wrap;align-items:center;background:var(--panel2);
@@ -1059,6 +1072,7 @@
     .gr-overlay[hidden]{display:none}
     body.gr-on .aluno-fab{display:none}
     body.gr-on .timer-bar{display:none}
+    body.tr-on .aluno-bar,body.gr-on .aluno-bar,body.tr-on .aluno-fab,body.gr-on .aluno-fab{display:none}
     .gr-overlay .tr-top,.gr-overlay .tr-progress,.gr-overlay .tr-foot{max-width:1100px}
     .gr-board{flex:1;display:grid;gap:8px;grid-template-columns:repeat(2,1fr);
       grid-auto-rows:minmax(148px,1fr);max-width:1100px;width:100%;margin:0 auto;overflow-y:auto;overflow-x:hidden}
@@ -2267,7 +2281,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '64';
+  const APP_V = '65';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -5497,6 +5511,85 @@
   }
   /* Abre o modo guiado. Sem argumentos usa os seletores da aba; com (sid, idx)
      pode ser chamado direto da lista de treinos. */
+  /* ---------- organizar a aba Carregar treino ----------
+     Passo 1 (buscar aluno) → passo 2 (escolher o treino do dia) → botão grande de
+     início. A busca filtra as opções de #trStudent sem tocar no resto do fluxo. */
+  (function trOrganizar(){
+    const sec = document.querySelector('#treino');
+    const sel = $('#trStudent');
+    if (!sec || !sel || sec.dataset.org === '1') return;
+    sec.dataset.org = '1';
+
+    /* passo 1 acima do seletor de aluno */
+    const p1 = document.createElement('div');
+    p1.className = 'tr-passo';
+    p1.innerHTML = '<i>1</i><b>Escolha o aluno</b><small>digite para filtrar</small>';
+    const busca = document.createElement('input');
+    busca.type = 'search';
+    busca.className = 'tr-busca';
+    busca.placeholder = 'Buscar aluno…';
+    busca.setAttribute('aria-label', 'Buscar aluno');
+    sel.parentElement.insertBefore(p1, sel);
+    sel.parentElement.insertBefore(busca, sel);
+
+    let master = null;
+    const foto = () => { master = [...sel.options].map(o => ({ v: o.value, t: o.textContent })); };
+    const filtra = () => {
+      if (!master) foto();
+      const q = String(busca.value || '').trim().toLowerCase();
+      const atual = sel.value;
+      const lista = !q ? master : master.filter(o => o.t.toLowerCase().includes(q) || o.v === atual);
+      sel.innerHTML = lista.map(o => `<option value="${esc(o.v)}">${esc(o.t)}</option>`).join('');
+      if (lista.some(o => o.v === atual)) sel.value = atual;
+      pintaCtx();
+    };
+    busca.addEventListener('focus', () => { master = null; foto(); });
+    busca.addEventListener('input', filtra);
+
+    /* passo 2 acima do seletor de treino */
+    const dia = $('#trDay');
+    if (dia && dia.parentElement){
+      const p2 = document.createElement('div');
+      p2.className = 'tr-passo';
+      p2.style.marginTop = '14px';
+      p2.innerHTML = '<i>2</i><b>Escolha o treino do dia</b><small>o app sugere pelo dia da semana</small>';
+      dia.parentElement.insertBefore(p2, dia);
+    }
+
+    /* linha de contexto com avaliação e última sessão do aluno */
+    let ctx = $('#trCtx');
+    if (!ctx){
+      ctx = document.createElement('div');
+      ctx.className = 'tr-ctx';
+      ctx.id = 'trCtx';
+      const st = $('#trStart');
+      if (st && st.parentElement) st.parentElement.insertBefore(ctx, st);
+    }
+    function pintaCtx(){
+      const c = $('#trCtx'); if (!c) return;
+      const sid = $('#trStudent') ? $('#trStudent').value : null;
+      if (!sid){ c.innerHTML = '<span>Escolha um aluno para começar.</span>'; return; }
+      const partes = [];
+      try {
+        const nx = avNextInfo(sid);
+        if (nx) partes.push(`<span>próxima avaliação <b>${dateFmt(nx.date)}</b></span>`);
+      } catch (e){}
+      try {
+        const ses = (state.sessions || []).filter(x => x.studentId === sid).sort((a, b) => String(b.date||'').localeCompare(String(a.date||'')));
+        partes.push(ses.length ? `<span>último treino <b>${dateFmt(ses[0].date)}</b></span>` : '<span>ainda sem treino registrado</span>');
+        partes.push(`<span><b>${ses.length}</b> sessão(ões) no histórico</span>`);
+      } catch (e){}
+      c.innerHTML = partes.join('') || '';
+    }
+    sel.addEventListener('change', pintaCtx);
+    const d2 = $('#trDay'); if (d2) d2.addEventListener('change', pintaCtx);
+    pintaCtx();
+
+    /* botão de início em destaque */
+    const st = $('#trStart');
+    if (st){ st.classList.remove('small'); st.textContent = '▶ Iniciar treino guiado'; }
+  })();
+
   function trOpen(sid, idx){
     if (typeof sid !== 'string') sid = null;   /* veio de addEventListener: e o evento */
     sid = sid || $('#trStudent').value;
