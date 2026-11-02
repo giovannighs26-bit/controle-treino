@@ -1329,26 +1329,14 @@
         <div class="list" id="alRecentes"></div>
       </article>
 
-      <article class="card al-pane" data-al-box="treino" id="mtEditorCard">
-        <div class="card-head" style="flex-wrap:wrap;gap:8px">
-          <h3 style="margin:0">Ficha de treino</h3>
-          <div class="actions" style="gap:6px;flex-wrap:wrap">
-            <button class="btn secondary small" id="mtNovaFicha" type="button">+ Nova ficha</button>
-            <button class="btn secondary small" id="mtNovoTreino" type="button">+ Novo treino</button>
-            <button class="btn secondary small" id="mtBaseBtn" type="button" title="Aplicar na ficha deste aluno o treino que está na base">↧ Base</button>
-            <button class="btn secondary small" id="alFichaPdf2" type="button" title="Baixar/imprimir a ficha em PDF">PDF</button>
-            <button class="btn secondary small" id="alFichaLink2" type="button" title="Gerar o link da ficha para o aluno">Link</button>
-            <button class="btn secondary small" id="mtHistorico" type="button" title="Ver e restaurar versões anteriores desta ficha">🕘 Versões</button>
-            <button class="btn ghost small" id="alReparar" type="button" title="Verificar e corrigir os dados das fichas">🛠 Reparar</button>
-            <button class="btn" id="mtSalvar" type="button">Salvar treino</button>
-          </div>
-        </div>
-        <p class="hint" style="margin-top:0">Edite direto aqui — salva sozinho. Cada linha tem exercício,
-          séries, repetições, carga, RIR, descanso e o preparo (aquecimento/reconhecimento).</p>
-        <div id="planList" style="margin-bottom:14px"></div>
-        <div id="mtFicha"></div>
-        <datalist id="mtExList"></datalist>
-      </article>
+    <article class="card">
+      <div class="actions" style="justify-content:space-between;margin-bottom:10px">
+        <h2 style="margin:0">Ficha do aluno</h2>
+        <button class="btn" type="button" id="alIrFicha">✎ Abrir em Fichas de treino</button>
+      </div>
+      <p class="hint" style="margin:0">A ficha, a periodização e o registro do treino agora ficam todos na aba
+        <b>Fichas de treino</b> — um só lugar, com as quatro views organizadas.</p>
+    </article>
 
       <article class="card al-pane" data-al-box="fin">
         <div class="card-head"><h3 style="margin:0">Financeiro</h3><span class="hint" id="alFinMes"></span></div>
@@ -2390,7 +2378,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '67';
+  const APP_V = '68';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -3498,6 +3486,8 @@
     setTimeout(() => $('#studentName').focus(), 20);
   }
   function closeStudent(){ $('#studentModal').classList.remove('open'); }
+  const alIr = $('#alIrFicha');
+  if (alIr) alIr.addEventListener('click', irEditarFicha);
   const nbBtn = $('#newStudentBtn'); if (nbBtn) nbBtn.addEventListener('click', () => openStudent(null));
   const syncFix = $('#syncFixBtn');
   if (syncFix) syncFix.addEventListener('click', () => {
