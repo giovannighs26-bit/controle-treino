@@ -1035,7 +1035,10 @@
     .fx-tabs{display:flex;gap:6px;flex-wrap:wrap;align-items:center;background:var(--panel2);
       border:1px solid var(--line);border-radius:14px;padding:6px;margin-bottom:14px}
     .fx-tabs .btn{padding:9px 16px;font-size:13px;border-radius:10px}
-    .fx-tabs .fx-now{margin-left:auto;font-size:11.5px;color:var(--muted);padding-right:8px}
+    .fx-tabs{position:sticky;top:0;z-index:3;backdrop-filter:blur(6px)}
+    .fx-tabs .btn{flex:1 1 0;min-width:0;text-align:center;padding:10px 8px}
+    .fx-tabs .fx-now{margin-left:0;flex:1 1 100%;font-size:11px;color:var(--muted);
+      padding:4px 6px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     #fichas[data-fx="treinos"] #mtEditorCard,
     #fichas[data-fx="treinos"] #sessionCard,
     #fichas[data-fx="editar"] #fxList,
@@ -1206,28 +1209,24 @@
 
 
   <nav class="tabs" aria-label="Navegação">
-    <!-- 1. Painel -->
-    <button class="tab active" data-page="dashboard">Visão geral</button>
-    <!-- 2. Cadastro e avaliação -->
-    <span class="nav-sep" aria-hidden="true"></span>
-    <button class="tab" data-page="alunos">Alunos</button>
-    <button class="tab" data-page="aval">
-    <button class="tab" data-page="fichas">Fichas de treino</button>Avaliação física</button>
-    <!-- 4. Execução do treino -->
-    <span class="nav-sep" aria-hidden="true"></span>
-    <button class="tab" data-page="treino">Carregar treino</button>
-    <button class="tab" data-page="grupo">Treino em grupo</button>
-    <button class="tab" data-page="evolucao">Evolução</button>
-    <!-- 5. Acompanhamento e gestão -->
-    <span class="nav-sep" aria-hidden="true"></span>
-    <button class="tab" data-page="history">Histórico</button>
-    <button class="tab" data-page="agenda">Agenda</button>
-    <button class="tab" data-page="financeiro">Financeiro</button>
-    <!-- 6. Sistema -->
-    <span class="nav-sep" aria-hidden="true"></span>
-    <button class="tab" data-page="data">Dados e backup</button>
-    <button class="tab" data-page="geral">Geral</button>
-  </nav>
+  <button class="tab active" data-page="dashboard">Visão geral</button>
+  <span class="nav-sep" aria-hidden="true"></span>
+  <button class="tab" data-page="alunos">Alunos</button>
+  <button class="tab" data-page="aval">Avaliação física</button>
+  <span class="nav-sep" aria-hidden="true"></span>
+  <button class="tab" data-page="fichas">Fichas de treino</button>
+  <span class="nav-sep" aria-hidden="true"></span>
+  <button class="tab" data-page="treino">Carregar treino</button>
+  <button class="tab" data-page="grupo">Treino em grupo</button>
+  <button class="tab" data-page="evolucao">Evolução</button>
+  <span class="nav-sep" aria-hidden="true"></span>
+  <button class="tab" data-page="history">Histórico</button>
+  <button class="tab" data-page="agenda">Agenda</button>
+  <button class="tab" data-page="financeiro">Financeiro</button>
+  <span class="nav-sep" aria-hidden="true"></span>
+  <button class="tab" data-page="data">Dados e backup</button>
+  <button class="tab" data-page="geral">Geral</button>
+</nav>
 
 
   <section class="page" id="agenda"><div class="ag-wrap">
@@ -2391,7 +2390,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '66';
+  const APP_V = '67';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -3691,7 +3690,7 @@
     sec.dataset.fx = v;
     $$('#fxTabs [data-fx-go]').forEach(b => b.classList.toggle('ghost', b.dataset.fxGo !== v));
     const now = $('#fxNow');
-    if (now) now.textContent = 'você está em: ' + FX_VISTAS[v];
+    if (now){ const al = active(); now.textContent = (al ? 'aluno ativo: ' + al.name + ' · ' : '') + FX_VISTAS[v]; }
     try { localStorage.setItem('ghPerformance.fxView', v); } catch (e){}
   }
   (function fxInit(){
