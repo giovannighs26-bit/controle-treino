@@ -1028,6 +1028,8 @@
     .tr-ctx{display:flex;gap:14px;flex-wrap:wrap;margin:10px 0 2px;font-size:11.5px;color:var(--muted)}
     .tr-ctx b{color:var(--text);font-variant-numeric:tabular-nums}
     .tr-ctx span{background:var(--panel2);border:1px solid var(--line);border-radius:99px;padding:3px 10px}
+    .tr-tec{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+    .tr-tec .btn{padding:5px 9px;font-size:10.5px}
     @media(max-width:700px){ .avp-table td:nth-child(3), .avp-table th:nth-child(3){display:none} }
     /* ---- Fichas de treino: 3 views ---- */
     .fx-tabs{display:flex;gap:6px;flex-wrap:wrap;align-items:center;background:var(--panel2);
@@ -1209,7 +1211,8 @@
     <!-- 2. Cadastro e avaliação -->
     <span class="nav-sep" aria-hidden="true"></span>
     <button class="tab" data-page="alunos">Alunos</button>
-    <button class="tab" data-page="aval">Avaliação física</button>
+    <button class="tab" data-page="aval">
+    <button class="tab" data-page="fichas">Fichas de treino</button>Avaliação física</button>
     <!-- 4. Execução do treino -->
     <span class="nav-sep" aria-hidden="true"></span>
     <button class="tab" data-page="treino">Carregar treino</button>
@@ -1488,6 +1491,113 @@
     <article class="card"><h2>Treinos recentes</h2><div id="recentSessions" class="list"></div></article>
   </div></section>
 
+
+  <section class="page" id="fichas" data-fx="treinos"><div class="grid">
+    <div class="fx-tabs" id="fxTabs">
+      <button class="btn" type="button" data-fx-go="treinos">📋 Treinos</button>
+      <button class="btn ghost" type="button" data-fx-go="editar">✎ Editar a ficha</button>
+      <button class="btn ghost" type="button" data-fx-go="registrar">▶ Registrar treino</button>
+      <button class="btn ghost" type="button" data-fx-go="periodo">📈 Periodização</button>
+      <span class="fx-now" id="fxNow"></span>
+    </div>
+
+    <article class="card" id="fxList">
+      <div class="actions" style="justify-content:space-between;margin-bottom:14px">
+        <h2 style="margin:0">Fichas de treino</h2>
+        <div class="actions">
+          <button class="btn secondary" id="printFichaBtn">🖨 PDF da ficha</button>
+          <button class="btn" id="shareFichaBtn">🔗 Compartilhar com o aluno</button>
+          <button class="btn secondary" id="importFichaBtn">Importar ficha</button>
+          <button class="btn" id="newPlanBtn">+ Nova ficha</button>
+        </div>
+      </div>
+      <p class="hint" style="margin-top:0">Toque em <strong>Registrar</strong> para anotar as séries de hoje,
+        em <strong>Guiado</strong> para conduzir o treino exercício por exercício, ou em <strong>Editar</strong>
+        para mudar a prescrição.</p>
+      <div id="planList"></div>
+    </article>
+
+    <article class="card" id="mtEditorCard">
+      <div class="actions" style="justify-content:space-between;margin-bottom:14px">
+        <h2 style="margin:0">Editar ficha</h2>
+        <div class="actions">
+          <button class="btn secondary" id="mtNovaFicha">+ Nova ficha</button>
+          <button class="btn secondary" id="mtNovoTreino">+ Novo treino</button>
+          <button class="btn secondary" id="mtBaseBtn" title="Aplicar na ficha deste aluno o treino que está na base">↧ Trazer da base</button>
+          <button class="btn" id="mtSalvar">Salvar treino</button>
+        </div>
+      </div>
+      <p class="hint" style="margin-top:0">Edite direto nesta tela — salva sozinho. Cada linha traz o preparo
+        (aquecimento/reconhecimento) e as séries de trabalho.</p>
+      <div id="mtFicha"></div>
+      <datalist id="mtExList"></datalist>
+    </article>
+
+    <article class="card" id="sessionCard">
+      <div class="actions" style="justify-content:space-between;margin-bottom:14px">
+        <h2 style="margin:0">Registro rápido</h2>
+        <span class="hint" style="margin:0">A ficha toda numa tela — marque as séries e salve</span>
+      </div>
+      <form id="sessionForm">
+        <div class="form sess-start">
+          <div class="field span4"><label>Aluno</label><select id="sessionStudent"></select></div>
+          <div class="field span4"><label>Treino do dia — ficha do aluno</label><select id="sessionDaySelect"></select></div>
+          <div class="field span2"><label>&nbsp;</label><button type="button" class="btn" id="sessionStartBtn" style="width:100%">▶ Iniciar treino</button></div>
+          <div class="field span2"><label>&nbsp;</label><button type="button" class="btn secondary" id="loadDayBtn" style="width:100%">↻ Recarregar</button></div>
+        </div>
+        <div class="form">
+          <div class="field span3"><label>Data</label><input type="date" id="sessionDate" required></div>
+          <div class="field span3"><label>Semana do ciclo</label><input type="number" id="sessionWeek" min="1" value="1"></div>
+          <div class="field span2"><label>Duração (min)</label><input type="number" id="sessionDuration" min="0" placeholder="60"></div>
+          <div class="field span4"><label>Descanso padrão</label>
+            <div class="timer-presets">
+              <button type="button" class="btn ghost" data-rest="30">30s</button>
+              <button type="button" class="btn ghost" data-rest="45">45s</button>
+              <button type="button" class="btn ghost" data-rest="60">60s</button>
+              <button type="button" class="btn ghost" data-rest="90">90s</button>
+              <button type="button" class="btn ghost" data-rest="120">120s</button>
+            </div>
+          </div>
+          <div class="field span12"><label>Nome da sessão</label><input id="sessionName" placeholder="Carregado da ficha do aluno" required></div>
+        </div>
+        <p class="hint" id="sessionPeriodHint"></p>
+        <h3 style="margin-top:16px">Exercícios — marque as séries feitas, ajuste carga, reps, RIR e a técnica</h3>
+        <div id="sessionSync" class="sync-bar" hidden>
+          <span id="sessionSyncText"></span>
+          <button class="btn small" type="button" id="sessionSyncBtn">↻ Recarregar da ficha</button>
+        </div>
+        <div id="exerciseCards"></div>
+        <div class="actions" style="margin-top:14px">
+          <button type="button" class="btn secondary" id="addExercise">+ Exercício</button>
+          <button type="submit" class="btn">Salvar sessão</button>
+          <button type="button" class="btn ghost" id="clearSession">Limpar</button>
+        </div>
+      </form>
+    </article>
+
+    <article class="card" id="fxPeriodo">
+      <div class="actions" style="justify-content:space-between;margin-bottom:14px">
+        <h2 style="margin:0">Periodização do ciclo</h2>
+        <span class="hint" style="margin:0" id="pdAluno"></span>
+      </div>
+      <p class="hint" style="margin-top:0">Defina o bloco e o app calcula a <b>carga relativa de cada semana</b>.
+        O fator vale para todas as séries de trabalho da ficha (100% = a carga prescrita).</p>
+      <div class="pd-grid">
+        <div class="field"><label for="pdNome">Nome do bloco</label><input id="pdNome" maxlength="40" placeholder="Hipertrofia — bloco 1"></div>
+        <div class="field"><label for="pdModelo">Modelo</label><select id="pdModelo">
+          <option value="linear">Linear (sobe toda semana)</option>
+          <option value="ondulatoria">Ondulatória (pesada / leve)</option>
+          <option value="regressiva">Regressiva com deload</option>
+        </select></div>
+        <div class="field"><label for="pdSemanas">Semanas</label><input id="pdSemanas" type="number" min="2" max="24" value="6"></div>
+        <div class="field"><label for="pdProg">Progressão por semana (%)</label><input id="pdProg" type="number" min="0" max="15" step="0.5" value="2.5"></div>
+        <div class="field"><label for="pdDeload">Semana de deload</label><input id="pdDeload" type="number" min="0" max="24" value="4"></div>
+        <div class="field"><label for="pdAtual">Semana atual</label><input id="pdAtual" type="number" min="1" max="24" value="1"></div>
+      </div>
+      <div class="pd-resumo" id="pdResumo"></div>
+      <div class="table-wrap"><table class="pd-tab" id="pdTabela"></table></div>
+    </article>
+  </div></section>
 
   <section class="page" id="treino"><div class="grid">
     <article class="card">
@@ -2281,7 +2391,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '65';
+  const APP_V = '66';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -3573,7 +3683,8 @@
   }
   /* Atalhos para as duas metades da aba Fichas: o registro rapido e o editor. */
   /* ---------- Fichas: alterna entre as tres views (Treinos / Editar / Registrar) ---------- */
-  const FX_VISTAS = { treinos: 'Treinos', editar: 'Editar a ficha', registrar: 'Registrar treino' };
+  const FX_VISTAS = {  treinos: 'Treinos', editar: 'Editar a ficha', registrar: 'Registrar treino' };
+  FX_VISTAS.periodo = 'Periodização';
   function fxSet(v){
     const sec = $('#fichas'); if (!sec) return;
     if (!FX_VISTAS[v]) v = 'treinos';
@@ -3594,6 +3705,94 @@
     fxSet(v);
   })();
   /* A aba Fichas saiu: registrar/editar agora vive no modo guiado. */
+
+  /* ================= PERIODIZAÇÃO ================= */
+  function pdStore(){
+    if (!state.periodizacao || typeof state.periodizacao !== 'object') state.periodizacao = {};
+    return state.periodizacao;
+  }
+  function pdCfg(sid){
+    const st = pdStore();
+    if (!st[sid]) st[sid] = { nome: '', modelo: 'linear', semanas: 6, prog: 2.5, deload: 4, atual: 1 };
+    const c = st[sid];
+    c.semanas = Math.max(2, Math.min(24, num(c.semanas) || 6));
+    c.deload = Math.max(0, Math.min(c.semanas, num(c.deload) || 0));
+    c.atual = Math.max(1, Math.min(c.semanas, num(c.atual) || 1));
+    c.prog = Math.max(0, Math.min(15, num(c.prog)));
+    if (!c.modelo) c.modelo = 'linear';
+    return c;
+  }
+  /* Fator de carga da semana (1 = 100% da carga prescrita na ficha). */
+  function pdFator(c, w){
+    const p = (num(c.prog) || 0) / 100;
+    if (c.modelo === 'ondulatoria'){
+      const ciclo = Math.floor((w - 1) / 2);
+      const base = 1 + ciclo * p;
+      return (w % 2 === 1) ? base : base * 0.9;
+    }
+    if (c.modelo === 'regressiva'){
+      if (c.deload && w === c.deload) return 0.6;
+      if (c.deload && w > c.deload) return 1 + (w - c.deload - 1) * p;
+      return 1 + (w - 1) * p;
+    }
+    return 1 + (w - 1) * p;
+  }
+  function pdPinta(){
+    const card = $('#fxPeriodo');
+    if (!card) return;
+    const al = $('#pdAluno'), tab = $('#pdTabela'), res = $('#pdResumo');
+    const s = active();
+    if (!s){
+      if (al) al.textContent = 'selecione um aluno';
+      if (tab) tab.innerHTML = '<tbody><tr><td>Selecione um aluno para periodizar.</td></tr></tbody>';
+      if (res) res.innerHTML = '';
+      return;
+    }
+    if (al) al.textContent = s.name;
+    const c = pdCfg(s.id);
+    const setV = (id, val) => { const el = $('#' + id); if (el && document.activeElement !== el) el.value = val; };
+    setV('pdNome', c.nome || ''); setV('pdModelo', c.modelo); setV('pdSemanas', c.semanas);
+    setV('pdProg', c.prog); setV('pdDeload', c.deload); setV('pdAtual', c.atual);
+    const f = pdFator(c, c.atual);
+    const nomeMod = c.modelo === 'linear' ? 'Linear'
+      : c.modelo === 'ondulatoria' ? 'Ondulatória' : 'Regressiva';
+    if (res){
+      let h = '<span>modelo <b>' + nomeMod + '</b></span>';
+      h += '<span>semana <b>' + c.atual + ' de ' + c.semanas + '</b></span>';
+      h += '<span>carga desta semana <b>' + Math.round(f * 100) + '%</b></span>';
+      if (c.nome) h += '<span>bloco <b>' + esc(c.nome) + '</b></span>';
+      res.innerHTML = h;
+    }
+    if (tab){
+      let linhas = '';
+      for (let w = 1; w <= c.semanas; w++){
+        const ff = pdFator(c, w);
+        const del = (c.modelo === 'regressiva' && c.deload && w === c.deload);
+        const cls = (w === c.atual ? ' class="atual"' : (del ? ' class="deload"' : ''));
+        linhas += '<tr' + cls + '><td>Semana ' + w
+          + (w === c.atual ? ' · atual' : '') + (del ? ' · deload' : '') + '</td>'
+          + '<td>' + Math.round(ff * 100) + '%</td>'
+          + '<td>' + (w === c.atual ? '← carga de hoje' : (del ? 'reduzir volume/carga' : '')) + '</td></tr>';
+      }
+      tab.innerHTML = '<thead><tr><th>Semana</th><th>Carga relativa</th><th></th></tr></thead><tbody>'
+        + linhas + '</tbody>';
+    }
+  }
+  /* liga os campos (uma vez) */
+  (function pdInit(){
+    const mapa = { pdNome: 'nome', pdModelo: 'modelo', pdSemanas: 'semanas', pdProg: 'prog', pdDeload: 'deload', pdAtual: 'atual' };
+    Object.keys(mapa).forEach(id => {
+      const el = $('#' + id); if (!el || el.dataset.pd === '1') return;
+      el.dataset.pd = '1';
+      el.addEventListener('change', () => {
+        const s = active(); if (!s) return;
+        const c = pdCfg(s.id); const k = mapa[id];
+        c[k] = (k === 'nome' || k === 'modelo') ? el.value : num(el.value);
+        save(); pdPinta();
+      });
+    });
+  })();
+
   function irRegistrar(){ showPage('treino'); notify('Use “Carregar treino” para registrar a sessão.'); }
   function irEditarFicha(){ showPage('data'); notify('Fichas vêm da base: use “Aplicar base de fichas” em Dados e backup.'); }
   /* Tipos de série: aquecimento (ativação, sem fadiga) · reconhecimento de carga · trabalho */
@@ -5238,6 +5437,35 @@
     };
   }
   /* Chips extras mostrados no alvo do exercício: última carga, histórico e sugestão. */
+  /* Seletor de técnica dentro do treino guiado: aparece junto do alvo do exercício. */
+  function trTecHTML(ex){
+    if (!ex || ex.free) return '';
+    const atual = ex.method || '';
+    return '<div class="tr-tec">' + TECHNIQUES.map(t =>
+      '<button type="button" class="btn ' + (t.id === atual ? '' : 'ghost') + ' small" data-ttec="'
+      + t.id + '">' + t.label + '</button>').join('') + '</div>';
+  }
+  document.addEventListener('click', function(ev){
+    const b = ev.target && ev.target.closest ? ev.target.closest('[data-ttec]') : null;
+    if (!b) return;
+    if (typeof trRun === 'undefined' || !trRun || !trRun.exercises) return;
+    const ex = trRun.exercises[trRun.i];
+    if (!ex) return;
+    ex.method = b.dataset.ttec;
+    const t = techOf(ex.method);
+    if (t && t.rest) ex.rest = t.rest;
+    ex.sets = (ex.sets || []).map(function(s){
+      const o = Object.assign({}, s);
+      if (t && t.blocks && !(Array.isArray(o.blocks) && o.blocks.length)){
+        o.blocks = [num(o.reps) || 0].filter(function(n){ return n > 0; });
+      }
+      if (!(t && t.blocks)) delete o.blocks;
+      return o;
+    });
+    trPaint();
+    notify('Técnica: ' + (t ? t.label : 'Tradicional'));
+  });
+
   function trHistChips(ex, sidIn){
     if (!ex || ex.free) return '';
     const sid = sidIn || (typeof trRun !== 'undefined' && trRun && trRun.studentId)
@@ -5344,7 +5572,7 @@
       <main class="tr-body">
         <div class="tr-step">Exercício ${run.i + 1} de ${total}</div>
         <h2 id="trExName">${esc(ex.name || 'Exercício')}</h2>
-        <div class="tr-target">${trChips(ex)}${trHistChips(ex)}</div>
+        <div class="tr-target">${trChips(ex)}${trHistChips(ex)}${trTecHTML(ex)}</div>
         <div class="tr-sets" id="trSets">${ex.free
           ? '<div class="tr-nota">📋 <b>Item de orientação da ficha</b> — não tem séries para registrar. Faça o que está descrito e toque em <b>Próximo</b> para seguir.</div>'
           : ex.sets.map((s,k) => trSetHTML(s, k, num(ex.rest) || 60)).join('')}</div>
