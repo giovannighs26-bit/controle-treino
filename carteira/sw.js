@@ -1,5 +1,5 @@
 /* Minha Carteira — service worker (offline) */
-var CACHE = "carteira-v3";
+var CACHE = "carteira-v4";
 var ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./sw.js"];
 
 self.addEventListener("install", function (e) {
