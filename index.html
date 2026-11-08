@@ -2378,7 +2378,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '70';
+  const APP_V = '71';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -4291,8 +4291,13 @@
      Ficha com conteudo: OK substitui, Cancelar acrescenta os treinos no fim. */
   function mtTrazerBase(){
     const s = active(); if (!s) return notify('Selecione um aluno primeiro.', true);
-    const nm = String(s.name || '').trim().toLowerCase();
-    const src = (GH_SEED || []).find(x => String(x.name || '').trim().toLowerCase() === nm);
+    /* Busca tolerante: nome exato -> sem acento/maiusculas -> pelo primeiro nome. */
+    const _norm = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase().replace(/\s+/g, ' ').trim();
+    const nm = _norm(s.name);
+    const primeiro = nm.split(' ')[0];
+    const src = (GH_SEED || []).find(x => _norm(x.name) === nm)
+      || (GH_SEED || []).find(x => _norm(x.name).split(' ')[0] === primeiro && primeiro.length > 2);
     const srcPlan = src && src.plans && src.plans[0];
     const days = (srcPlan && srcPlan.days) ? srcPlan.days.filter(d => d && d.items && d.items.length) : [];
     if (!days.length) return notify('A base não tem ficha para este aluno.', true);
