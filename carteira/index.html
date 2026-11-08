@@ -211,6 +211,12 @@ var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"']/g, f
 
 function toISO(d) { var p = function (n) { return String(n).padStart(2, "0"); }; return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()); }
 function hojeISO() { return toISO(new Date()); }
+function linkDoApp() {
+  try {
+    var u = (typeof location !== "undefined" && location.href) ? location.href : "https://giovannighs26-bit.github.io/controle-treino/carteira/";
+    return u.split("?")[0].replace(/index\.html$/, "");
+  } catch (e) { return "https://giovannighs26-bit.github.io/controle-treino/carteira/"; }
+}
 function mesDe(iso) { return String(iso || "").slice(0, 7); }
 function diaDe(iso) { return String(iso || "").slice(8, 10); }
 function nomeMes(m) { var a = String(m).split("-"); return MESESF[(+a[1] || 1) - 1] + "/" + a[0]; }
@@ -592,7 +598,6 @@ function renderTopbar() {
   if (secao === "dividas") t += '<button class="btn" data-act="nova-div">+ Dívida</button>';
   if (secao === "reserva") t += '<button class="btn" data-act="nova-meta">+ Meta</button>';
   t += '<button class="btn ghost sm" data-act="backup-rapido" title="Exportar backup agora">⤓ Backup</button>';
-  if (!appInstalado()) t += '<button class="btn ghost sm" data-act="instalar" title="Instalar como aplicativo">📲 Instalar</button>';
   t += "</div>";
   document.getElementById("topbar").innerHTML = h + t;
   var mi = document.getElementById("mesRef");
@@ -978,10 +983,12 @@ function viewConfig() {
     '<button class="btn danger" data-act="reset">Apagar tudo</button></div>' +
     '<div class="hint" style="margin-top:10px">Os dados de exemplo são fictícios e servem para você entender os gráficos e relatórios. Apague depois em "Apagar tudo".</div></div>';
 
-  h += '<div class="card"><div class="card-h"><h3>Instalar na tela inicial</h3></div>' +
-    '<p class="hint" style="margin-top:0">Instalado, o app abre em tela cheia, com ícone próprio, e funciona sem internet. Seus dados continuam salvos neste aparelho.</p>' +
+  h += '<div class="card"><div class="card-h"><h3>Abrir rápido no navegador</h3></div>' +
+    '<p class="hint" style="margin-top:0">A carteira foi feita para abrir no navegador, junto com suas abas. Deixe o endereço à mão:</p>' +
     '<div id="instStatus" class="hint" style="margin:10px 0 0"></div>' +
-    '<button class="btn" data-act="instalar" style="margin-top:10px">Instalar app</button>' +
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">' +
+    '<button class="btn secondary sm" data-act="copiar-link">📋 Copiar o link do app</button>' +
+    '<button class="btn ghost sm" data-act="instalar">📲 Instalar como app (opcional)</button></div>' +
     '<div class="hint" style="margin-top:10px">Android/Chrome: botão acima ou menu ⋮ → "Instalar aplicativo".<br>iPhone/Safari: botão Compartilhar → "Adicionar à Tela de Início".</div>' +
     '<div class="hint" style="margin-top:8px">Se você baixou o arquivo HTML e abre por <b>file://</b>, a instalação não funciona — use a versão publicada.</div></div>';
 
@@ -1207,9 +1214,12 @@ function render() {
 
   if (secao === "config") {
     var ist = document.getElementById("instStatus");
-    if (ist) ist.innerHTML = appInstalado()
-      ? "✅ Você está no app instalado (tela cheia, ícone próprio)."
-      : "⚠️ Agora você está no <b>navegador</b>. Instale para abrir em tela cheia, sem barra de endereço.";
+    if (ist) {
+      var link = linkDoApp();
+      ist.innerHTML = appInstalado()
+        ? "✅ Você está no app instalado. Link: <b>" + link + "</b>"
+        : "Endereço desta carteira:<br><b style='word-break:break-all'>" + link + "</b><br>No Chrome: menu ⋮ → <b>Adicionar aos favoritos</b> (ou <b>Adicionar à tela inicial</b> para um atalho).";
+    }
     renderAutoBkps();
     var si = document.getElementById("seedInfo");
     if (si) {
@@ -1377,6 +1387,13 @@ async function compartilharBackup() {
     if (navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], title: "Backup" }); return; }
   } catch (e) { if (e && e.name === "AbortError") return; }
   copiarBackup();
+}
+
+function copiarLinkApp() {
+  var link = linkDoApp();
+  var ok = function (deu) { toast(deu ? "Link copiado — cole no navegador ou num atalho" : "Copie o endereço da barra do navegador", !deu); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(link).then(function () { ok(true); }, function () { ok(false); });
+  else ok(false);
 }
 
 /* ---------- importar colando o texto (quando o arquivo não chega ao celular) ---------- */
@@ -1602,6 +1619,7 @@ document.addEventListener("click", function (e) {
   if (a === "importar-texto") { importarTextoModal(); return; }
   if (a === "fazer-import-texto") { fazerImportTexto(); return; }
   if (a === "recarregar-seed") { recarregarSeed(); return; }
+  if (a === "copiar-link") { copiarLinkApp(); return; }
   if (a === "export-csv") { exportarCSV(secao !== "config"); return; }
   if (a === "import-json") { var fi = document.getElementById("fileImport"); if (fi) fi.click(); return; }
   if (a === "demo") {
