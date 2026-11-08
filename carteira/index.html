@@ -276,6 +276,7 @@ var S = carregar();
 function salvar() {
   try { localStorage.setItem(LS, JSON.stringify(S)); }
   catch (e) { toast("Não foi possível salvar. Exporte um backup."); }
+  try { if (typeof autoSnapshot === "function") autoSnapshot(); } catch (e) {}
 }
 
 var mesRef = mesDe(hojeISO());
@@ -560,6 +561,8 @@ function renderTopbar() {
   }
   if (secao === "dividas") t += '<button class="btn" data-act="nova-div">+ Dívida</button>';
   if (secao === "reserva") t += '<button class="btn" data-act="nova-meta">+ Meta</button>';
+  t += '<button class="btn ghost sm" data-act="backup-rapido" title="Exportar backup agora">⤓ Backup</button>';
+  if (!appInstalado()) t += '<button class="btn ghost sm" data-act="instalar" title="Instalar como aplicativo">📲 Instalar</button>';
   t += "</div>";
   document.getElementById("topbar").innerHTML = h + t;
   var mi = document.getElementById("mesRef");
@@ -922,12 +925,18 @@ function viewConfig() {
   h += '<div class="grid g-2e" style="margin-top:14px">';
   h += '<div class="card"><div class="card-h"><h3>Backup e dados</h3></div>' +
     '<p class="hint" style="margin-top:0">A importação <b>mescla</b>: lançamentos que já existem (mesma data, valor, categoria e descrição) são ignorados, o resto é adicionado. Seus dados ficam salvos apenas neste navegador/dispositivo. Se limpar o cache ou trocar de celular, eles se perdem — exporte um backup de vez em quando.</p>' +
-    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">' +
-    '<button class="btn" data-act="export-json">⤓ Exportar backup</button>' +
-    '<button class="btn ghost" data-act="import-json">⤒ Importar (mesclar)</button>' +
-    '<button class="btn ghost" data-act="export-csv">⤓ CSV de tudo</button>' +
+    '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">' +
+    '<button class="btn" style="font-size:15px;padding:13px 18px" data-act="export-json">⤓ Exportar backup</button>' +
+    '<button class="btn secondary" style="font-size:15px;padding:13px 18px" data-act="import-json">⤒ Importar (mesclar)</button>' +
     '<input type="file" id="fileImport" accept=".json,application/json" style="display:none">' +
     "</div>" +
+    '<div class="hint" style="margin-top:8px">No celular abre o menu de compartilhar (salve em <b>Arquivos</b> ou mande para você mesmo no WhatsApp). Se nada acontecer, use <b>“Não baixou? Copiar os dados”</b>.</div>' +
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">' +
+    '<button class="btn ghost sm" data-act="backup-texto">📋 Não baixou? Copiar os dados</button>' +
+    '<button class="btn ghost sm" data-act="export-csv">⤓ CSV de tudo</button>' +
+    "</div>" +
+    '<div class="sec-title">Backups automáticos do aparelho</div>' +
+    '<div id="autoBkps" class="list"></div>' +
     '<div class="sec-title">Zona de risco</div>' +
     '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" data-act="demo">Carregar dados de exemplo</button>' +
     '<button class="btn danger" data-act="reset">Apagar tudo</button></div>' +
@@ -935,7 +944,8 @@ function viewConfig() {
 
   h += '<div class="card"><div class="card-h"><h3>Instalar na tela inicial</h3></div>' +
     '<p class="hint" style="margin-top:0">Instalado, o app abre em tela cheia, com ícone próprio, e funciona sem internet. Seus dados continuam salvos neste aparelho.</p>' +
-    '<button class="btn" data-act="instalar" style="margin-top:12px">Instalar app</button>' +
+    '<div id="instStatus" class="hint" style="margin:10px 0 0"></div>' +
+    '<button class="btn" data-act="instalar" style="margin-top:10px">Instalar app</button>' +
     '<div class="hint" style="margin-top:10px">Android/Chrome: botão acima ou menu ⋮ → "Instalar aplicativo".<br>iPhone/Safari: botão Compartilhar → "Adicionar à Tela de Início".</div>' +
     '<div class="hint" style="margin-top:8px">Se você baixou o arquivo HTML e abre por <b>file://</b>, a instalação não funciona — use a versão publicada.</div></div>';
 
@@ -1159,6 +1169,13 @@ function render() {
   else html = viewConfig();
   document.getElementById("view").innerHTML = html;
 
+  if (secao === "config") {
+    var ist = document.getElementById("instStatus");
+    if (ist) ist.innerHTML = appInstalado()
+      ? "✅ Você está no app instalado (tela cheia, ícone próprio)."
+      : "⚠️ Agora você está no <b>navegador</b>. Instale para abrir em tela cheia, sem barra de endereço.";
+    renderAutoBkps();
+  }
   var bt = document.getElementById("buscaTx");
   if (bt) bt.addEventListener("input", function () { filtroTrans.busca = this.value; var pos = this.selectionStart; render(); var n = document.getElementById("buscaTx"); if (n) { n.focus(); n.setSelectionRange(pos, pos); } });
   var be = document.getElementById("buscaEdu");
@@ -1252,14 +1269,111 @@ function abrirAporteMeta(id) {
     '<div class="hint" style="margin-top:10px">Saldo atual: ' + fmt(mt.atual) + " de " + fmt(mt.alvo) + "</div>" +
     '<div style="display:flex;gap:9px;margin-top:16px"><button class="btn" type="submit">Registrar aporte</button><button class="btn ghost" type="button" data-act="close-modal">Cancelar</button></div></form>');
 }
-function exportarJSON() {
-  var blob = new Blob([JSON.stringify(S, null, 2)], { type: "application/json" });
-  var a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "minha-carteira-backup-" + hojeISO() + ".json";
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
-  toast("Backup exportado");
+/* Exportar: 1) compartilhar (celular) · 2) baixar arquivo · 3) mostrar para copiar */
+async function exportarJSON() {
+  var nome = "minha-carteira-backup-" + hojeISO() + ".json";
+  var txt = JSON.stringify(S, null, 2);
+  var blob = new Blob([txt], { type: "application/json" });
+  var file = null;
+  try { file = new File([blob], nome, { type: "application/json" }); } catch (e) { file = null; }
+
+  if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: "Backup Minha Carteira", text: "Backup de " + hojeISO() });
+      toast("Backup compartilhado — salve em Arquivos ou no WhatsApp");
+      return;
+    } catch (e) { if (e && e.name === "AbortError") return; }
+  }
+
+  var baixou = false;
+  try {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = nome; a.rel = "noopener";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 15000);
+    baixou = true;
+  } catch (e) { baixou = false; }
+
+  if (baixou) toast("Backup gerado: " + nome + " (veja os downloads)");
+  else backupTextoModal();
+}
+
+/* Plano B garantido: mostra o conteúdo e deixa copiar/compartilhar */
+function backupTextoModal() {
+  var txt = JSON.stringify(S);
+  openModal("Seus dados para backup",
+    '<div class="prose"><p>Copie o texto abaixo e guarde num lugar seguro (<b>Notas</b>, e-mail para você mesmo, WhatsApp). ' +
+    'Para voltar, use <b>Ajustes → Importar (mesclar)</b>.</p></div>' +
+    '<textarea id="backupTxt" readonly style="width:100%;height:190px;font-family:monospace;font-size:11px;line-height:1.35"></textarea>' +
+    '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">' +
+    '<button class="btn" data-act="copiar-backup">Copiar tudo</button>' +
+    '<button class="btn ghost" data-act="share-backup">Compartilhar</button>' +
+    '<button class="btn ghost" data-act="close-modal">Fechar</button></div>',
+    "Backup manual");
+  var ta = document.getElementById("backupTxt");
+  if (ta) { ta.value = txt; setTimeout(function () { ta.focus(); ta.select(); }, 80); }
+}
+function copiarBackup() {
+  var ta = document.getElementById("backupTxt");
+  var txt = ta ? ta.value : JSON.stringify(S);
+  var ok = function (deu) { toast(deu ? "Backup copiado — cole onde quiser guardar" : "Selecione o texto e copie manualmente", !deu); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(function () { ok(true); }, function () {
+      if (ta) { ta.focus(); ta.select(); }
+      ok(false);
+    });
+  } else {
+    if (ta) { ta.focus(); ta.select(); }
+    ok(false);
+  }
+}
+async function compartilharBackup() {
+  var nome = "minha-carteira-backup-" + hojeISO() + ".json";
+  var txt = JSON.stringify(S, null, 2);
+  try {
+    var f = new File([new Blob([txt], { type: "application/json" })], nome, { type: "application/json" });
+    if (navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], title: "Backup" }); return; }
+  } catch (e) { if (e && e.name === "AbortError") return; }
+  copiarBackup();
+}
+
+/* ---------- backups automáticos do próprio aparelho ---------- */
+var AUTO_KEY = "minha_carteira_auto";
+var _ultimoSnap = 0;
+function lerAuto() { try { return JSON.parse(localStorage.getItem(AUTO_KEY) || "[]"); } catch (e) { return []; } }
+function autoSnapshot() {
+  var agora = Date.now();
+  if (agora - _ultimoSnap < 120000) return;
+  _ultimoSnap = agora;
+  try {
+    var arr = lerAuto(), atual = JSON.stringify(S);
+    if (arr[0] && arr[0].json === atual) return;
+    arr.unshift({ at: new Date().toISOString(), json: atual });
+    localStorage.setItem(AUTO_KEY, JSON.stringify(arr.slice(0, 5)));
+  } catch (e) {}
+}
+function renderAutoBkps() {
+  var box = document.getElementById("autoBkps"); if (!box) return;
+  var arr = lerAuto();
+  if (!arr.length) { box.innerHTML = '<div class="hint">Nenhum backup automático ainda — ele é criado sozinho conforme você usa o app.</div>'; return; }
+  box.innerHTML = arr.map(function (b, i) {
+    var d = new Date(b.at);
+    var t = 0;
+    try { t = (JSON.parse(b.json).transacoes || []).length; } catch (e) {}
+    return '<div class="row"><div class="grow"><div class="t1">' + d.toLocaleString("pt-BR") + '</div>' +
+      '<div class="t2">' + t + ' lançamento(s)</div></div>' +
+      '<button class="btn ghost sm" data-act="restaurar-auto" data-v="' + i + '">Restaurar</button></div>';
+  }).join("");
+}
+function restaurarAuto(i) {
+  var arr = lerAuto(), b = arr[i];
+  if (!b) return;
+  if (!confirm("Restaurar o backup de " + new Date(b.at).toLocaleString("pt-BR") + "? O estado atual será substituído.")) return;
+  try {
+    S = Object.assign(estadoInicial(), JSON.parse(b.json));
+    salvar(); render(); toast("Backup automático restaurado");
+  } catch (e) { toast("Não foi possível restaurar", true); }
 }
 function exportarCSV(soMes) {
   var tx = soMes ? txMes(mesRef) : S.transacoes.slice();
@@ -1408,7 +1522,11 @@ document.addEventListener("click", function (e) {
     S.categorias = S.categorias.filter(function (c) { return c.nome !== v; }); salvar(); render(); toast("Categoria removida"); return;
   }
   if (a === "instalar") { instalarApp(); return; }
-  if (a === "export-json") { exportarJSON(); return; }
+  if (a === "backup-rapido" || a === "export-json") { exportarJSON(); return; }
+  if (a === "backup-texto") { backupTextoModal(); return; }
+  if (a === "copiar-backup") { copiarBackup(); return; }
+  if (a === "share-backup") { compartilharBackup(); return; }
+  if (a === "restaurar-auto") { restaurarAuto(parseInt(el.getAttribute("data-v"), 10) || 0); return; }
   if (a === "export-csv") { exportarCSV(secao !== "config"); return; }
   if (a === "import-json") { var fi = document.getElementById("fileImport"); if (fi) fi.click(); return; }
   if (a === "demo") {
@@ -1605,7 +1723,33 @@ var promptInstalar = null;
 window.addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); promptInstalar = e; });
 window.addEventListener("appinstalled", function () { promptInstalar = null; toast("App instalado!"); });
 
+function appInstalado() {
+  try {
+    return (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
+  } catch (e) { return false; }
+}
 function instalarApp() {
+  if (appInstalado()) {
+    openModal("App já instalado",
+      '<div class="prose"><p>Você já está usando o app instalado (sem barra do navegador). O atalho está na tela inicial.</p></div>' +
+      '<div style="margin-top:14px"><button class="btn" data-act="close-modal">Fechar</button></div>');
+    return;
+  }
+  if (location.protocol === "file:") {
+    openModal("Para instalar, abra pelo link",
+      '<div class="prose"><p>O arquivo baixado no computador abre como página e <b>não pode ser instalado</b>. ' +
+      'Use o endereço publicado:</p><p style="word-break:break-all"><b>https://giovannighs26-bit.github.io/controle-treino/carteira/</b></p>' +
+      '<p>Abra esse link no <b>Chrome</b> (Android) ou no <b>Safari</b> (iPhone) e instale por lá.</p></div>' +
+      '<div style="margin-top:14px"><button class="btn" data-act="close-modal">Fechar</button></div>');
+    return;
+  }
+  if (/FBAN|FBAV|Instagram|WhatsApp|Line\//i.test(navigator.userAgent)) {
+    openModal("Abra no navegador",
+      '<div class="prose"><p>Você está num navegador interno (WhatsApp/Instagram). Para instalar, toque em <b>⋮ → Abrir no Chrome</b> ' +
+      '(Android) ou <b>⋯ → Abrir no Safari</b> (iPhone) e use o botão Instalar de novo.</p></div>' +
+      '<div style="margin-top:14px"><button class="btn" data-act="close-modal">Fechar</button></div>');
+    return;
+  }
   if (promptInstalar) {
     promptInstalar.prompt();
     promptInstalar.userChoice.then(function (r) {
@@ -1631,6 +1775,7 @@ if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0) {
 try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
 
 render();
+try { autoSnapshot(); } catch (e) {}   /* ponto de restauração já na abertura */
 abertura();
 
 </script>
