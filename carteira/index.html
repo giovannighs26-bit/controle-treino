@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#080b10">
 <title>Minha Carteira — Controle Financeiro</title>
 <link rel="manifest" href="./manifest.webmanifest">
-<meta name="description" content="Controle financeiro pessoal: entradas e saídas, reserva de emergência, dívidas, metas e dicas personalizadas.">
+<meta name="description" content="Minha Carteira — controle financeiro pessoal: entradas e saídas, reserva, dívidas, metas e dicas.">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -251,6 +251,10 @@ var CAT_PADRAO = [
 ];
 var METODOS = ["Pix", "Débito", "Crédito", "Dinheiro", "Boleto", "Transferência"];
 
+/* Lançamentos do PicPay (31/10 a 07/11/2026) que o Giovanni pediu para importar.
+   Entram sozinhos na primeira abertura e podem ser recarregados em Ajustes. */
+var SEED_PICPAY = [["2026-11-07", "despesa", 214.1, "Moradia", "CEMIG Distribuição — energia", "Pix", false], ["2026-11-07", "despesa", 803.26, "Dívidas e juros", "Fatura PicPay Card", "Débito", false], ["2026-11-07", "despesa", 394.43, "Dívidas e juros", "MAREE Instituição de Pagamento", "Pix", false], ["2026-11-07", "receita", 265.0, "Extra / Freelance", "Pix recebido — Letícia Aparecida Teodoro Pinheiro", "Pix", false], ["2026-11-07", "despesa", 8.5, "Assinaturas", "Seguro Carteira Digital", "Crédito", true], ["2026-11-06", "despesa", 31.9, "Assinaturas", "Spotify", "Crédito", true], ["2026-11-06", "receita", 225.0, "Extra / Freelance", "Pix recebido — Fabiana Aparecida dos Santos Teodoro", "Pix", false], ["2026-11-06", "despesa", 90.0, "Outros", "Pix enviado — Wellington Silva dos Santos", "Pix", false], ["2026-11-06", "receita", 180.0, "Extra / Freelance", "Pix recebido — Stephanie Zacarias dos Santos Nunes", "Pix", false], ["2026-11-06", "despesa", 99.98, "Vestuário", "C & A Pernambucanas", "Crédito", false], ["2026-11-05", "despesa", 20.0, "Moradia", "Recarga de celular", "Débito", false], ["2026-11-05", "despesa", 8.5, "Assinaturas", "Seguro Carteira Digital", "Crédito", true], ["2026-11-04", "despesa", 64.8, "Outros", "Mariadiminas Ouro Fino", "Débito", false], ["2026-11-04", "despesa", 80.5, "Moradia", "Sociedade Fogas — gás", "Pix", false], ["2026-11-04", "receita", 1480.0, "Estágio", "Estágio — Donderi S.A.", "Pix", false], ["2026-11-04", "despesa", 260.0, "Assinaturas", "Eduzz Tecnologia", "Pix", true], ["2026-11-03", "despesa", 100.0, "Transporte", "Auto Posto Brasil Petróleo Ouro Fino", "Débito", false], ["2026-11-02", "despesa", 95.99, "Assinaturas", "Google", "Crédito", false], ["2026-11-01", "despesa", 100.0, "Outros", "Pix enviado (não identificado na captura)", "Pix", false], ["2026-11-01", "receita", 80.0, "Extra / Freelance", "Pix recebido — Gabrielly Cabrini Camargo Cruz", "Pix", false], ["2026-10-31", "despesa", 35.0, "Outros", "Paulocesardesouza Ouro Fino", "Débito", false], ["2026-10-31", "receita", 160.0, "Extra / Freelance", "Pix recebido — Vanessa Suellen de A. P. Crochiquia", "Pix", false], ["2026-10-31", "despesa", 31.97, "Outros", "Lojão Orru Ouro Fino", "Débito", false], ["2026-10-31", "despesa", 44.64, "Alimentação", "Supermercados Alvorada Ouro Fino", "Débito", false], ["2026-11-06", "receita", 2723.0, "Salário", "Salário — Zaaz", "Transferência", true]];
+
 function estadoInicial() {
   return {
     versao: 1,
@@ -273,6 +277,32 @@ function carregar() {
   } catch (e) { return estadoInicial(); }
 }
 var S = carregar();
+/* primeira abertura: já começa com os lançamentos reais do PicPay */
+function semDados(){ try { return !localStorage.getItem(LS); } catch (e) { return false; } }
+function aplicarSeedPicPay(estado){
+  var base = estado || S;
+  if (!SEED_PICPAY || !SEED_PICPAY.length) return base;
+  var exist = {}, add = 0;
+  base.transacoes.forEach(function (t) {
+    exist[[t.data, t.tipo, Math.round(num(t.valor)*100), String(t.categoria||'').toLowerCase(), String(t.descricao||'').trim().toLowerCase()].join('|')] = 1;
+  });
+  SEED_PICPAY.forEach(function (r) {
+    var k = [r[0], r[1], Math.round(num(r[2])*100), String(r[3]||'').toLowerCase(), String(r[4]||'').trim().toLowerCase()].join('|');
+    if (exist[k]) return;
+    exist[k] = 1;
+    base.transacoes.push({ id: uid('t'), data: r[0], tipo: r[1], valor: num(r[2]), categoria: r[3], descricao: r[4], metodo: r[5] || 'Pix', fixa: !!r[6] });
+    add++;
+  });
+  if (!base.categorias.some(function (c) { return c.nome === 'Estágio'; }))
+    base.categorias.push({ nome: 'Estágio', tipo: 'receita', orcamento: 0, cor: '#38bdf8' });
+  base.config.rendaMensal = base.config.rendaMensal || 2723;
+  if (num(base.reserva.atual) < 4004.51) base.reserva.atual = 4004.51;
+  return base;
+}
+if (semDados()) {
+  S = aplicarSeedPicPay(S);
+  try { localStorage.setItem(LS, JSON.stringify(S)); } catch (e) {}
+}
 function salvar() {
   try { localStorage.setItem(LS, JSON.stringify(S)); }
   catch (e) { toast("Não foi possível salvar. Exporte um backup."); }
@@ -933,8 +963,14 @@ function viewConfig() {
     '<div class="hint" style="margin-top:8px">No celular abre o menu de compartilhar (salve em <b>Arquivos</b> ou mande para você mesmo no WhatsApp). Se nada acontecer, use <b>“Não baixou? Copiar os dados”</b>.</div>' +
     '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">' +
     '<button class="btn ghost sm" data-act="backup-texto">📋 Não baixou? Copiar os dados</button>' +
+    '<button class="btn ghost sm" data-act="importar-texto">📥 Importar colando o texto</button>' +
     '<button class="btn ghost sm" data-act="export-csv">⤓ CSV de tudo</button>' +
     "</div>" +
+    '<div class="sec-title">Meus lançamentos do PicPay</div>' +
+    '<p class="hint" style="margin-top:0">25 lançamentos de <b>31/10 a 07/11/2026</b> — salário Zaaz, estágio Donderi, fatura do cartão, mercado, assinaturas. ' +
+    'Eles entram sozinhos na primeira abertura do app. Se algo faltar, use o botão para recarregar (não duplica).</p>' +
+    '<div id="seedInfo" class="hint"></div>' +
+    '<button class="btn secondary sm" style="margin-top:8px" data-act="recarregar-seed">↻ Recarregar meus lançamentos</button>' +
     '<div class="sec-title">Backups automáticos do aparelho</div>' +
     '<div id="autoBkps" class="list"></div>' +
     '<div class="sec-title">Zona de risco</div>' +
@@ -1175,6 +1211,11 @@ function render() {
       ? "✅ Você está no app instalado (tela cheia, ícone próprio)."
       : "⚠️ Agora você está no <b>navegador</b>. Instale para abrir em tela cheia, sem barra de endereço.";
     renderAutoBkps();
+    var si = document.getElementById("seedInfo");
+    if (si) {
+      var n = S.transacoes.filter(function (t) { return t.data >= "2026-10-31" && t.data <= "2026-11-07"; }).length;
+      si.textContent = n + " lançamento(s) do período no app agora.";
+    }
   }
   var bt = document.getElementById("buscaTx");
   if (bt) bt.addEventListener("input", function () { filtroTrans.busca = this.value; var pos = this.selectionStart; render(); var n = document.getElementById("buscaTx"); if (n) { n.focus(); n.setSelectionRange(pos, pos); } });
@@ -1336,6 +1377,37 @@ async function compartilharBackup() {
     if (navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], title: "Backup" }); return; }
   } catch (e) { if (e && e.name === "AbortError") return; }
   copiarBackup();
+}
+
+/* ---------- importar colando o texto (quando o arquivo não chega ao celular) ---------- */
+function importarTextoModal() {
+  openModal("Importar colando o texto",
+    '<div class="prose"><p>Cole aqui o conteúdo do backup (o mesmo texto do botão <b>Copiar os dados</b>) e toque em <b>Importar</b>. ' +
+    'A importação <b>mescla</b> — nada é apagado nem duplicado.</p></div>' +
+    '<textarea id="importTx" placeholder=\'{"transacoes":[ ... ]}\' style="width:100%;height:170px;font-family:monospace;font-size:11px"></textarea>' +
+    '<div style="display:flex;gap:8px;margin-top:12px">' +
+    '<button class="btn" data-act="fazer-import-texto">Importar</button>' +
+    '<button class="btn ghost" data-act="close-modal">Cancelar</button></div>',
+    "Importar do texto");
+}
+function fazerImportTexto() {
+  var ta = document.getElementById("importTx"); if (!ta) return;
+  var bruto = (ta.value || "").trim();
+  if (!bruto) return toast("Cole o texto do backup primeiro", true);
+  try {
+    var obj = JSON.parse(bruto);
+    if (!obj || !Array.isArray(obj.transacoes)) throw new Error("formato");
+    var r = mesclarBackup(obj);
+    closeModal(); mesRef = mesDe(hojeISO()); salvar(); render();
+    toast(r.add ? r.add + " lançamento(s) importado(s)" + (r.dup ? " · " + r.dup + " já existiam" : "") : "Nada novo: já estava tudo aqui");
+  } catch (e) { toast("Texto inválido — cole o JSON completo do backup", true); }
+}
+function recarregarSeed() {
+  var antes = S.transacoes.length;
+  aplicarSeedPicPay(S);
+  salvar(); render();
+  var n = S.transacoes.length - antes;
+  toast(n ? n + " lançamento(s) adicionado(s)" : "Todos os lançamentos do PicPay já estão no app");
 }
 
 /* ---------- backups automáticos do próprio aparelho ---------- */
@@ -1527,6 +1599,9 @@ document.addEventListener("click", function (e) {
   if (a === "copiar-backup") { copiarBackup(); return; }
   if (a === "share-backup") { compartilharBackup(); return; }
   if (a === "restaurar-auto") { restaurarAuto(parseInt(el.getAttribute("data-v"), 10) || 0); return; }
+  if (a === "importar-texto") { importarTextoModal(); return; }
+  if (a === "fazer-import-texto") { fazerImportTexto(); return; }
+  if (a === "recarregar-seed") { recarregarSeed(); return; }
   if (a === "export-csv") { exportarCSV(secao !== "config"); return; }
   if (a === "import-json") { var fi = document.getElementById("fileImport"); if (fi) fi.click(); return; }
   if (a === "demo") {
