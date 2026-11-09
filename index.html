@@ -1029,6 +1029,17 @@
       border:1px solid var(--line);border-radius:14px;padding:6px;margin-bottom:14px}
     .fx-tabs .btn{padding:9px 16px;font-size:13px;border-radius:10px}
     .fx-tabs{position:sticky;top:0;z-index:3;backdrop-filter:blur(6px)}
+    /* ---- seção recolhível (Avaliação física) ---- */
+    details.enx{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:0 14px 4px}
+    details.enx>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;
+      gap:10px;padding:14px 2px;font-weight:800;font-size:13.5px;color:var(--text)}
+    details.enx>summary::-webkit-details-marker{display:none}
+    details.enx>summary i{font-style:normal;font-size:11px;color:var(--muted);font-weight:600;
+      border:1px solid var(--line);border-radius:99px;padding:2px 9px}
+    details.enx[open]>summary i{color:var(--accent2);border-color:var(--accent2)}
+    details.enx[open]>summary i::after{content:' ✓'}
+    details.enx>summary:hover{color:var(--accent2)}
+    details.enx>article.card{background:transparent;border:0;padding:0 0 8px}
     .fx-tabs .btn{flex:1 1 0;min-width:0;text-align:center;padding:10px 8px}
     .fx-tabs .fx-now{margin-left:0;flex:1 1 100%;font-size:11px;color:var(--muted);
       padding:4px 6px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -2371,7 +2382,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '73';
+  const APP_V = '74';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -3772,6 +3783,43 @@
         c[k] = (k === 'nome' || k === 'modelo') ? el.value : num(el.value);
         save(); pdPinta();
       });
+    });
+  })();
+
+
+  /* ================= ITEM 1b: menos informação na tela =================
+     Avaliação física empilha 8 cartões. Fotos, comparador de fotos e a comparação
+     entre avaliações são consulta ocasional: viram seções recolhidas, fechadas por
+     padrão. Tudo continua lá, a um toque. */
+  (function avEnxugar(){
+    const sec = document.querySelector('#aval');
+    if (!sec || sec.dataset.enx === '1') return;
+    sec.dataset.enx = '1';
+    const alvos = /foto|compar/i;
+    [...sec.querySelectorAll('article.card')].forEach(card => {
+      const h = card.querySelector('h2');
+      if (!h || !alvos.test(h.textContent)) return;
+      if (card.closest('details')) return;
+      const d = document.createElement('details');
+      d.className = 'enx';
+      const sum = document.createElement('summary');
+      sum.innerHTML = '<span>' + h.textContent.trim() + '</span><i>abrir</i>';
+      card.parentElement.insertBefore(d, card);
+      d.appendChild(sum);
+      d.appendChild(card);
+      card.style.marginTop = '12px';
+    });
+  })();
+
+  /* Evolução: os dois gráficos menores dividem um cartão. Deixamos o gráfico
+     principal como estrela e damos aos outros duas um teto de altura. */
+  (function evEnxugar(){
+    const sec = document.querySelector('#evolucao');
+    if (!sec || sec.dataset.enx === '1') return;
+    sec.dataset.enx = '1';
+    ['#evVolumeChart', '#evFreqChart'].forEach(q => {
+      const cv = sec.querySelector(q);
+      if (cv && cv.parentElement){ cv.parentElement.style.height = '190px'; }
     });
   })();
 
