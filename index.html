@@ -1134,7 +1134,20 @@
     .ex-free-hint{font-size:11.5px;color:var(--muted);margin:2px 0 8px}
     body.tr-on .toast,body.gr-on .toast{top:calc(10px + env(safe-area-inset-top));bottom:auto}
     @media (max-width:399px){ .gr-board{grid-template-columns:1fr;grid-auto-rows:auto} }
-</style>
+
+    /* ===== ITEM3: iniciar treino — ultima carga em destaque e campos grandes ===== */
+    .tr-target .tr-chip.hist{order:-2;flex:1 1 100%;justify-content:center;text-align:center;
+      font-size:14px;padding:11px 14px;border-radius:12px;
+      border:1px solid var(--accent2);background:rgba(216,169,61,.12);color:var(--text)}
+    .tr-target .tr-chip.hist b{display:block;font-size:26px;line-height:1.15;color:var(--accent2);
+      font-variant-numeric:tabular-nums;margin-top:2px}
+    .tr-target .tr-chip.up,.tr-target .tr-chip.keep,.tr-target .tr-chip.first{
+      order:-1;flex:1 1 100%;justify-content:center;text-align:center;font-size:13px;padding:9px 12px;border-radius:12px}
+    .tr-set .s-reps input,.tr-set .s-load input,.tr-set .s-rir input,.tr-set .s-blocks input{
+      font-size:20px !important;padding:11px 8px !important;font-weight:700}
+    .tr-set{padding:11px 12px !important}
+    .tr-exname{font-size:17px !important}
+  </style>
 </head>
 <body>
 
@@ -2382,7 +2395,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '74';
+  const APP_V = '75';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
