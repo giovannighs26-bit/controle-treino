@@ -1188,6 +1188,13 @@
     #mtFicha .exercise-row.mt-free{border-style:dashed;background:transparent}
     /* dias da ficha com mais separação */
     #mtFicha .mt-day{margin-bottom:22px}
+  
+    /* ===== ITEM6: arrastar para ordenar os exercícios da ficha ===== */
+    #mtFicha .exercise-row{cursor:grab}
+    #mtFicha .exercise-row.arrastando{opacity:.45;border-style:dashed;transform:scale(.995)}
+    #mtFicha .exercise-row.alvo{border-color:var(--accent2);box-shadow:0 0 0 2px rgba(216,169,61,.3)}
+    #mtFicha .mt-drag-hint{font-size:10.5px;color:var(--muted);display:flex;align-items:center;gap:6px;margin:2px 0 10px}
+    #mtFicha .mt-drag-hint b{color:var(--accent2)}
   </style>
 </head>
 <body>
@@ -2436,7 +2443,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '77';
+  const APP_V = '78';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -3744,6 +3751,10 @@
   (function fxInit(){
     $$('#fxTabs [data-fx-go]').forEach(b => b.addEventListener('click', () => {
       fxSet(b.dataset.fxGo);
+      /* a ficha precisa ser desenhada com a view já visível */
+      if (b.dataset.fxGo === 'editar'){ try { mtRender(); } catch (e){} }
+      if (b.dataset.fxGo === 'registrar'){ try { autoLoadToday(); } catch (e){} }
+      if (b.dataset.fxGo === 'periodo'){ try { if (typeof pdPinta === 'function') pdPinta(); } catch (e){} }
       const alvo = b.dataset.fxGo === 'editar' ? $('#mtEditorCard') : (b.dataset.fxGo === 'registrar' ? $('#sessionCard') : $('#fxList'));
       if (alvo) alvo.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }));
@@ -3875,6 +3886,57 @@
       const cv = sec.querySelector(q);
       if (cv && cv.parentElement){ cv.parentElement.style.height = '190px'; }
     });
+  })();
+
+
+  /* ===== arrastar para ordenar os exercicios da ficha =====
+     Delegação de eventos: funciona com qualquer linha, a qualquer momento, sem
+     depender de onde/como a ficha é desenhada. Arrasta pela área do cartão
+     (não pelos campos), então continua possível digitar normalmente. */
+  (function item6Arrastar(){
+    const box = document.getElementById('mtFicha');
+    if (!box || box.dataset.arrastar === '1') return;
+    box.dataset.arrastar = '1';
+    let alvo = null, iniciou = false, y0 = 0, x0 = 0;
+
+    const ehCampo = el => !!(el && el.closest && el.closest('input,select,textarea,button,a'));
+
+    box.addEventListener('pointerdown', e => {
+      if (e.button !== 0) return;
+      const row = e.target && e.target.closest ? e.target.closest('.exercise-row') : null;
+      if (!row || ehCampo(e.target)) return;
+      alvo = row; iniciou = false; y0 = e.clientY; x0 = e.clientX;
+    });
+
+    box.addEventListener('pointermove', e => {
+      if (!alvo) return;
+      if (!iniciou){
+        if (Math.abs(e.clientY - y0) < 6 && Math.abs(e.clientX - x0) < 6) return;
+        iniciou = true;
+        alvo.classList.add('arrastando');
+        try { alvo.setPointerCapture(e.pointerId); } catch (err){}
+      }
+      e.preventDefault();
+      const alvoEl = document.elementFromPoint(e.clientX, e.clientY);
+      const row = alvoEl && alvoEl.closest ? alvoEl.closest('.exercise-row') : null;
+      if (!row || row === alvo || row.parentElement !== alvo.parentElement) return;
+      box.querySelectorAll('.alvo').forEach(x => x.classList.remove('alvo'));
+      row.classList.add('alvo');
+      const r = row.getBoundingClientRect();
+      row.parentElement.insertBefore(alvo, (e.clientY - r.top) > r.height / 2 ? row.nextSibling : row);
+    });
+
+    const soltar = () => {
+      if (!alvo) return;
+      alvo.classList.remove('arrastando');
+      box.querySelectorAll('.alvo').forEach(x => x.classList.remove('alvo'));
+      const mudou = iniciou;
+      alvo = null; iniciou = false;
+      if (mudou){ try { mtSave(); } catch (e){} }
+    };
+    box.addEventListener('pointerup', soltar);
+    box.addEventListener('pointercancel', soltar);
+    box.addEventListener('pointerleave', () => { if (alvo && iniciou) soltar(); });
   })();
 
   function irRegistrar(){ showPage('treino'); notify('Use “Carregar treino” para registrar a sessão.'); }
