@@ -1008,9 +1008,6 @@
     .al-nav .al-now{margin-left:auto;font-size:11.5px;color:var(--muted);padding-right:8px;
       max-width:46%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     #alunos .card{scroll-margin-top:14px}
-    .al-sec-titulo{display:flex;align-items:center;gap:8px;margin:0 0 10px}
-    .al-sec-titulo i{font-style:normal;font-size:15px}
-    .al-sec-titulo small{font-size:11px;color:var(--muted);font-weight:600}
     /* ---- Carregar treino organizado ---- */
     .tr-passo{display:flex;align-items:center;gap:10px;margin:2px 0 10px}
     .tr-passo i{font-style:normal;width:24px;height:24px;border-radius:8px;display:grid;place-items:center;
@@ -2374,7 +2371,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '72';
+  const APP_V = '73';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -7693,63 +7690,6 @@ ${corpo}
   }
 
   /* ---------- PDF: relatório de avaliação física ---------- */
-  async function printAvaliacao(){
-    const a = avResultsSource();
-    if (!a) return notify('Selecione uma avaliação.', true);
-    const s = state.students.find(x => x.id === a.studentId);
-    const c = avComposition(a), bmi = avBmi(a), sum = avFoldSum(a);
-    const lin = (k, v) => `<div><span>${esc(k)}</span><b>${v}</b></div>`;
-    const medidas = AV_MEASURES.map(([k, label]) => {
-      const v = avNum((a.measures || {})[k]);
-      return v === null ? '' : `<tr><td>${esc(label)}</td><td class="n">${avFmt(v)} cm</td></tr>`;
-    }).join('');
-    const dobras = AV_FOLDS.map(([k, label]) => {
-      const v = avNum((a.folds || {})[k]);
-      return v === null ? '' : `<tr><td>${esc(label)}</td><td class="n">${avFmt(v)} mm</td></tr>`;
-    }).join('');
-    let fotos = '';
-    try {
-      const refs = [];
-      AV_ANGLES.forEach(([k, label]) => (((a.photos || {})[k]) || []).forEach(r => refs.push({ r, label })));
-      if (refs.length){
-        let figs = '';
-        for (const item of refs.slice(0, 6)){
-          const blob = await avPhotoGet(item.r.id);
-          if (!blob) continue;
-          const d = await avBlobToDataURL(blob);
-          if (d) figs += `<figure><img src="${d}" alt=""><figcaption>${esc(item.label)}</figcaption></figure>`;
-        }
-        if (figs) fotos = `<h2>Registro fotográfico</h2><div class="fotos">${figs}</div>`;
-      }
-    } catch (e){}
-    const corpo = `
-      <div class="meta">
-        ${lin('Aluno', esc(s ? s.name : '—'))}
-        ${lin('Data da avaliação', dateFmt(a.date))}
-        ${lin('Idade', avAgeAt(a) === null ? '—' : avAgeAt(a) + ' anos')}
-        ${lin('Sexo', esc(a.sex || '—'))}
-        ${lin('Altura', a.height ? avFmt(a.height, 0) + ' cm' : '—')}
-        ${lin('Peso', a.weight ? avFmt(a.weight) + ' kg' : '—')}
-        ${lin('Examinador', esc(a.examiner || ghOwner()))}
-        ${a.nextDate ? lin('Próxima avaliação', dateFmt(a.nextDate)) : ''}
-      </div>
-      <h2>Resultados</h2>
-      <table><tbody>
-        <tr><td>IMC</td><td class="n">${bmi === null ? '—' : avFmt(bmi)} ${esc(avBmiClass(bmi))}</td></tr>
-        <tr><td>% de gordura</td><td class="n">${c.bf === null ? '—' : avFmt(c.bf) + ' %'}${c.src ? ' (' + esc(c.src) + ')' : ''}</td></tr>
-        <tr><td>Massa gorda</td><td class="n">${c.fatMass === null ? '—' : avFmt(c.fatMass) + ' kg'}</td></tr>
-        <tr><td>Massa magra</td><td class="n">${c.leanMass === null ? '—' : avFmt(c.leanMass) + ' kg'}</td></tr>
-        <tr><td>Soma das 7 dobras</td><td class="n">${sum === null ? '—' : avFmt(sum, 0) + ' mm'}</td></tr>
-        ${c.jp ? `<tr><td>Densidade corporal</td><td class="n">${avFmt(c.jp.density, 5)}</td></tr>` : ''}
-      </tbody></table>
-      ${medidas ? `<h2>Perimetria</h2><table><tbody>${medidas}</tbody></table>` : ''}
-      ${dobras ? `<h2>Dobras cutâneas</h2><table><tbody>${dobras}</tbody></table>` : ''}
-      ${a.notes ? `<h2>Observações</h2><p>${esc(a.notes)}</p>` : ''}
-      ${fotos}
-      <p style="font-size:10.5px;color:#777;margin-top:14px">% de gordura por Jackson &amp; Pollock (7 dobras) e equação de Siri, quando todas as dobras estão preenchidas.</p>`;
-    printDoc(`Avaliação física — ${s ? s.name : ''} ${dateFmt(a.date)}`, corpo);
-  }
-
   /* ================= PDF REAL — download no dispositivo =================
      Gera um arquivo .pdf de verdade (sem depender da janela de impressão,
      que sai em branco em vários celulares). Escrito à mão em PDF 1.4:
