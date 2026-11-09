@@ -1196,6 +1196,19 @@
     #mtFicha .exercise-row.alvo{border-color:var(--accent2);box-shadow:0 0 0 2px rgba(216,169,61,.3)}
     #mtFicha .mt-drag-hint{font-size:10.5px;color:var(--muted);display:flex;align-items:center;gap:6px;margin:2px 0 10px}
     #mtFicha .mt-drag-hint b{color:var(--accent2)}
+  
+    /* ===== ITEM7: mover exercício para cima/baixo ===== */
+    #mtFicha .exercise-row{position:relative;user-select:none}
+    #mtFicha .exercise-row input,#mtFicha .exercise-row select,
+    #mtFicha .exercise-row textarea{user-select:text}
+    #mtFicha .mt-mv{grid-column:1/-1;display:flex;align-items:center;gap:8px;
+      margin-top:4px;padding-top:8px;border-top:1px dashed var(--line)}
+    #mtFicha .mt-mv span{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+    #mtFicha .mt-mv button{width:30px;height:26px;border-radius:8px;border:1px solid var(--line);
+      background:var(--panel);color:var(--text);cursor:pointer;font-size:13px;line-height:1;padding:0}
+    #mtFicha .mt-mv button:hover{border-color:var(--accent2);color:var(--accent2)}
+    #mtFicha .mt-mv button:disabled{opacity:.3;cursor:not-allowed}
+    #mtFicha .mt-mv em{font-style:normal;font-size:10.5px;color:var(--muted);margin-left:auto}
   </style>
 </head>
 <body>
@@ -2444,7 +2457,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '79';
+  const APP_V = '80';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -3753,7 +3766,7 @@
     $$('#fxTabs [data-fx-go]').forEach(b => b.addEventListener('click', () => {
       fxSet(b.dataset.fxGo);
       /* a ficha precisa ser desenhada com a view já visível */
-      if (b.dataset.fxGo === 'editar'){ try { mtRender(); } catch (e){} }
+      if (b.dataset.fxGo === 'editar'){ try { mtRender(); mtBotoesOrdem(); } catch (e){} }
       if (b.dataset.fxGo === 'registrar'){ try { autoLoadToday(); } catch (e){} }
       if (b.dataset.fxGo === 'periodo'){ try { if (typeof pdPinta === 'function') pdPinta(); } catch (e){} }
       const alvo = b.dataset.fxGo === 'editar' ? $('#mtEditorCard') : (b.dataset.fxGo === 'registrar' ? $('#sessionCard') : $('#fxList'));
@@ -3891,6 +3904,54 @@
 
 
 
+
+
+  /* ===== mover exercício para cima/baixo (ordem de execução) ===== */
+  function mtBotoesOrdem(){
+    const box = document.getElementById('mtFicha');
+    if (!box) return;
+    box.querySelectorAll('.mt-row').forEach(row => {
+      if (row.classList.contains('mt-free') || row.querySelector('.mt-mv')) return;
+      const wrap = document.createElement('div');
+      wrap.className = 'mt-mv';
+      wrap.innerHTML = '<span>ordem</span>'
+        + '<button type="button" data-mv="up" title="Mover para cima">↑</button>'
+        + '<button type="button" data-mv="down" title="Mover para baixo">↓</button>'
+        + '<em>posição no treino do dia</em>';
+      row.appendChild(wrap);
+    });
+    mtOrdemEstados();
+  }
+  /* desabilita ↑ no primeiro e ↓ no último */
+  function mtOrdemEstados(){
+    const box = document.getElementById('mtFicha');
+    if (!box) return;
+    box.querySelectorAll('.mt-day').forEach(day => {
+      const rows = [...day.querySelectorAll('.mt-row')].filter(r => !r.classList.contains('mt-free'));
+      rows.forEach((r, i) => {
+        const up = r.querySelector('[data-mv="up"]'), dn = r.querySelector('[data-mv="down"]');
+        if (up) up.disabled = (i === 0);
+        if (dn) dn.disabled = (i === rows.length - 1);
+      });
+    });
+  }
+  document.addEventListener('click', ev => {
+    const b = ev.target && ev.target.closest ? ev.target.closest('#mtFicha [data-mv]') : null;
+    if (!b) return;
+    ev.preventDefault();
+    const row = b.closest('.mt-row');
+    if (!row) return;
+    const dir = b.dataset.mv;
+    const pai = row.parentElement;
+    const irmaos = [...pai.querySelectorAll('.mt-row')].filter(r => !r.classList.contains('mt-free'));
+    const i = irmaos.indexOf(row);
+    if (i < 0) return;
+    if (dir === 'up' && i > 0) pai.insertBefore(row, irmaos[i - 1]);
+    else if (dir === 'down' && i < irmaos.length - 1) pai.insertBefore(irmaos[i + 1], row);
+    else return;
+    try { mtSave(); } catch (e){}
+    mtOrdemEstados();
+  });
 
   function irRegistrar(){ showPage('treino'); notify('Use “Carregar treino” para registrar a sessão.'); }
   function irEditarFicha(){ showPage('data'); notify('Fichas vêm da base: use “Aplicar base de fichas” em Dados e backup.'); }
