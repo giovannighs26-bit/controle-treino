@@ -1147,6 +1147,30 @@
       font-size:20px !important;padding:11px 8px !important;font-weight:700}
     .tr-set{padding:11px 12px !important}
     .tr-exname{font-size:17px !important}
+  
+    /* ===== ITEM4: polimento visual — tipografia, respiro e bordas ===== */
+    :root{--pad:18px;--rd:18px}
+    .grid{gap:16px}
+    .card{padding:18px;border-radius:var(--rd)}
+    .card h2{font-size:18px;letter-spacing:-.01em;margin:0 0 6px;font-weight:800}
+    .card h3{font-size:14px;letter-spacing:-.005em;margin:18px 0 10px}
+    .hint{line-height:1.55}
+    /* rótulos: menos ruído, mais legível */
+    label,.field label{font-size:11px;letter-spacing:.03em;font-weight:600}
+    /* campos com altura e raio consistentes */
+    input,select,textarea{border-radius:11px}
+    .btn{border-radius:11px;font-weight:700;letter-spacing:.01em}
+    .btn.small{border-radius:9px}
+    /* tabelas: cabeçalho mais discreto e linhas mais leves */
+    table th{font-weight:700;letter-spacing:.05em}
+    table td{padding:10px 10px}
+    /* cartões aninhados não repetem a borda */
+    .card .card{border-color:transparent;background:transparent;padding:0}
+    /* barras de navegação internas respiram igual */
+    .fx-tabs,.al-nav,.tr-prefs{gap:8px}
+    /* cabeçalho de seção: título e ação alinhados */
+    .card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;flex-wrap:wrap}
+    .card-head h2{margin:0}
   </style>
 </head>
 <body>
@@ -2395,7 +2419,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '75';
+  const APP_V = '76';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
