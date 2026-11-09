@@ -1171,6 +1171,23 @@
     /* cabeçalho de seção: título e ação alinhados */
     .card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;flex-wrap:wrap}
     .card-head h2{margin:0}
+  
+    /* ===== ITEM5: cada exercício da ficha é um cartão, editável um por um ===== */
+    #mtFicha .exercise-row{
+      display:grid;grid-template-columns:2fr .95fr .6fr .8fr .75fr .7fr 1.5fr auto;
+      gap:12px;align-items:end;background:var(--panel2);border:1px solid var(--line);
+      border-radius:16px;padding:14px 16px;margin:12px 0;border-bottom:1px solid var(--line)}
+    #mtFicha .exercise-row:hover{border-color:#3a4a40}
+    #mtFicha .exercise-row.alvo{border-color:var(--accent2);box-shadow:0 0 0 2px rgba(216,169,61,.25)}
+    /* o nome do exercício ganha peso de título dentro do cartão */
+    #mtFicha .exercise-row .mt-name{font-size:15px;font-weight:700}
+    /* campos um pouco maiores, para editar com conforto */
+    #mtFicha .exercise-row input,#mtFicha .exercise-row select{padding:10px 10px;font-size:14px}
+    #mtFicha .exercise-row label{font-size:10px;letter-spacing:.05em}
+    /* o cartão livre (item de orientação) fica mais discreto */
+    #mtFicha .exercise-row.mt-free{border-style:dashed;background:transparent}
+    /* dias da ficha com mais separação */
+    #mtFicha .mt-day{margin-bottom:22px}
   </style>
 </head>
 <body>
@@ -2419,7 +2436,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '76';
+  const APP_V = '77';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
