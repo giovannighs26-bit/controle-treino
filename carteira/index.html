@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#080d0a">
 <title>Minha Carteira — Controle Financeiro</title>
 <link rel="manifest" href="./manifest.webmanifest">
-<meta name="description" content="Minha Carteira — controle financeiro pessoal: entradas e saídas, reserva, dívidas, metas e dicas.">
+<meta name="description" content="Minha Carteira — controle financeiro pessoal.">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -644,8 +644,9 @@ function viewDashboard() {
   var mp = mesPassado(m), sp = saldoMes(mp);
   var dif = sp !== 0 ? ((s - sp) / Math.abs(sp)) * 100 : 0;
   /* só compara quando o mês anterior tem dados suficientes (senão dá 3800%) */
-  var temBase = txMes(mp).length >= 3 && (receitas(mp) + despesas(mp)) > 0;
-  var difTxt = !temBase ? "primeiro mês com dados"
+  /* compara só quando o mês anterior tem base parecida (evita "3800% vs out/26") */
+  var temBase = txMes(mp).length >= 5 && Math.abs(sp) >= Math.abs(s) * 0.2;
+  var difTxt = !temBase ? "sem base de comparação ainda"
     : (s === sp ? "igual a " + mesCurto(mp)
       : (dif >= 0 ? "▲ " : "▼ ") + pct(Math.abs(dif)) + " vs " + mesCurto(mp));
   var sc = saude(m), f = faixaScore(sc.total);
