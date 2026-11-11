@@ -2457,7 +2457,7 @@
   /* Versao do app: usada no parametro ?v= dos links compartilhados.
      BUMPAR JUNTO COM O sw.js (gh-performance-vN). O ?v= muda a URL e fura o
      cache do service worker, senao quem ja tem o app instalado abre o HTML velho. */
-  const APP_V = '80';
+  const APP_V = '81';
   const today = () => new Date().toLocaleDateString('en-CA');
   /* Saudacao conforme a hora do APARELHO (fuso do dispositivo).
      05h-11h59 = bom dia · 12h-17h59 = boa tarde · 18h-04h59 = boa noite */
@@ -3952,6 +3952,85 @@
     try { mtSave(); } catch (e){}
     mtOrdemEstados();
   });
+
+
+  /* ===== ITEM8: relatorio de evolucao em PDF ===== */
+  function evRelatorio(){
+    const s = active();
+    if (!s) return notify('Selecione um aluno para gerar o relatorio.', true);
+    const img = id => { const c = document.getElementById(id); return c ? c.toDataURL('image/png') : ''; };
+    const carga = img('evCargaChart'), vol = img('evVolumeChart'), freq = img('evFreqChart');
+    const kpis = document.getElementById('evKpis');
+    const tabela = document.getElementById('evPrTable');
+    const per = document.getElementById('evPeriodo');
+    const periodo = per && per.selectedIndex >= 0 ? per.options[per.selectedIndex].textContent : '';
+    const hoje = new Date().toLocaleDateString('pt-BR');
+    const kpiHTML = kpis ? kpis.innerHTML : '';
+    const tabHTML = tabela ? tabela.innerHTML : '';
+    const treinos = (state.sessions || []).filter(x => x.studentId === s.id).length;
+
+    const css = '@page{size:A4;margin:14mm 12mm}'
+      + '*{box-sizing:border-box}'
+      + 'body{font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#14201a;margin:0;font-size:12px}'
+      + '.hd{display:flex;align-items:center;justify-content:space-between;gap:16px;'
+      + 'border-bottom:3px solid #d8a93d;padding-bottom:10px;margin-bottom:16px}'
+      + '.hd h1{margin:0;font-size:19px;letter-spacing:-.01em}'
+      + '.hd .sub{font-size:10.5px;color:#63736a;text-transform:uppercase;letter-spacing:.12em;font-weight:700}'
+      + '.hd .r{text-align:right;font-size:10.5px;color:#63736a;line-height:1.5}'
+      + '.nome{font-size:15px;font-weight:800;margin:2px 0 0}'
+      + '.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px}'
+      + '.kpis .ev-kpi{border:1px solid #dfe7e2;border-radius:10px;padding:8px 10px;background:#fbfdfc}'
+      + '.kpis .ev-kpi span{display:block;font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;color:#63736a;font-weight:700}'
+      + '.kpis .ev-kpi b{display:block;font-size:15px;margin-top:2px}'
+      + '.kpis .ev-kpi small{display:block;font-size:8.5px;color:#8a9a92}'
+      + '.kpis .ev-kpi i{font-style:normal;font-size:9px;font-weight:800;margin-left:5px}'
+      + 'h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#63736a;'
+      + 'margin:16px 0 8px;border-left:3px solid #d8a93d;padding-left:8px}'
+      + '.grafico{border:1px solid #dfe7e2;border-radius:10px;padding:8px;margin-bottom:10px;text-align:center}'
+      + '.grafico img{width:100%;max-height:170px;object-fit:contain}'
+      + '.duas{display:grid;grid-template-columns:1fr 1fr;gap:10px}'
+      + 'table{width:100%;border-collapse:collapse;font-size:10.5px}'
+      + 'th{background:#f4f7f5;text-align:left;padding:6px 8px;border-bottom:1px solid #dfe7e2;'
+      + 'font-size:8.5px;text-transform:uppercase;letter-spacing:.05em;color:#63736a}'
+      + 'td{padding:6px 8px;border-bottom:1px solid #eef2ef}'
+      + '.ft{margin-top:18px;padding-top:8px;border-top:1px solid #dfe7e2;'
+      + 'font-size:9px;color:#8a9a92;display:flex;justify-content:space-between}';
+
+    const html = '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">'
+      + '<title>GH Performance - Evolucao - ' + esc(s.name) + '</title>'
+      + '<style>' + css + '</style></head><body>'
+      + '<div class="hd"><div><div class="sub">GH Performance</div>'
+      + '<h1>Relatorio de evolucao</h1><div class="nome">' + esc(s.name) + '</div></div>'
+      + '<div class="r">Periodo: ' + esc(periodo) + '<br>Emitido em ' + hoje + '<br>'
+      + treinos + ' treino(s) no historico</div></div>'
+      + '<h2>Indicadores</h2><div class="kpis">' + kpiHTML + '</div>'
+      + '<h2>Evolucao de carga</h2><div class="grafico"><img src="' + carga + '"></div>'
+      + '<h2>Volume e frequencia</h2><div class="duas">'
+      + '<div class="grafico"><img src="' + vol + '"></div>'
+      + '<div class="grafico"><img src="' + freq + '"></div></div>'
+      + '<h2>Recordes por exercicio</h2><table>' + tabHTML + '</table>'
+      + '<div class="ft"><span>GH Performance - Treine com proposito. Evolua com metodo.</span>'
+      + '<span>Relatorio gerado pelo app</span></div>'
+      + '</body></html>';
+
+    const w = window.open('', '_blank');
+    if (!w) return notify('Libere pop-ups para gerar o PDF.', true);
+    try { w.document.open(); w.document.write(html); w.document.close(); } catch (e){}
+    setTimeout(() => { try { w.focus(); w.print(); } catch (e){} }, 500);
+    notify('Relatorio pronto - escolha "Salvar como PDF".');
+  }
+  (function evBotaoPdf(){
+    const sec = document.querySelector('#evolucao');
+    if (!sec || sec.dataset.pdf === '1') return;
+    const per = sec.querySelector('#evPeriodo');
+    if (!per) return;
+    sec.dataset.pdf = '1';
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'btn'; b.id = 'evPdfBtn';
+    b.textContent = 'Relatorio em PDF';
+    b.addEventListener('click', evRelatorio);
+    per.parentElement.insertBefore(b, per.nextSibling);
+  })();
 
   function irRegistrar(){ showPage('treino'); notify('Use “Carregar treino” para registrar a sessão.'); }
   function irEditarFicha(){ showPage('data'); notify('Fichas vêm da base: use “Aplicar base de fichas” em Dados e backup.'); }
