@@ -384,11 +384,23 @@
       <p class="hint" style="margin:10px 0 0">Troca de celular ou reinstalação: exporte aqui e importe no aparelho novo.</p>
     </div>
 
+    <h2>Novo ciclo / reset</h2>
+    <div class="card">
+      <p class="hint" style="margin:0 0 12px">
+        Use quando for começar um desafio do zero. O reset do grupo é feito uma vez e vale
+        para os três celulares, porque apaga os registros no banco compartilhado.
+      </p>
+      <button class="btn ghost block" id="btnResetLocal" style="margin-bottom:8px">Novo ciclo só neste aparelho</button>
+      <button class="btn block" id="btnResetGrupo" style="color:var(--err);border:1px solid rgba(239,94,94,.4);background:transparent">
+        Apagar registros de todos (grupo)
+      </button>
+    </div>
+
     <h2>Dados e versão</h2>
     <div class="card">
       <button class="btn ghost block" id="btnLimpar" style="color:var(--err)">Apagar dados deste aparelho</button>
       <p class="hint" style="margin-top:12px">
-        GH Desafio · v4.0 · build 8 · funciona offline. Os check-ins ficam neste aparelho até o envio concluir;
+        GH Desafio · v4.1 · build 9 · funciona offline. Os check-ins ficam neste aparelho até o envio concluir;
         apagar remove o histórico local, o que já foi para a planilha permanece lá.
       </p>
     </div>
@@ -1141,6 +1153,49 @@ $("#btnRosterLocal").onclick = () => {
 
 $("#btnSync").onclick = () => sincronizar(false);
 
+function novoInicio() {
+  S.cfg.inicio = iso(new Date());
+  LS.set("cfg", S.cfg);
+}
+
+$("#btnResetLocal").onclick = () => {
+  if (!confirm("Começar um ciclo novo neste aparelho?\n\nApaga os check-ins guardados aqui e zera a contagem. Os nomes e o endereço do banco continuam.")) return;
+  S.regs = [];
+  LS.set("regs", S.regs);
+  novoInicio();
+  S.lastOk = 0;
+  toast("Ciclo novo neste aparelho");
+  renderCfg(); renderProgresso(); renderLista(); renderGrupo();
+  if (temSala()) sincronizar(true);
+};
+
+$("#btnResetGrupo").onclick = async () => {
+  if (!temSala()) { toast("Configure o endereço do banco primeiro", true); return; }
+  const ok = prompt(
+    "Isto APAGA os registros dos três no banco compartilhado e começa um ciclo novo hoje.\n\n" +
+    "Não tem como desfazer.\n\nDigite APAGAR para confirmar:"
+  );
+  if (!ok || ok.trim().toUpperCase() !== "APAGAR") { toast("Cancelado"); return; }
+
+  try {
+    await pedir(salaUrl() + "/regs.json", { method: "DELETE" });
+    await pedir(salaUrl() + "/meta.json", {
+      method: "PUT", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ inicio: iso(new Date()), em: new Date().toISOString() })
+    });
+    S.regs = []; LS.set("regs", S.regs);
+    S.remoto = {}; LS.set("remoto", {});
+    novoInicio();
+    S.lastOk = 0;
+    toast("Grupo zerado. Ciclo novo a partir de hoje.");
+    renderCfg(); renderProgresso(); renderLista(); renderGrupo();
+    sincronizar(true);
+  } catch (e) {
+    guardarDiag("reset", e);
+    toast(e && e.tipo ? mensagemDe(e) : "Não consegui apagar no banco", true);
+  }
+};
+
 $("#btnLimpar").onclick = () => {
   if (!confirm("Apagar todos os check-ins deste aparelho? O que já foi enviado continua no banco.")) return;
   S.regs = []; LS.set("regs", S.regs);
@@ -1264,6 +1319,11 @@ async function sincronizar(silencioso) {
   try {
     const d = lerJson(await pedir(salaUrl() + "/regs.json"));
     if (d && typeof d === "object") { S.remoto = d; LS.set("remoto", d); }
+    const meta = lerJson(await pedir(salaUrl() + "/meta.json"));
+    if (meta && meta.inicio && meta.inicio !== S.cfg.inicio) {
+      S.cfg.inicio = meta.inicio;
+      LS.set("cfg", S.cfg);
+    }
   } catch (e) {
     if (e && e.tipo) guardarDiag("leitura", e);
     erro = mensagemDe(e);
@@ -1287,6 +1347,18 @@ async function sincronizar(silencioso) {
       erro = mensagemDe(e);
       break;
     }
+  }
+
+  if (ok || !erro) {
+    try {
+      const meta = lerJson(await pedir(salaUrl() + "/meta.json"));
+      if (!meta || !meta.inicio) {
+        await pedir(salaUrl() + "/meta.json", {
+          method: "PUT", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ inicio: S.cfg.inicio || iso(new Date()) })
+        });
+      }
+    } catch (e) {}
   }
 
   if (ok) {
