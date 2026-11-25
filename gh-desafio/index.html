@@ -296,12 +296,17 @@
     <p class="hint" id="histVazio" hidden>Nenhum check-in salvo neste aparelho ainda.</p>
   </section>
 
-  <!-- ================= RANKING ================= -->
-  <section id="v-rank" hidden>
+  <!-- ================= GRUPO ================= -->
+  <section id="v-grupo" hidden>
     <div class="row between" style="margin-bottom:12px">
-      <h2 style="margin:0">Ranking do grupo</h2>
-      <button class="btn ghost" id="btnRank" style="padding:8px 12px;font-size:12px">Atualizar</button>
+      <h2 style="margin:0">Grupo</h2>
+      <button class="btn ghost" id="btnGrupo" style="padding:8px 12px;font-size:12px">Atualizar</button>
     </div>
+
+    <h2>Hoje</h2>
+    <div class="hist" id="hojeLista"></div>
+
+    <h2 style="margin-top:20px">Ranking</h2>
     <div class="card tight" id="minhaPos" hidden>
       <div class="row between">
         <span class="muted">Sua posição</span>
@@ -309,10 +314,13 @@
       </div>
     </div>
     <div class="hist" id="rankLista"></div>
-    <p class="hint" id="rankVazio" hidden>
-      Ranking indisponível. Ele é calculado na planilha — conecte o app em <b>Ajustes</b> e toque em Atualizar.
+
+    <h2 style="margin-top:20px">Registros dos últimos 14 dias</h2>
+    <div class="hist" id="feedLista"></div>
+    <p class="hint" id="grupoVazio" hidden>
+      Sem dados do grupo. Conecte o app em <b>Ajustes</b> e toque em Atualizar.
     </p>
-    <p class="hint" id="rankData" style="margin-top:12px"></p>
+    <p class="hint" id="grupoData" style="margin-top:12px"></p>
   </section>
 
   <!-- ================= AJUSTES ================= -->
@@ -365,7 +373,7 @@
     <div class="card">
       <button class="btn ghost block" id="btnLimpar" style="color:var(--err)">Apagar dados deste aparelho</button>
       <p class="hint" style="margin-top:12px">
-        GH Desafio · v3.1 · build 4 · funciona offline. Os check-ins ficam neste aparelho até o envio concluir;
+        GH Desafio · v3.2 · build 5 · funciona offline. Os check-ins ficam neste aparelho até o envio concluir;
         apagar remove o histórico local, o que já foi para a planilha permanece lá.
       </p>
     </div>
@@ -385,9 +393,9 @@
     <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>
     Progresso
   </button>
-  <button data-view="v-rank">
-    <svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4"/><path d="M17 4h3v3a4 4 0 0 1-4 4h-1"/><path d="M7 4H4v3a4 4 0 0 0 4 4h1"/><path d="M7 4h10v5a5 5 0 0 1-10 0z"/></svg>
-    Ranking
+  <button data-view="v-grupo">
+    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Grupo
   </button>
   <button data-view="v-cfg">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M4 12a8 8 0 0 1 .2-1.8l2 .4a6 6 0 0 0 0 2.8l-2 .4A8 8 0 0 1 4 12z"/><path d="M12 4a8 8 0 0 1 1.8.2l-.4 2a6 6 0 0 0-2.8 0l-.4-2A8 8 0 0 1 12 4z"/><path d="M20 12a8 8 0 0 1-.2 1.8l-2-.4a6 6 0 0 0 0-2.8l2-.4A8 8 0 0 1 20 12z"/><path d="M12 20a8 8 0 0 1-1.8-.2l.4-2a6 6 0 0 0 2.8 0l.4 2A8 8 0 0 1 12 20z"/></svg>
@@ -438,6 +446,7 @@ const S = {
   regs: LS.get("regs", []),
   roster: LS.get("roster", []),
   ranking: LS.get("ranking", null),
+  grupo: LS.get("grupo", null),
   lastOk: LS.get("lastok", 0)
 };
 if (!S.cfg.pontos) S.cfg.pontos = Object.assign({}, PADRAO.pontos);
@@ -500,7 +509,7 @@ function ir(view) {
   if (view === "v-aluno") renderLista();
   if (view === "v-checkin") renderCheckin();
   if (view === "v-prog") renderProgresso();
-  if (view === "v-rank") renderRanking();
+  if (view === "v-grupo") { renderGrupo(); carregarGrupo(true); }
   if (view === "v-cfg") renderCfg();
   window.scrollTo({ top: 0 });
 }
@@ -833,55 +842,95 @@ function sequenciaMax(meus) {
   return max;
 }
 
-/* ---------------- ranking ---------------- */
-function renderRanking() {
-  const box = $("#rankLista");
-  box.innerHTML = "";
-  const r = S.ranking;
-  const vazio = !r || !r.lista || !r.lista.length;
-  $("#rankVazio").hidden = !vazio;
+/* ---------------- grupo (feed compartilhado) ---------------- */
+function renderGrupo() {
+  const g = S.grupo;
+  const hojeBox = $("#hojeLista");
+  const rankBox = $("#rankLista");
+  const feedBox = $("#feedLista");
+  hojeBox.innerHTML = ""; rankBox.innerHTML = ""; feedBox.innerHTML = "";
+
+  const vazio = !g || (!g.registros.length && !g.hoje.length);
+  $("#grupoVazio").hidden = !vazio;
   $("#minhaPos").hidden = vazio || !S.aluno;
+  if (vazio) return;
 
-  if (!vazio) {
-    r.lista.slice(0, 10).forEach((x, i) => {
-      const el = document.createElement("div");
-      el.className = "rankItem" + (so(x.nome) === so(S.aluno) ? " me" : "");
-      el.innerHTML = `<span class="pos">${x.pos || (i + 1)}</span>
-        <span class="nm">${x.nome}</span>
-        <span class="pt">${x.pontos}<small> pts</small></span>`;
-      box.appendChild(el);
-    });
+  (g.hoje || []).forEach((h) => {
+    const el = document.createElement("div");
+    el.className = "rankItem" + (so(h.nome) === so(S.aluno) ? " me" : "");
+    el.innerHTML = `<span class="pos">${h.fez ? "✓" : "·"}</span>
+      <span class="nm">${h.nome}</span>
+      <span class="pt">${h.fez ? h.pontos + "<small> pts</small>" : '<small>aguardando</small>'}</span>`;
+    hojeBox.appendChild(el);
+  });
 
-    const eu = r.lista.find((x) => so(x.nome) === so(S.aluno));
-    if (eu) $("#minhaPosTxt").textContent = (eu.pos || "?") + "º de " + r.lista.length + " · " + eu.pontos + " pts";
+  (g.ranking || []).slice(0, 10).forEach((x, i) => {
+    const el = document.createElement("div");
+    el.className = "rankItem" + (so(x.nome) === so(S.aluno) ? " me" : "");
+    el.innerHTML = `<span class="pos">${x.pos || (i + 1)}</span>
+      <span class="nm">${x.nome}</span>
+      <span class="pt">${x.pontos}<small> pts</small></span>`;
+    rankBox.appendChild(el);
+  });
 
-    const quando = r.em ? new Date(r.em) : null;
-    $("#rankData").textContent = quando
-      ? "Atualizado " + quando.toLocaleDateString("pt-BR") + " às " +
-        quando.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
-      : "";
-  }
+  const eu = (g.ranking || []).find((x) => so(x.nome) === so(S.aluno));
+  if (eu) $("#minhaPosTxt").textContent = (eu.pos || "?") + "º de " + g.ranking.length + " · " + eu.pontos + " pts";
+
+  (g.registros || []).forEach((r) => {
+    const d = new Date(r.ts);
+    const hoje = iso(d) === iso(new Date());
+    const ontem = iso(d) === iso(new Date(Date.now() - 86400000));
+    const quando = hoje ? "hoje" : ontem ? "ontem" : String(d.getDate()).padStart(2, "0") + "/" + String(d.getMonth() + 1).padStart(2, "0");
+
+    const peso = Number(r.peso) > 1 ? nf(r.peso, 1) + " kg" : (Number(r.peso) === 1 ? "peso ok" : "—");
+    const el = document.createElement("div");
+    el.className = "rankItem" + (so(r.nome) === so(S.aluno) ? " me" : "");
+    el.style.flexDirection = "column";
+    el.style.alignItems = "stretch";
+    el.style.gap = "6px";
+    el.innerHTML =
+      `<div class="row" style="gap:8px">
+         <span class="nm" style="flex:1">${r.nome}</span>
+         <span class="muted" style="font-size:11px">${quando}</span>
+         <span class="pt">${r.pontos}<small> pts</small></span>
+       </div>
+       <div class="muted" style="font-size:12px">
+         ${(r.cardio || 0)} min cardio · ${nf(r.agua, 1)} L água · ${peso}
+       </div>` +
+      (r.foto ? `<img src="${r.foto}" alt="" style="width:100%;max-height:150px;object-fit:cover;border-radius:10px;margin-top:4px">` : "");
+    feedBox.appendChild(el);
+  });
+
+  const quando = g.em ? new Date(g.em) : null;
+  $("#grupoData").textContent = quando
+    ? "Atualizado " + quando.toLocaleDateString("pt-BR") + " às " +
+      quando.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+    : "";
 }
 
-async function carregarRanking(silencioso) {
+async function carregarGrupo(silencioso) {
   if (!S.cfg.endpoint || !S.cfg.token) { if (!silencioso) toast("Conecte o app em Ajustes", true); return; }
   try {
     const url = S.cfg.endpoint + (S.cfg.endpoint.includes("?") ? "&" : "?") +
-      "acao=ranking&token=" + encodeURIComponent(S.cfg.token);
+      "acao=feed&dias=14&token=" + encodeURIComponent(S.cfg.token);
     const resp = await fetch(url, { cache: "no-store" });
     const data = await resp.json();
     if (!data || !data.ok) throw new Error((data && data.erro) || "falha");
-    S.ranking = { lista: data.ranking || [], em: new Date().toISOString() };
+
+    S.grupo = { registros: data.dados.registros || [], hoje: data.dados.hoje || [],
+                ranking: data.ranking || [], em: new Date().toISOString() };
+    S.ranking = { lista: data.ranking || [], em: S.grupo.em };
+    LS.set("grupo", S.grupo);
     LS.set("ranking", S.ranking);
     aplicarConfig(data.config);
-    renderRanking();
-    if (!silencioso) toast("Ranking atualizado");
+    renderGrupo();
+    if (!silencioso) toast("Grupo atualizado");
   } catch (e) {
-    if (!silencioso) toast("Não consegui atualizar o ranking", true);
+    if (!silencioso) toast("Não consegui atualizar o grupo", true);
   }
 }
 
-$("#btnRank").onclick = () => carregarRanking(false);
+$("#btnGrupo").onclick = () => carregarGrupo(false);
 
 /* ---------------- configuração ---------------- */
 function aplicarConfig(c) {
@@ -928,7 +977,7 @@ $("#btnSalvarCfg").onclick = async () => {
   $("#cfgStatus").textContent = ok
     ? "Conectado. Lista e regras atualizadas."
     : "Não consegui falar com a planilha. O app continua funcionando offline.";
-  if (ok) carregarRanking(true);
+  if (ok) carregarGrupo(true);
 };
 
 $("#btnLink").onclick = async () => {
@@ -1044,7 +1093,7 @@ async function sincronizar(silencioso) {
   LS.set("regs", S.regs);
   atualizarChip(); renderLista(); renderProgresso(); renderCfg();
 
-  if (ok) { toast(ok + " check-in" + (ok > 1 ? "s" : "") + " enviado" + (ok > 1 ? "s" : "")); carregarRanking(true); }
+  if (ok) { toast(ok + " check-in" + (ok > 1 ? "s" : "") + " enviado" + (ok > 1 ? "s" : "")); carregarGrupo(true); }
   else if (!silencioso) toast(erro || "Nada enviado", true);
 }
 
