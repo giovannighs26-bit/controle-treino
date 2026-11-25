@@ -275,7 +275,10 @@
   <section id="v-grupo" hidden>
     <div class="row between" style="margin-bottom:10px">
       <h2 style="margin:0">Grupo</h2>
-      <button class="btn ghost" id="btnGrupo" style="padding:8px 12px;font-size:12px">Atualizar</button>
+      <div class="row" style="gap:6px">
+        <button class="btn ghost" id="btnLimparGrupo" style="padding:8px 12px;font-size:12px;color:var(--err)">Limpar</button>
+        <button class="btn ghost" id="btnGrupo" style="padding:8px 12px;font-size:12px">Atualizar</button>
+      </div>
     </div>
 
     <div class="card tight" style="margin-bottom:14px">
@@ -284,6 +287,19 @@
         <span class="hint" id="gTxt" style="flex:1">—</span>
       </div>
       <button class="btn gold block" id="gCta" hidden style="margin-top:10px;padding:12px">Conectar agora</button>
+    </div>
+
+    <div class="card tight" id="limparBox" hidden style="border-color:rgba(239,94,94,.35)">
+      <div style="font-weight:800;margin-bottom:6px;color:var(--err)">Limpar dados</div>
+      <p class="hint" style="margin:0 0 12px">
+        O segundo e o terceiro item valem para os três celulares. Não tem como desfazer.
+      </p>
+      <button class="btn ghost block" id="btnLimparHoje" style="margin-bottom:8px">Apagar o check-in de hoje (dos três)</button>
+      <button class="btn ghost block" id="btnLimparLocalG" style="margin-bottom:8px">Novo ciclo só neste aparelho</button>
+      <button class="btn block" id="btnLimparGrupo2"
+              style="color:var(--err);border:1px solid rgba(239,94,94,.4);background:transparent">
+        Apagar todos os registros do grupo
+      </button>
     </div>
 
     <h2>Hoje</h2>
@@ -376,7 +392,7 @@
     <div class="card">
       <button class="btn ghost block" id="btnLimpar" style="color:var(--err)">Apagar dados deste aparelho</button>
       <p class="hint" style="margin-top:12px">
-        GH Desafio · v4.2 · build 10 · funciona offline. Os check-ins ficam neste aparelho até o envio concluir;
+        GH Desafio · v4.3 · build 11 · funciona offline. Os check-ins ficam neste aparelho até o envio concluir;
         apagar remove o histórico local, o que já foi para a planilha permanece lá.
       </p>
     </div>
@@ -1289,24 +1305,31 @@ function novoInicio() {
   LS.set("cfg", S.cfg);
 }
 
-$("#btnResetLocal").onclick = () => {
-  if (!confirm("Começar um ciclo novo neste aparelho?\n\nApaga os check-ins guardados aqui e zera a contagem. Os nomes e o endereço do banco continuam.")) return;
+function zerarAparelho() {
   S.regs = [];
   LS.set("regs", S.regs);
+  S.remoto = {};
+  LS.set("remoto", {});
   novoInicio();
   S.lastOk = 0;
-  toast("Ciclo novo neste aparelho");
   renderCfg(); renderProgresso(); renderLista(); renderGrupo();
-  if (temSala()) sincronizar(true);
-};
+}
 
-$("#btnResetGrupo").onclick = async () => {
-  if (!temSala()) { toast("Configure o endereço do banco primeiro", true); return; }
+function resetLocal(silencioso) {
+  if (!silencioso && !confirm("Começar um ciclo novo neste aparelho?\n\nApaga os check-ins guardados aqui e zera a contagem. Nomes e conexão continuam.")) return false;
+  zerarAparelho();
+  toast("Ciclo novo neste aparelho");
+  if (temSala()) sincronizar(true);
+  return true;
+}
+
+async function resetGrupo() {
+  if (!temSala()) { toast("Configure o endereço do banco primeiro", true); return false; }
   const ok = prompt(
     "Isto APAGA os registros dos três no banco compartilhado e começa um ciclo novo hoje.\n\n" +
     "Não tem como desfazer.\n\nDigite APAGAR para confirmar:"
   );
-  if (!ok || ok.trim().toUpperCase() !== "APAGAR") { toast("Cancelado"); return; }
+  if (!ok || ok.trim().toUpperCase() !== "APAGAR") { toast("Cancelado"); return false; }
 
   try {
     await pedir(salaUrl() + "/regs.json", { method: "DELETE" });
@@ -1314,18 +1337,57 @@ $("#btnResetGrupo").onclick = async () => {
       method: "PUT", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ inicio: iso(new Date()), em: new Date().toISOString() })
     });
-    S.regs = []; LS.set("regs", S.regs);
-    S.remoto = {}; LS.set("remoto", {});
-    novoInicio();
-    S.lastOk = 0;
+    zerarAparelho();
     toast("Grupo zerado. Ciclo novo a partir de hoje.");
-    renderCfg(); renderProgresso(); renderLista(); renderGrupo();
     sincronizar(true);
+    return true;
   } catch (e) {
     guardarDiag("reset", e);
     toast(e && e.tipo ? mensagemDe(e) : "Não consegui apagar no banco", true);
+    return false;
   }
+}
+
+async function apagarHoje() {
+  if (!confirm("Apagar o check-in de HOJE dos três?\n\nOs outros dias continuam.")) return;
+  const hoje = iso(new Date());
+  let apagados = 0;
+
+  if (temSala()) {
+    const rem = S.remoto || {};
+    for (const k of Object.keys(rem)) {
+      const r = rem[k];
+      if (!r || !r.ts) continue;
+      if (iso(new Date(r.ts)) !== hoje) continue;
+      try {
+        await pedir(salaUrl() + "/regs/" + encodeURIComponent(k) + ".json", { method: "DELETE" });
+        delete S.remoto[k];
+        apagados++;
+      } catch (e) { guardarDiag("limpar-hoje", e); }
+    }
+    LS.set("remoto", S.remoto);
+  }
+
+  S.regs = S.regs.filter((r) => diaDoReg(r) !== hoje);
+  LS.set("regs", S.regs);
+
+  toast(apagados ? apagados + " registro(s) de hoje apagado(s)" : "Nada de hoje para apagar");
+  renderLista(); renderGrupo(); renderProgresso(); renderCfg();
+  if (temSala()) sincronizar(true);
+}
+
+$("#btnLimparGrupo").onclick = () => {
+  const box = $("#limparBox");
+  box.hidden = !box.hidden;
+  if (!box.hidden) box.scrollIntoView({ behavior: "smooth", block: "center" });
 };
+
+$("#btnLimparHoje").onclick = () => apagarHoje();
+$("#btnLimparLocalG").onclick = () => resetLocal(false);
+$("#btnLimparGrupo2").onclick = () => resetGrupo();
+
+$("#btnResetLocal").onclick = () => resetLocal(false);
+$("#btnResetGrupo").onclick = () => resetGrupo();
 
 $("#btnLimpar").onclick = () => {
   if (!confirm("Apagar todos os check-ins deste aparelho? O que já foi enviado continua no banco.")) return;
