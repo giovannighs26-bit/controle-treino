@@ -79,7 +79,7 @@
   .badge.ok{color:var(--ok);border-color:rgba(62,207,142,.35)}
   .badge.pend{color:var(--warn);border-color:rgba(224,177,58,.35)}
   .photo{width:100%;max-height:220px;object-fit:cover;border-radius:12px;margin-top:10px;display:block}
-  footer{position:fixed;left:0;right:0;bottom:0;z-index:20;display:grid;grid-template-columns:repeat(5,1fr);
+  footer{position:fixed;left:0;right:0;bottom:0;z-index:20;display:grid;grid-template-columns:repeat(6,1fr);
     gap:2px;background:rgba(10,11,14,.96);backdrop-filter:blur(12px);
     border-top:1px solid var(--line);padding:8px 4px calc(8px + env(safe-area-inset-bottom))}
   footer button{background:none;border:none;color:var(--muted);font-size:9.5px;font-weight:700;
@@ -133,6 +133,20 @@
   .rk .pt{font-weight:800;font-size:13px;text-align:right;flex:0 0 auto}
   .rk .pt small{display:block;color:var(--muted);font-weight:600;font-size:9.5px}
   .ph{color:#3a3f4a;font-weight:800}
+  .frow{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)}
+  .frow:last-child{border-bottom:none}
+  .frow label{flex:1;font-size:13px;color:var(--txt)}
+  .frow input{width:92px;padding:9px 10px;text-align:right;background:var(--card2);
+    border:1px solid var(--line);color:var(--txt);border-radius:10px;font-size:14px}
+  .frow input:focus{border-color:var(--gold)}
+  .seg2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+  .ava{display:flex;align-items:center;gap:10px;padding:11px 13px;border:1px solid var(--line);
+    border-radius:14px;background:var(--card);cursor:pointer}
+  .ava .d{font-size:12px;color:var(--muted);min-width:52px}
+  .ava .v{font-weight:800;font-size:15px;color:var(--gold)}
+  .ava .p{margin-left:auto;font-size:11.5px;color:var(--muted);text-align:right}
+  .det{font-size:12.5px;line-height:1.7;color:var(--steel)}
+  .det b{color:var(--txt)}
   .gchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
   .gchip{font-size:10.5px;font-weight:600;padding:3px 8px;border-radius:999px;
     border:1px solid var(--line);color:var(--muted);white-space:nowrap}
@@ -326,6 +340,65 @@
     <p class="hint" id="grupoVazio" hidden style="margin-top:8px">—</p>
   </section>
 
+  <!-- ================= AVALIAÇÃO ================= -->
+  <section id="v-aval" hidden>
+    <div class="row between" style="margin-bottom:12px">
+      <h2 style="margin:0">Avaliação física</h2>
+      <button class="btn ghost" id="btnNovaAval" style="padding:8px 12px;font-size:12px">Nova</button>
+    </div>
+
+    <div class="card tight" id="avalAlunoBox">
+      <div class="row between">
+        <div>
+          <div class="muted">Avaliando</div>
+          <div style="font-weight:800;font-size:16px" id="avalAluno">—</div>
+        </div>
+        <button class="btn ghost" id="btnAvalTrocar" style="padding:9px 13px;font-size:12px">Trocar</button>
+      </div>
+    </div>
+
+    <div id="avalForm" hidden>
+      <div class="card">
+        <h2 style="margin-bottom:8px">Dados</h2>
+        <div class="field" style="margin-bottom:10px">
+          <label>Data</label>
+          <input type="date" id="avData">
+        </div>
+        <div class="seg2" style="margin-bottom:10px">
+          <button class="btn" id="avMasc">Masculino</button>
+          <button class="btn" id="avFem">Feminino</button>
+        </div>
+        <div id="avDados"></div>
+      </div>
+
+      <div class="card">
+        <h2 style="margin-bottom:8px">Circunferências (cm)</h2>
+        <div id="avMedidas"></div>
+      </div>
+
+      <div class="card">
+        <h2 style="margin-bottom:8px">Dobras cutâneas (mm)</h2>
+        <div id="avDobras"></div>
+        <p class="hint" style="margin:8px 0 0">Com 3 dobras (peitoral/abdominal/coxa ou tríceps/suprailíaca/coxa) já calculo o %G. Com 7, uso Pollock de 7.</p>
+      </div>
+
+      <div class="card" style="border-color:var(--gold);background:linear-gradient(180deg,#1a1710,#12141a)">
+        <div class="row between" style="margin-bottom:8px">
+          <span class="muted">Resultado</span>
+          <span class="hero" id="avG">—<small> %G</small></span>
+        </div>
+        <div class="det" id="avResumo">Preencha para calcular.</div>
+      </div>
+
+      <button class="btn gold block" id="btnSalvarAval" style="padding:18px">Salvar avaliação</button>
+      <button class="btn ghost block" id="btnCancelarAval" style="margin-top:8px;padding:12px">Cancelar</button>
+    </div>
+
+    <h2 style="margin-top:18px">Histórico</h2>
+    <div class="hist" id="avalLista"></div>
+    <p class="hint" id="avalVazio" hidden>Nenhuma avaliação registrada para este aluno.</p>
+  </section>
+
   <!-- ================= AJUSTES ================= -->
   <section id="v-cfg" hidden>
     <h2>Banco compartilhado</h2>
@@ -406,7 +479,7 @@
     <div class="card">
       <button class="btn ghost block" id="btnLimpar" style="color:var(--err)">Apagar dados deste aparelho</button>
       <p class="hint" style="margin-top:12px">
-        GH Desafio · v4.5 · build 13 · funciona offline. Os check-ins ficam neste aparelho até o envio concluir;
+        GH Desafio · v5.0 · build 14 · funciona offline. Os check-ins ficam neste aparelho até o envio concluir;
         apagar remove o histórico local, o que já foi para a planilha permanece lá.
       </p>
     </div>
@@ -429,6 +502,10 @@
   <button data-view="v-grupo">
     <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
     Grupo
+  </button>
+  <button data-view="v-aval">
+    <svg viewBox="0 0 24 24"><path d="M6 3v18"/><path d="M6 7h8"/><path d="M6 12h12"/><path d="M6 17h5"/></svg>
+    Medidas
   </button>
   <button data-view="v-cfg">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M4 12a8 8 0 0 1 .2-1.8l2 .4a6 6 0 0 0 0 2.8l-2 .4A8 8 0 0 1 4 12z"/><path d="M12 4a8 8 0 0 1 1.8.2l-.4 2a6 6 0 0 0-2.8 0l-.4-2A8 8 0 0 1 12 4z"/><path d="M20 12a8 8 0 0 1-.2 1.8l-2-.4a6 6 0 0 0 0-2.8l2-.4A8 8 0 0 1 20 12z"/><path d="M12 20a8 8 0 0 1-1.8-.2l.4-2a6 6 0 0 0 2.8 0l.4 2A8 8 0 0 1 12 20z"/></svg>
@@ -484,6 +561,8 @@ const S = {
   ranking: LS.get("ranking", null),
   grupo: LS.get("grupo", null),
   remoto: LS.get("remoto", {}),
+  aval: LS.get("aval", []),
+  avalRemoto: LS.get("avalremoto", {}),
   lastOk: LS.get("lastok", 0),
   diag: LS.get("diag", null)
 };
@@ -632,6 +711,7 @@ function ir(view) {
   if (view === "v-checkin") renderCheckin();
   if (view === "v-prog") renderProgresso();
   if (view === "v-grupo") { renderGrupo(); sincronizar(true); }
+  if (view === "v-aval") renderAval();
   if (view === "v-cfg") renderCfg();
   window.scrollTo({ top: 0 });
 }
@@ -1515,6 +1595,253 @@ $("#btnDiag").onclick = async () => {
   out.textContent = linhas.join("\n");
 };
 
+/* ---------------- avaliação física ---------------- */
+const MEDIDAS = [
+  { id: "cintura", nome: "Cintura" },
+  { id: "quadril", nome: "Quadril" },
+  { id: "peito", nome: "Peito" },
+  { id: "braco", nome: "Braço (dir.)" },
+  { id: "coxa", nome: "Coxa (dir.)" },
+  { id: "panturrilha", nome: "Panturrilha" },
+  { id: "pescoco", nome: "Pescoço" }
+];
+const DOBRAS = [
+  { id: "tri", nome: "Tríceps" },
+  { id: "sub", nome: "Subescapular" },
+  { id: "sup", nome: "Suprailíaca" },
+  { id: "abd", nome: "Abdominal" },
+  { id: "cox", nome: "Coxa" },
+  { id: "pei", nome: "Peitoral" },
+  { id: "axi", nome: "Axilar média" },
+  { id: "bic", nome: "Bíceps" }
+];
+
+let af = { sexo: "M", dia: iso(new Date()) };
+
+function avalDoAluno() {
+  const rem = Object.values(S.avalRemoto || {}).map((a) => Object.assign({}, a, { _remoto: true }));
+  const todos = S.aval.concat(rem);
+  const mapa = new Map();
+  todos.forEach((a) => mapa.set(a.id, a));
+
+  let lista = Array.from(mapa.values()).filter((a) => a && a.aluno && a.ts);
+  if (S.aluno) lista = lista.filter((a) => so(a.aluno) === so(S.aluno));
+  return lista.sort((a, b) => {
+    const t = String(b.ts).localeCompare(String(a.ts));
+    if (t) return t;
+    return String(b.criado || "").localeCompare(String(a.criado || ""));
+  });
+}
+
+function calcAval(a) {
+  const d = a.dobras || {}, m = a.medidas || {};
+  const soma = (arr) => arr.reduce((t, v) => t + (Number(v) || 0), 0);
+  const todos = (arr) => arr.every((v) => Number(v) > 0);
+
+  const s3h = [d.pei, d.abd, d.cox];
+  const s3f = [d.tri, d.sup, d.cox];
+  const s7 = [d.tri, d.sub, d.sup, d.abd, d.cox, d.pei, d.axi];
+
+  const idade = Number(a.idade) || 30;
+  const peso = Number(a.peso) || 0;
+  const altura = Number(a.altura) || 0;
+
+  let pct = null, metodo = "";
+  if (todos(s7)) {
+    const S7 = soma(s7);
+    const den = a.sexo === "F"
+      ? 1.097 - 0.00046971 * S7 + 0.00000056 * S7 * S7 - 0.00012828 * idade
+      : 1.112 - 0.00043499 * S7 + 0.00000055 * S7 * S7 - 0.00028826 * idade;
+    pct = 495 / den - 450;
+    metodo = "Pollock 7 dobras";
+  } else if (a.sexo === "F" && todos(s3f)) {
+    const S3 = soma(s3f);
+    const den = 1.0994921 - 0.0009929 * S3 + 0.0000023 * S3 * S3 - 0.0001392 * idade;
+    pct = 495 / den - 450;
+    metodo = "Pollock 3 dobras";
+  } else if (a.sexo !== "F" && todos(s3h)) {
+    const S3 = soma(s3h);
+    const den = 1.10938 - 0.0008267 * S3 + 0.0000016 * S3 * S3 - 0.0002574 * idade;
+    pct = 495 / den - 450;
+    metodo = "Pollock 3 dobras";
+  }
+
+  const imc = altura > 0 ? peso / Math.pow(altura / 100, 2) : null;
+  const mm = (pct != null && peso > 0) ? peso * (1 - pct / 100) : null;
+  const rcq = (m.cintura > 0 && m.quadril > 0) ? m.cintura / m.quadril : null;
+
+  return {
+    pct: pct == null ? null : Math.round(pct * 10) / 10,
+    metodo: metodo,
+    soma7: soma(s7) || null,
+    soma3: a.sexo === "F" ? (soma(s3f) || null) : (soma(s3h) || null),
+    imc: imc == null ? null : Math.round(imc * 10) / 10,
+    mm: mm == null ? null : Math.round(mm * 10) / 10,
+    rcq: rcq == null ? null : Math.round(rcq * 100) / 100
+  };
+}
+
+function campoAval(id, nome, un, valor) {
+  return `<div class="frow"><label>${nome}</label>
+    <input type="number" id="${id}" inputmode="decimal" step="0.1" min="0" placeholder="${un}"
+           value="${valor != null ? valor : ""}"></div>`;
+}
+
+function montarFormAval(base) {
+  const a = base || {};
+  const m = a.medidas || {}, d = a.dobras || {};
+  af.sexo = a.sexo || af.sexo;
+  af.dia = a.dia || af.dia;
+
+  $("#avData").value = af.dia;
+  $("#avMasc").classList.toggle("on", af.sexo === "M");
+  $("#avFem").classList.toggle("on", af.sexo === "F");
+  $("#avMasc").style.background = af.sexo === "M" ? "var(--gold-soft)" : "";
+  $("#avMasc").style.borderColor = af.sexo === "M" ? "var(--gold)" : "";
+  $("#avFem").style.background = af.sexo === "F" ? "var(--gold-soft)" : "";
+  $("#avFem").style.borderColor = af.sexo === "F" ? "var(--gold)" : "";
+
+  $("#avDados").innerHTML =
+    campoAval("af_peso", "Peso", "kg", a.peso) +
+    campoAval("af_altura", "Altura", "cm", a.altura) +
+    campoAval("af_idade", "Idade", "anos", a.idade);
+
+  $("#avMedidas").innerHTML = MEDIDAS.map((x) => campoAval("af_m_" + x.id, x.nome, "cm", m[x.id])).join("");
+  $("#avDobras").innerHTML = DOBRAS.map((x) => campoAval("af_d_" + x.id, x.nome, "mm", d[x.id])).join("");
+
+  document.querySelectorAll("#avalForm input[type=number]").forEach((i) => i.oninput = atualizarResumoAval);
+  atualizarResumoAval();
+}
+
+function lerFormAval() {
+  const num = (id) => {
+    const el = document.getElementById(id);
+    const v = el ? parseFloat(String(el.value).replace(",", ".")) : NaN;
+    return isNaN(v) ? 0 : v;
+  };
+  const medidas = {}, dobras = {};
+  MEDIDAS.forEach((x) => { medidas[x.id] = num("af_m_" + x.id); });
+  DOBRAS.forEach((x) => { dobras[x.id] = num("af_d_" + x.id); });
+  return {
+    sexo: af.sexo,
+    dia: $("#avData").value || iso(new Date()),
+    peso: num("af_peso"), altura: num("af_altura"), idade: num("af_idade"),
+    medidas: medidas, dobras: dobras
+  };
+}
+
+function atualizarResumoAval() {
+  const v = lerFormAval();
+  const r = calcAval(v);
+  $("#avG").innerHTML = (r.pct == null ? "—" : nf(r.pct, 1)) + "<small> %G</small>";
+
+  const linhas = [];
+  if (r.metodo) linhas.push("<b>" + r.metodo + "</b> · somatório " + (r.metodo.indexOf("7") >= 0 ? r.soma7 : r.soma3) + " mm");
+  else linhas.push("Preencha as dobras para calcular o %G.");
+  if (r.mm != null) linhas.push("Massa magra: <b>" + nf(r.mm, 1) + " kg</b> · gordura: " + nf(v.peso - r.mm, 1) + " kg");
+  if (r.imc != null) linhas.push("IMC: <b>" + nf(r.imc, 1) + "</b>");
+  if (r.rcq != null) linhas.push("Cintura/quadril: <b>" + nf(r.rcq, 2) + "</b>");
+  $("#avResumo").innerHTML = linhas.join("<br>");
+}
+
+function abrirAval(editar) {
+  if (!S.aluno && !editar) { toast("Escolha o aluno primeiro"); ir("v-aluno"); return; }
+  const anterior = avalDoAluno()[0];
+  const checkin = S.regs.filter((r) => so(r.aluno) === so(S.aluno)).sort((a, b) => String(b.ts).localeCompare(String(a.ts)))[0];
+
+  af = { sexo: (editar && editar.sexo) || (anterior && anterior.sexo) || "M", dia: iso(new Date()) };
+  $("#avalAluno").textContent = S.aluno || "—";
+  $("#avalForm").hidden = false;
+  montarFormAval(editar || {
+    peso: (checkin && checkin.peso) || (anterior && anterior.peso) || null,
+    altura: anterior ? anterior.altura : null,
+    idade: anterior ? anterior.idade : null,
+    medidas: anterior ? anterior.medidas : {},
+    dobras: anterior ? anterior.dobras : {}
+  });
+  $("#avalForm").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+$("#btnNovaAval").onclick = () => abrirAval(null);
+$("#btnCancelarAval").onclick = () => { $("#avalForm").hidden = true; renderAval(); };
+$("#btnAvalTrocar").onclick = () => ir("v-aluno");
+$("#avMasc").onclick = () => { af.sexo = "M"; montarFormAval(lerFormAvalComDia()); };
+$("#avFem").onclick = () => { af.sexo = "F"; montarFormAval(lerFormAvalComDia()); };
+
+function lerFormAvalComDia() {
+  const v = lerFormAval();
+  return Object.assign({}, v, { dia: $("#avData").value });
+}
+
+$("#btnSalvarAval").onclick = () => {
+  if (!S.aluno) { toast("Escolha o aluno primeiro"); return; }
+  const v = lerFormAval();
+  if (!v.peso || !v.altura) { toast("Informe peso e altura"); return; }
+
+  const res = calcAval(v);
+  const rec = {
+    id: uid(), aluno: S.aluno, dia: v.dia,
+    ts: new Date(v.dia + "T12:00:00").toISOString(),
+    criado: new Date().toISOString(),
+    sexo: v.sexo, idade: v.idade, peso: v.peso, altura: v.altura,
+    medidas: v.medidas, dobras: v.dobras, res: res, sync: 0
+  };
+
+  S.aval.push(rec);
+  LS.set("aval", S.aval);
+  toast("Avaliação salva" + (res.pct != null ? " · " + nf(res.pct, 1) + "% G" : ""));
+  $("#avalForm").hidden = true;
+  renderAval();
+  sincronizar(true);
+};
+
+function renderAval() {
+  $("#avalAluno").textContent = S.aluno || "todos";
+  const lista = avalDoAluno();
+  const box = $("#avalLista");
+  box.innerHTML = "";
+  $("#avalVazio").hidden = lista.length > 0;
+
+  lista.forEach((a, idx) => {
+    const r = a.res || calcAval(a);
+    const ant = lista[idx + 1];
+    const d = new Date(a.ts);
+    const el = document.createElement("div");
+    el.className = "ava";
+    el.style.flexDirection = "column";
+    el.style.alignItems = "stretch";
+
+    let delta = "";
+    if (ant) {
+      const ra = ant.res || calcAval(ant);
+      if (ra.pct != null && r.pct != null) {
+        const dif = Math.round((r.pct - ra.pct) * 10) / 10;
+        delta = (dif > 0 ? "+" : "") + nf(dif, 1) + " %G";
+      }
+    }
+
+    el.innerHTML =
+      `<div class="row" style="gap:10px">
+         <span class="d">${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}</span>
+         <span class="v">${r.pct == null ? "—" : nf(r.pct, 1) + "%"}</span>
+         <span class="p">${nf(a.peso, 1)} kg · ${r.mm != null ? nf(r.mm, 1) + " kg massa magra" : "sem dobras"}</span>
+       </div>` +
+      (delta ? `<div class="muted" style="font-size:11px;margin-top:4px">${delta} vs. anterior</div>` : "") +
+      `<div class="det" style="margin-top:8px;display:none">
+         ${r.metodo ? r.metodo + " · somatório " + nf(r.metodo.indexOf("7") >= 0 ? r.soma7 : r.soma3, 0) + " mm<br>" : ""}
+         IMC <b>${r.imc == null ? "—" : nf(r.imc, 1)}</b> · C/Q <b>${r.rcq == null ? "—" : nf(r.rcq, 2)}</b><br>
+         Cintura <b>${a.medidas.cintura || "—"}</b> · Quadril <b>${a.medidas.quadril || "—"}</b> · Peito <b>${a.medidas.peito || "—"}</b><br>
+         Braço <b>${a.medidas.braco || "—"}</b> · Coxa <b>${a.medidas.coxa || "—"}</b> · Panturrilha <b>${a.medidas.panturrilha || "—"}</b>
+       </div>`;
+
+    el.onclick = () => {
+      const det = el.querySelector(".det");
+      det.style.display = det.style.display === "none" ? "block" : "none";
+    };
+    box.appendChild(el);
+  });
+}
+
 /* ---------------- backup ---------------- */
 function baixarJson(obj, nome) {
   const a = document.createElement("a");
@@ -1615,8 +1942,8 @@ $("#btnCard").onclick = async () => {
   }
 };
 $("#btnExport").onclick = () => {
-  const dump = { app: "gh-desafio", versao: 4, em: new Date().toISOString(),
-                 cfg: S.cfg, roster: S.roster, regs: S.regs };
+  const dump = { app: "gh-desafio", versao: 6, em: new Date().toISOString(),
+                 cfg: S.cfg, roster: S.roster, regs: S.regs, avaliacoes: S.aval };
   baixarJson(dump, "gh-desafio-backup-" + iso(new Date()) + ".json");
 };
 
@@ -1655,6 +1982,12 @@ $("#fileImport").addEventListener("change", async (e) => {
     S.regs = Array.from(mapa.values());
     LS.set("regs", S.regs);
     if (Array.isArray(d.roster) && d.roster.length) { S.roster = d.roster; LS.set("roster", d.roster); }
+    if (Array.isArray(d.avaliacoes)) {
+      const ma = new Map(S.aval.map((a) => [a.id, a]));
+      d.avaliacoes.forEach((a) => ma.set(a.id, a));
+      S.aval = Array.from(ma.values());
+      LS.set("aval", S.aval);
+    }
     toast(S.regs.length + " registros restaurados");
     renderLista(); renderProgresso(); renderCfg(); renderGrupo();
   } catch (err) { toast("Arquivo inválido", true); }
@@ -1731,6 +2064,34 @@ async function sincronizar(silencioso) {
       }
     }
 
+    /* 2b. avaliações físicas */
+    try {
+      const da = lerJson(await pedir(salaUrl() + "/aval.json"));
+      if (da && typeof da === "object") { S.avalRemoto = da; LS.set("avalremoto", da); }
+    } catch (e) {}
+
+    for (const a of S.aval.filter((x) => !x.sync)) {
+      try {
+        const resp = await pedir(salaUrl() + "/aval/" + encodeURIComponent(a.id) + ".json", {
+          method: "PUT", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            aluno: a.aluno, ts: a.ts, dia: a.dia, criado: a.criado, sexo: a.sexo, idade: a.idade,
+            peso: a.peso, altura: a.altura, medidas: a.medidas, dobras: a.dobras,
+            res: a.res, v: 1
+          })
+        });
+        if (resp.status >= 300) {
+          throw { tipo: classificar(resp.status, resp.texto), status: resp.status, ms: resp.ms,
+                  amostra: String(resp.texto || "").slice(0, 160) };
+        }
+        a.sync = 1;
+        LS.set("aval", S.aval);
+      } catch (e) {
+        if (e && e.tipo) guardarDiag("avaliacao", e);
+        break;
+      }
+    }
+
     /* 3. data de início compartilhada */
     if (!erroLeitura) {
       try {
@@ -1759,7 +2120,7 @@ async function sincronizar(silencioso) {
   if (!erroEnvio) { S.lastOk = Date.now(); LS.set("lastok", S.lastOk); }
   LS.set("regs", S.regs);
 
-  atualizarChip(); renderLista(); renderGrupo(); renderProgresso(); renderCfg();
+  atualizarChip(); renderLista(); renderGrupo(); renderProgresso(); renderCfg(); renderAval();
 
   if (ok) toast(ok + " check-in" + (ok > 1 ? "s" : "") + " sincronizado" + (ok > 1 ? "s" : ""));
   else if (!silencioso) toast(erro || "Nada para enviar", !!erro);
