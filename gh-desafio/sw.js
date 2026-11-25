@@ -1,8 +1,9 @@
 /* GH Desafio — service worker
-   Estratégia: pré-cache do shell na instalação e cache-first com atualização em
-   segundo plano. O app precisa abrir sem internet, então nada de network-first. */
+   Regra: o HTML (navegação) é network-first, para que uma versão nova apareça na
+   hora em que o aluno abrir o app. Todo o resto é cache-first, para abrir offline.
+   Se a rede falhar, o HTML vem do cache — o app continua funcionando sem sinal. */
 
-const VERSAO = "gh-desafio-v3";
+const VERSAO = "gh-desafio-v4";
 
 /* Os ícones viajam como base64 em icones.js e são servidos daqui como PNG.
    Assim o repositório fica 100% em texto e o app continua instalável. */
@@ -44,6 +45,21 @@ self.addEventListener("fetch", (e) => {
   if (req.method !== "GET") return;                 // POST da API passa direto
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;  // não intercepta script.google.com
+
+  const navegacao = req.mode === "navigate" || url.pathname.endsWith("/")
+                    || url.pathname.endsWith("index.html");
+  if (navegacao) {
+    e.respondWith(
+      fetch(req)
+        .then((res) => {
+          const copia = res.clone();
+          caches.open(VERSAO).then((c) => c.put(req, copia));
+          return res;
+        })
+        .catch(() => caches.match(req).then((hit) => hit || caches.match("./index.html")))
+    );
+    return;
+  }
 
   const nomeIcone = url.pathname.split("/").pop();
   if (ICONES[nomeIcone]) {
