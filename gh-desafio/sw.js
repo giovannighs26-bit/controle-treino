@@ -3,7 +3,7 @@
    hora em que o aluno abrir o app. Todo o resto é cache-first, para abrir offline.
    Se a rede falhar, o HTML vem do cache — o app continua funcionando sem sinal. */
 
-const VERSAO = "gh-desafio-v15";
+const VERSAO = "gh-desafio-v16";
 
 /* Os ícones viajam como base64 em icones.js e são servidos daqui como PNG.
    Assim o repositório fica 100% em texto e o app continua instalável. */
