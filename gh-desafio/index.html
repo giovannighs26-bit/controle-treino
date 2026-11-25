@@ -479,7 +479,7 @@
     <div class="card">
       <button class="btn ghost block" id="btnLimpar" style="color:var(--err)">Apagar dados deste aparelho</button>
       <p class="hint" style="margin-top:12px">
-        GH Desafio · v5.0 · build 14 · funciona offline. Os check-ins ficam neste aparelho até o envio concluir;
+        GH Desafio · v5.1 · build 15 · funciona offline. Os check-ins ficam neste aparelho até o envio concluir;
         apagar remove o histórico local, o que já foi para a planilha permanece lá.
       </p>
     </div>
@@ -561,6 +561,8 @@ const S = {
   ranking: LS.get("ranking", null),
   grupo: LS.get("grupo", null),
   remoto: LS.get("remoto", {}),
+  resetVisto: LS.get("resetvisto", ""),
+  limpoDia: LS.get("limpodia", ""),
   aval: LS.get("aval", []),
   avalRemoto: LS.get("avalremoto", {}),
   lastOk: LS.get("lastok", 0),
@@ -1396,7 +1398,8 @@ async function testarSala() {
   try {
     const r = await pedir(salaUrl() + "/regs.json");
     const d = lerJson(r);
-    if (d && typeof d === "object") { S.remoto = d; LS.set("remoto", d); }
+    S.remoto = (d && typeof d === "object") ? d : {};
+    LS.set("remoto", S.remoto);
 
     try {
       const m = lerJson(await pedir(salaUrl() + "/meta.json"));
@@ -1465,6 +1468,8 @@ function zerarAparelho() {
   LS.set("remoto", {});
   novoInicio();
   S.lastOk = 0;
+  S.limpoDia = iso(new Date());
+  LS.set("limpodia", S.limpoDia);
   renderCfg(); renderProgresso(); renderLista(); renderGrupo();
 }
 
@@ -1496,10 +1501,14 @@ async function resetGrupo() {
     } catch (e) {}
 
     await pedir(salaUrl() + "/regs.json", { method: "DELETE" });
+
+    const marcador = new Date().toISOString();
     await pedir(salaUrl() + "/meta.json", {
       method: "PUT", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ inicio: iso(new Date()), em: new Date().toISOString() })
+      body: JSON.stringify({ inicio: iso(new Date()), reset: marcador })
     });
+    S.resetVisto = marcador;
+    LS.set("resetvisto", marcador);
     zerarAparelho();
     toast("Grupo zerado. Ciclo novo a partir de hoje.");
     sincronizar(true);
@@ -1533,6 +1542,18 @@ async function apagarHoje() {
 
   S.regs = S.regs.filter((r) => diaDoReg(r) !== hoje);
   LS.set("regs", S.regs);
+
+  if (temSala()) {
+    try {
+      const marcador = new Date().toISOString();
+      await pedir(salaUrl() + "/meta.json", {
+        method: "PUT", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ limparDia: hoje, limparEm: marcador })
+      });
+      S.limpoDia = hoje;
+      LS.set("limpodia", hoje);
+    } catch (e) {}
+  }
 
   toast(apagados ? apagados + " registro(s) de hoje apagado(s)" : "Nada de hoje para apagar");
   renderLista(); renderGrupo(); renderProgresso(); renderCfg();
@@ -2026,9 +2047,31 @@ async function sincronizar(silencioso) {
     /* 1. leitura */
     try {
       const d = lerJson(await pedir(salaUrl() + "/regs.json"));
-      if (d && typeof d === "object") { S.remoto = d; LS.set("remoto", d); }
+      S.remoto = (d && typeof d === "object") ? d : {};
+      LS.set("remoto", S.remoto);
 
       const meta = lerJson(await pedir(salaUrl() + "/meta.json"));
+
+      // ciclo reiniciado em outro aparelho
+      if (meta && meta.reset && meta.reset !== S.resetVisto) {
+        S.regs = [];
+        LS.set("regs", S.regs);
+        S.resetVisto = meta.reset;
+        LS.set("resetvisto", meta.reset);
+        if (meta.inicio) { S.cfg.inicio = meta.inicio; LS.set("cfg", S.cfg); }
+        toast("Ciclo reiniciado — registros apagados");
+      }
+
+      // dia apagado em outro aparelho
+      if (meta && meta.limparDia && meta.limparDia !== S.limpoDia) {
+        const dia = meta.limparDia;
+        S.regs = S.regs.filter((r) => diaDoReg(r) !== dia);
+        LS.set("regs", S.regs);
+        S.limpoDia = dia;
+        LS.set("limpodia", dia);
+        toast("Check-in de " + dia.split("-").reverse().join("/") + " apagado");
+      }
+
       if (meta && meta.inicio && meta.inicio !== S.cfg.inicio) {
         S.cfg.inicio = meta.inicio;
         LS.set("cfg", S.cfg);
