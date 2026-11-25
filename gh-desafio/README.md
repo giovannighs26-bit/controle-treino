@@ -40,38 +40,40 @@ Não existe ícone `.png` no repositório: os dois ícones ficam em base64 dentr
 
 Depois disso o ícone **GH Desafio** abre em tela cheia, mesmo em modo avião.
 
-## 3. Preparar o Apps Script
+## 3. Banco compartilhado (Firebase) — 3 minutos, sem código
 
-1. Na planilha: Extensões → Apps Script.
-2. Apague o conteúdo e cole **`apps-script-gh-desafio.gs`**.
-3. Linha ~20, troque:
+1. Abra https://console.firebase.google.com e faça login com sua conta Google.
+2. **Criar projeto** → nome `gh-desafio` → continuar → desative o Analytics → **Criar projeto**.
+3. No menu lateral: **Bancos de dados e armazenamento** → **Realtime Database** → **Criar banco de dados**
+   - Local: escolha o padrão (Estados Unidos)
+   - **Iniciar no modo de teste** → Ativar
+4. Copie a URL que aparece no topo, algo como `https://gh-desafio-default-rtdb.firebaseio.com`
+   (o trecho antes de `.firebaseio.com` muda conforme o nome do projeto).
+5. No app: **Ajustes → Endereço do banco** → cole → **Salvar e testar**.
+6. **Ajustes → Copiar link já configurado** → envie para os outros dois. Quem abrir por esse link já entra conectado.
 
-```js
-var CODIGO_ACESSO = 'troque-este-codigo-2026';   // use algo seu, tipo 'gh-ana-2026'
+O modo de teste expira em 30 dias. Para continuar valendo, em **Realtime Database → Regras** deixe:
+
+```json
+{ "rules": { ".read": true, ".write": true } }
 ```
 
-4. **Implantar → Nova implantação → tipo "App da Web"**
-   - Executar como: **Eu**
-   - Quem tem acesso: **Qualquer pessoa**
-5. Autorize e copie a URL que termina em `/exec`.
+Qualquer pessoa com a URL consegue ler e escrever — para um desafio entre três amigos é o nível de
+privacidade esperado. Não use para dados sensíveis.
 
-> Sempre que alterar o código, refaça a implantação (*Gerenciar implantações → editar → nova versão*),
-> senão o app continua falando com a versão antiga.
+## 4. Nomes dos participantes
 
-## 4. Configurar cada celular (uma vez)
+Ajustes → **Lista de alunos** (um nome por linha) ou **Buscar nomes do grupo** (traz quem já sincronizou).
 
-No app: **Ajustes**
+## 4.1 Novo ciclo / reset
 
-| Campo | O que preencher |
-|---|---|
-| Endereço do Web App | a URL `/exec` copiada acima |
-| Código de acesso | o mesmo `CODIGO_ACESSO` do script |
+Em **Ajustes → Novo ciclo / reset**:
 
-Toque em **Salvar e testar**. Deve aparecer *Conectado* e a lista de alunos vem da
-coluna **Nome** do Painel de Controle.
+- **Novo ciclo só neste aparelho** — apaga os check-ins locais e zera a contagem; mantém nomes e conexão.
+- **Apagar registros de todos (grupo)** — apaga os registros no banco compartilhado (vale para os três),
+  grava a data de início de hoje e zera o aparelho. Exige digitar `APAGAR`.
 
-Se o aluno instalar o app num lugar sem internet, a lista pode ser colada à mão em
-**Ajustes → Lista offline** (um nome por linha).
+A data de início do ciclo também é compartilhada: quem resetar o grupo define o dia 1 para todos.
 
 ## 5. Operação diária
 
@@ -87,7 +89,10 @@ foto se quiser → *Salvar check-in*. Acabou. Não precisa de sinal.
 | Água | 1 | se ≥ meta de água (3 L) |
 | Peso registrado | 1 | se o peso do dia foi informado |
 
-Máximo de 4 pontos por dia. Ciclo de **30 dias**, meta padrão **90 pontos**.
+**Metas configuráveis** em *Ajustes → Metas do check-in*: cardio (min), água (L), sono (h),
+peso (registro), passos e proteína. Cada meta ligada vale 1 ponto (valor editável) e o check-in
+sempre vale 1. Máximo padrão: **5 pontos/dia** (com passo e proteína ligados, 7).
+Ciclo de 30 dias; meta do ciclo padrão 120 pontos.
 
 **Treinador**: abre a planilha. O Registro Diário recebe a linha, o Painel soma os
 pontos e Ranking, Semanal e Dashboard se atualizam sozinhos.
