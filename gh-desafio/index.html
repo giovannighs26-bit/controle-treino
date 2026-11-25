@@ -118,6 +118,12 @@
   <!-- ================= ALUNO ================= -->
   <section id="v-aluno">
     <h2>Quem está treinando</h2>
+    <div class="card" id="bannerCfg" hidden style="border-color:var(--gold);background:linear-gradient(180deg,#1a1710,#12141a)">
+      <div style="font-weight:800;margin-bottom:4px">Este aparelho não está ligado à planilha</div>
+      <p class="hint" style="margin:0">Sem a conexão, os check-ins ficam só neste celular. Toque em conectar e cole o endereço e o código do desafio.</p>
+      <button class="btn gold block" id="btnConectar" style="margin-top:12px">Conectar à planilha</button>
+    </div>
+
     <div class="card tight" id="alunoAtualBox" hidden>
       <div class="row between">
         <div>
@@ -242,6 +248,9 @@
       </div>
       <button class="btn gold block" id="btnSalvarCfg">Salvar e testar</button>
       <p class="hint" id="cfgStatus" style="margin:10px 0 0"></p>
+      <div class="sep"></div>
+      <button class="btn ghost block" id="btnLink">Copiar link já configurado</button>
+      <p class="hint" style="margin:8px 0 0">Mande esse link para os alunos: quem abrir por ele já entra conectado, sem digitar nada.</p>
     </div>
 
     <h2>Alunos</h2>
@@ -320,11 +329,25 @@ const LS = {
   }
 };
 
+/* Link de configuração: .../gh-desafio/?e=<url do web app>&t=<codigo>
+   Quem abrir por esse endereço fica conectado sem digitar nada. */
+(function lerLinkDeConfiguracao() {
+  try {
+    const q = new URLSearchParams(location.search);
+    const e = (q.get("e") || "").trim();
+    const t = (q.get("t") || "").trim();
+    if (!e || !t) return;
+    const atual = LS.get("cfg", {});
+    LS.set("cfg", Object.assign(atual, { endpoint: e, token: t }));
+  } catch (err) {}
+})();
+
 const S = {
   cfg: Object.assign({}, PADRAO, LS.get("cfg", {})),
   aluno: LS.get("aluno", ""),
   regs: LS.get("regs", []),
-  roster: LS.get("roster", [])
+  roster: LS.get("roster", []),
+  lastOk: LS.get("lastok", 0)
 };
 
 const ci = { treino: null, habito: null, cardio: 0, foto: null, dia: 0 };
@@ -372,6 +395,9 @@ $$("footer button").forEach((b) => b.addEventListener("click", () => ir(b.datase
 
 /* ---------------- lista de alunos ---------------- */
 function renderLista() {
+  const semConexao = !S.cfg.endpoint || !S.cfg.token;
+  const banner = $("#bannerCfg");
+  if (banner) banner.hidden = !semConexao;
   const q = so($("#busca").value);
   const box = $("#listaNomes");
   const nomes = S.roster.filter((n) => !q || so(n).includes(q));
@@ -573,6 +599,20 @@ function renderCfg() {
   atualizarChip();
 }
 
+$("#btnConectar").onclick = () => { ir("v-cfg"); setTimeout(() => $("#cfgEndpoint").focus(), 250); };
+
+$("#btnLink").onclick = async () => {
+  if (!S.cfg.endpoint || !S.cfg.token) { toast("Salve o endereço e o código primeiro", true); return; }
+  const base = location.origin + location.pathname;
+  const link = base + "?e=" + encodeURIComponent(S.cfg.endpoint) + "&t=" + encodeURIComponent(S.cfg.token);
+  try {
+    await navigator.clipboard.writeText(link);
+    toast("Link copiado");
+  } catch (e) {
+    prompt("Copie o link de configuração:", link);
+  }
+};
+
 $("#btnSalvarCfg").onclick = async () => {
   S.cfg.endpoint = $("#cfgEndpoint").value.trim();
   S.cfg.token = $("#cfgToken").value.trim();
@@ -601,7 +641,8 @@ async function testarConexao() {
       S.cfg.teto = d.config.teto ?? S.cfg.teto;
       LS.set("cfg", S.cfg);
     }
-    renderLista(); renderCfg();
+    S.lastOk = Date.now(); LS.set("lastok", S.lastOk);
+    renderLista(); renderCfg(); atualizarChip();
     return true;
   } catch (e) { return false; }
 }
@@ -649,13 +690,15 @@ function atualizarChip() {
   const chip = $("#syncChip");
   const dot = chip.querySelector(".dot");
   if (!S.cfg.endpoint || !S.cfg.token) {
-    dot.className = "dot"; $("#syncTxt").textContent = "local";
+    dot.className = "dot"; $("#syncTxt").textContent = "só local";
   } else if (pend) {
     dot.className = "dot pend"; $("#syncTxt").textContent = pend + " pendente" + (pend > 1 ? "s" : "");
   } else if (navigator.onLine === false) {
     dot.className = "dot off"; $("#syncTxt").textContent = "offline";
-  } else {
+  } else if (S.lastOk) {
     dot.className = "dot ok"; $("#syncTxt").textContent = "tudo enviado";
+  } else {
+    dot.className = "dot pend"; $("#syncTxt").textContent = "sem conexão";
   }
   const p = $("#cfgPend"); if (p) p.textContent = pend;
 }
@@ -706,6 +749,7 @@ async function sincronizar(silencioso) {
     }
   }
   sincronizando = false;
+  if (ok && !erro) { S.lastOk = Date.now(); LS.set("lastok", S.lastOk); }
   LS.set("regs", S.regs);
   atualizarChip(); renderLista(); renderHist(); renderCfg();
 
