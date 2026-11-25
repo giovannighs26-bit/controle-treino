@@ -342,22 +342,27 @@
 
   <!-- ================= AVALIAÇÃO ================= -->
   <section id="v-aval" hidden>
-    <div class="row between" style="margin-bottom:12px">
+    <div class="row between" style="margin-bottom:10px">
       <h2 style="margin:0">Avaliação física</h2>
       <button class="btn ghost" id="btnNovaAval" style="padding:8px 12px;font-size:12px">Nova</button>
     </div>
 
-    <div class="card tight" id="avalAlunoBox">
-      <div class="row between">
-        <div>
-          <div class="muted">Avaliando</div>
-          <div style="font-weight:800;font-size:16px" id="avalAluno">—</div>
-        </div>
-        <button class="btn ghost" id="btnAvalTrocar" style="padding:9px 13px;font-size:12px">Trocar</button>
-      </div>
+    <div class="card tight" style="margin-bottom:14px">
+      <div class="muted" style="margin-bottom:8px">Quem está sendo avaliado</div>
+      <div class="chips" id="avalAlunos"></div>
     </div>
 
     <div id="avalForm" hidden>
+      <div class="card" style="border-color:rgba(201,162,39,.5)">
+        <div class="row between">
+          <div>
+            <div class="muted">Avaliação de</div>
+            <div style="font-weight:800;font-size:16px" id="avQuem">—</div>
+          </div>
+          <span class="badge pend" id="avNova">nova</span>
+        </div>
+      </div>
+
       <div class="card">
         <h2 style="margin-bottom:8px">Dados</h2>
         <div class="field" style="margin-bottom:10px">
@@ -394,9 +399,15 @@
       <button class="btn ghost block" id="btnCancelarAval" style="margin-top:8px;padding:12px">Cancelar</button>
     </div>
 
-    <h2 style="margin-top:18px">Histórico</h2>
-    <div class="hist" id="avalLista"></div>
-    <p class="hint" id="avalVazio" hidden>Nenhuma avaliação registrada para este aluno.</p>
+    <div id="avalHistBox">
+      <div class="row between" style="margin-bottom:10px">
+        <h2 style="margin:0">Histórico</h2>
+        <span class="muted" id="avalCount"></span>
+      </div>
+      <div class="card tight" id="avalUltima" hidden style="margin-bottom:12px"></div>
+      <div class="hist" id="avalLista"></div>
+      <p class="hint" id="avalVazio" hidden>Nenhuma avaliação deste aluno ainda.</p>
+    </div>
   </section>
 
   <!-- ================= AJUSTES ================= -->
@@ -479,7 +490,7 @@
     <div class="card">
       <button class="btn ghost block" id="btnLimpar" style="color:var(--err)">Apagar dados deste aparelho</button>
       <p class="hint" style="margin-top:12px">
-        GH Desafio · v5.1 · build 15 · funciona offline. Os check-ins ficam neste aparelho até o envio concluir;
+        GH Desafio · v5.2 · build 16 · funciona offline. Os check-ins ficam neste aparelho até o envio concluir;
         apagar remove o histórico local, o que já foi para a planilha permanece lá.
       </p>
     </div>
@@ -1638,21 +1649,7 @@ const DOBRAS = [
 ];
 
 let af = { sexo: "M", dia: iso(new Date()) };
-
-function avalDoAluno() {
-  const rem = Object.values(S.avalRemoto || {}).map((a) => Object.assign({}, a, { _remoto: true }));
-  const todos = S.aval.concat(rem);
-  const mapa = new Map();
-  todos.forEach((a) => mapa.set(a.id, a));
-
-  let lista = Array.from(mapa.values()).filter((a) => a && a.aluno && a.ts);
-  if (S.aluno) lista = lista.filter((a) => so(a.aluno) === so(S.aluno));
-  return lista.sort((a, b) => {
-    const t = String(b.ts).localeCompare(String(a.ts));
-    if (t) return t;
-    return String(b.criado || "").localeCompare(String(a.criado || ""));
-  });
-}
+let avalEditando = null;   // id da avaliação em edição (ou null)
 
 function calcAval(a) {
   const d = a.dobras || {}, m = a.medidas || {};
@@ -1702,25 +1699,84 @@ function calcAval(a) {
   };
 }
 
+/* --- coleção: junta local + remoto, sem duplicar por id --- */
+function todasAvaliacoes() {
+  const mapa = new Map();
+  Object.keys(S.avalRemoto || {}).forEach((k) => {
+    const a = S.avalRemoto[k];
+    if (a && a.id && a.aluno) mapa.set(a.id, a);
+    else if (a && a.aluno) mapa.set(k, Object.assign({ id: k }, a));
+  });
+  S.aval.forEach((a) => { if (a && a.id) mapa.set(a.id, a); });
+  return Array.from(mapa.values());
+}
+
+function avaliacoesDe(aluno) {
+  return todasAvaliacoes()
+    .filter((a) => so(a.aluno) === so(aluno))
+    .sort((a, b) => {
+      const t = String(b.ts).localeCompare(String(a.ts));
+      if (t) return t;
+      return String(b.criado || "").localeCompare(String(a.criado || ""));
+    });
+}
+
+/* --- seletor de aluno --- */
+function renderAvalAlunos() {
+  const box = $("#avalAlunos");
+  if (!box) return;
+  box.innerHTML = "";
+
+  const nomes = Array.from(new Set([]
+    .concat(S.roster, todasAvaliacoes().map((a) => a.aluno))
+    .filter(Boolean)));
+
+  if (!nomes.length) {
+    box.innerHTML = '<p class="hint" style="margin:0">Cadastre os alunos em Ajustes → Lista de alunos.</p>';
+    return;
+  }
+
+  nomes.forEach((n) => {
+    const qtd = avaliacoesDe(n).length;
+    const b = document.createElement("button");
+    b.className = "chipBtn" + (so(n) === so(S.aluno) ? " on" : "");
+    b.innerHTML = `${esc(n)}${qtd ? " · " + qtd : ""}`;
+    b.onclick = () => {
+      S.aluno = n;
+      LS.set("aluno", n);
+      fecharFormAval();
+      renderAval();
+      renderLista();
+    };
+    box.appendChild(b);
+  });
+}
+
+/* --- formulário --- */
 function campoAval(id, nome, un, valor) {
   return `<div class="frow"><label>${nome}</label>
     <input type="number" id="${id}" inputmode="decimal" step="0.1" min="0" placeholder="${un}"
-           value="${valor != null ? valor : ""}"></div>`;
+           value="${valor != null && valor !== 0 ? valor : ""}"></div>`;
 }
 
 function montarFormAval(base) {
   const a = base || {};
   const m = a.medidas || {}, d = a.dobras || {};
-  af.sexo = a.sexo || af.sexo;
-  af.dia = a.dia || af.dia;
+  af.sexo = a.sexo || af.sexo || "M";
+  af.dia = a.dia || af.dia || iso(new Date());
 
+  $("#avQuem").textContent = S.aluno || "—";
+  $("#avNova").textContent = avalEditando ? "editando" : "nova";
   $("#avData").value = af.dia;
-  $("#avMasc").classList.toggle("on", af.sexo === "M");
-  $("#avFem").classList.toggle("on", af.sexo === "F");
-  $("#avMasc").style.background = af.sexo === "M" ? "var(--gold-soft)" : "";
-  $("#avMasc").style.borderColor = af.sexo === "M" ? "var(--gold)" : "";
-  $("#avFem").style.background = af.sexo === "F" ? "var(--gold-soft)" : "";
-  $("#avFem").style.borderColor = af.sexo === "F" ? "var(--gold)" : "";
+
+  const pintar = (btn, on) => {
+    btn.classList.toggle("on", on);
+    btn.style.background = on ? "var(--gold-soft)" : "";
+    btn.style.borderColor = on ? "var(--gold)" : "";
+    btn.style.color = on ? "var(--gold)" : "";
+  };
+  pintar($("#avMasc"), af.sexo === "M");
+  pintar($("#avFem"), af.sexo === "F");
 
   $("#avDados").innerHTML =
     campoAval("af_peso", "Peso", "kg", a.peso) +
@@ -1730,7 +1786,7 @@ function montarFormAval(base) {
   $("#avMedidas").innerHTML = MEDIDAS.map((x) => campoAval("af_m_" + x.id, x.nome, "cm", m[x.id])).join("");
   $("#avDobras").innerHTML = DOBRAS.map((x) => campoAval("af_d_" + x.id, x.nome, "mm", d[x.id])).join("");
 
-  document.querySelectorAll("#avalForm input[type=number]").forEach((i) => i.oninput = atualizarResumoAval);
+  document.querySelectorAll("#avalForm input[type=number]").forEach((i) => { i.oninput = atualizarResumoAval; });
   atualizarResumoAval();
 }
 
@@ -1765,105 +1821,194 @@ function atualizarResumoAval() {
   $("#avResumo").innerHTML = linhas.join("<br>");
 }
 
-function abrirAval(editar) {
-  if (!S.aluno && !editar) { toast("Escolha o aluno primeiro"); ir("v-aluno"); return; }
-  const anterior = avalDoAluno()[0];
-  const checkin = S.regs.filter((r) => so(r.aluno) === so(S.aluno)).sort((a, b) => String(b.ts).localeCompare(String(a.ts)))[0];
+function abrirFormAval(a) {
+  if (!S.aluno) { toast("Escolha quem está sendo avaliado"); return; }
+  avalEditando = a ? a.id : null;
 
-  af = { sexo: (editar && editar.sexo) || (anterior && anterior.sexo) || "M", dia: iso(new Date()) };
-  $("#avalAluno").textContent = S.aluno || "—";
+  const anterior = avaliacoesDe(S.aluno)[0];
+  const checkin = S.regs
+    .filter((r) => so(r.aluno) === so(S.aluno))
+    .sort((x, y) => String(y.ts).localeCompare(String(x.ts)))[0];
+
+  af = { sexo: (a && a.sexo) || (anterior && anterior.sexo) || "M", dia: iso(new Date()) };
+
   $("#avalForm").hidden = false;
-  montarFormAval(editar || {
+  $("#avalHistBox").hidden = true;
+  montarFormAval(a || {
     peso: (checkin && checkin.peso) || (anterior && anterior.peso) || null,
     altura: anterior ? anterior.altura : null,
     idade: anterior ? anterior.idade : null,
     medidas: anterior ? anterior.medidas : {},
     dobras: anterior ? anterior.dobras : {}
   });
-  $("#avalForm").scrollIntoView({ behavior: "smooth", block: "start" });
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-$("#btnNovaAval").onclick = () => abrirAval(null);
-$("#btnCancelarAval").onclick = () => { $("#avalForm").hidden = true; renderAval(); };
-$("#btnAvalTrocar").onclick = () => ir("v-aluno");
-$("#avMasc").onclick = () => { af.sexo = "M"; montarFormAval(lerFormAvalComDia()); };
-$("#avFem").onclick = () => { af.sexo = "F"; montarFormAval(lerFormAvalComDia()); };
-
-function lerFormAvalComDia() {
-  const v = lerFormAval();
-  return Object.assign({}, v, { dia: $("#avData").value });
+function fecharFormAval() {
+  $("#avalForm").hidden = true;
+  $("#avalHistBox").hidden = false;
+  avalEditando = null;
 }
+
+$("#btnNovaAval").onclick = () => {
+  if (!S.aluno) { toast("Escolha quem está sendo avaliado"); return; }
+  abrirFormAval(null);
+};
+$("#btnCancelarAval").onclick = () => { fecharFormAval(); renderAval(); };
+$("#avMasc").onclick = () => { af.sexo = "M"; montarFormAval(lerFormAval()); };
+$("#avFem").onclick = () => { af.sexo = "F"; montarFormAval(lerFormAval()); };
 
 $("#btnSalvarAval").onclick = () => {
-  if (!S.aluno) { toast("Escolha o aluno primeiro"); return; }
+  if (!S.aluno) { toast("Escolha quem está sendo avaliado"); return; }
   const v = lerFormAval();
   if (!v.peso || !v.altura) { toast("Informe peso e altura"); return; }
+  if (!v.idade) { toast("Informe a idade (usada no cálculo)"); return; }
 
   const res = calcAval(v);
-  const rec = {
-    id: uid(), aluno: S.aluno, dia: v.dia,
-    ts: new Date(v.dia + "T12:00:00").toISOString(),
-    criado: new Date().toISOString(),
-    sexo: v.sexo, idade: v.idade, peso: v.peso, altura: v.altura,
-    medidas: v.medidas, dobras: v.dobras, res: res, sync: 0
-  };
+  const aluno = S.aluno;
 
-  S.aval.push(rec);
-  LS.set("aval", S.aval);
-  toast("Avaliação salva" + (res.pct != null ? " · " + nf(res.pct, 1) + "% G" : ""));
-  $("#avalForm").hidden = true;
+  if (avalEditando) {
+    let alvo = S.aval.find((a) => a.id === avalEditando);
+    if (!alvo && S.avalRemoto && S.avalRemoto[avalEditando]) {
+      alvo = Object.assign({}, S.avalRemoto[avalEditando], { id: avalEditando, sync: 0 });
+      S.aval.push(alvo);
+    }
+    if (alvo) {
+      Object.assign(alvo, { dia: v.dia, ts: new Date(v.dia + "T12:00:00").toISOString(),
+        sexo: v.sexo, idade: v.idade, peso: v.peso, altura: v.altura,
+        medidas: v.medidas, dobras: v.dobras, res: res, sync: 0 });
+      LS.set("aval", S.aval);
+      toast("Avaliação atualizada");
+    } else {
+      toast("Não achei esta avaliação para editar", true);
+    }
+  } else {
+    S.aval.push({
+      id: uid(), aluno: aluno, dia: v.dia,
+      ts: new Date(v.dia + "T12:00:00").toISOString(),
+      criado: new Date().toISOString(),
+      sexo: v.sexo, idade: v.idade, peso: v.peso, altura: v.altura,
+      medidas: v.medidas, dobras: v.dobras, res: res, sync: 0
+    });
+    LS.set("aval", S.aval);
+    toast("Avaliação salva" + (res.pct != null ? " · " + nf(res.pct, 1) + "% G" : ""));
+  }
+
+  fecharFormAval();
   renderAval();
   sincronizar(true);
 };
 
+async function excluirAval(id) {
+  if (!confirm("Excluir esta avaliação? Não tem como desfazer.")) return;
+  S.aval = S.aval.filter((a) => a.id !== id);
+  LS.set("aval", S.aval);
+
+  if (S.avalRemoto && S.avalRemoto[id]) {
+    delete S.avalRemoto[id];
+    LS.set("avalremoto", S.avalRemoto);
+  }
+
+  renderAval();
+
+  if (temSala()) {
+    try { await pedir(salaUrl() + "/aval/" + encodeURIComponent(id) + ".json", { method: "DELETE" }); }
+    catch (e) {}
+    sincronizar(true);
+  }
+  toast("Avaliação excluída");
+}
+
+/* --- histórico --- */
 function renderAval() {
-  $("#avalAluno").textContent = S.aluno || "todos";
-  const lista = avalDoAluno();
+  renderAvalAlunos();
+
+  const lista = S.aluno ? avaliacoesDe(S.aluno) : [];
+  $("#avalCount").textContent = lista.length
+    ? lista.length + (lista.length === 1 ? " avaliação" : " avaliações")
+    : "";
+  if (!S.aluno) {
+    $("#avalVazio").hidden = false;
+    $("#avalVazio").textContent = "Escolha acima quem você está avaliando.";
+  } else {
+    $("#avalVazio").hidden = lista.length > 0;
+    $("#avalVazio").textContent = "Nenhuma avaliação deste aluno ainda.";
+  }
+
+  const ultima = $("#avalUltima");
   const box = $("#avalLista");
   box.innerHTML = "";
-  $("#avalVazio").hidden = lista.length > 0;
+  ultima.hidden = true;
+
+  if (lista.length >= 2) {
+    const atual = lista[0], ant = lista[1];
+    const ra = atual.res || calcAval(atual), rb = ant.res || calcAval(ant);
+    const dif = (x, y) => (x == null || y == null) ? null : Math.round((x - y) * 10) / 10;
+    const dPct = dif(ra.pct, rb.pct), dPeso = dif(Number(atual.peso), Number(ant.peso)), dMM = dif(ra.mm, rb.mm);
+
+    const linha = (rot, v, un, bomNegativo) => {
+      if (v == null) return "";
+      const cls = v === 0 ? "" : (bomNegativo ? (v < 0 ? "var(--ok)" : "var(--warn)") : (v > 0 ? "var(--ok)" : "var(--warn)"));
+      return `<div class="row between" style="padding:4px 0">
+        <span class="muted">${rot}</span>
+        <b style="color:${cls || "var(--steel)"}">${v > 0 ? "+" : ""}${nf(v, 1)} ${un}</b></div>`;
+    };
+
+    const d = new Date(atual.ts);
+    ultima.hidden = false;
+    ultima.innerHTML =
+      `<div class="muted" style="margin-bottom:6px">Evolução desde ${String(new Date(ant.ts).getDate()).padStart(2, "0")}/${String(new Date(ant.ts).getMonth() + 1).padStart(2, "0")}</div>` +
+      linha("% de gordura", dPct, "p.p.", true) +
+      linha("Peso", dPeso, "kg", true) +
+      linha("Massa magra", dMM, "kg", false);
+  }
 
   lista.forEach((a, idx) => {
     const r = a.res || calcAval(a);
-    const ant = lista[idx + 1];
     const d = new Date(a.ts);
+    const pendente = a.sync !== 1 && !a._remoto;
     const el = document.createElement("div");
     el.className = "ava";
     el.style.flexDirection = "column";
     el.style.alignItems = "stretch";
 
-    let delta = "";
-    if (ant) {
-      const ra = ant.res || calcAval(ant);
-      if (ra.pct != null && r.pct != null) {
-        const dif = Math.round((r.pct - ra.pct) * 10) / 10;
-        delta = (dif > 0 ? "+" : "") + nf(dif, 1) + " %G";
-      }
-    }
-
     el.innerHTML =
-      `<div class="row" style="gap:10px">
-         <span class="d">${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}</span>
+      `<div class="row" style="gap:8px">
+         <span class="d">${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getFullYear()).slice(2)}</span>
          <span class="v">${r.pct == null ? "—" : nf(r.pct, 1) + "%"}</span>
-         <span class="p">${nf(a.peso, 1)} kg · ${r.mm != null ? nf(r.mm, 1) + " kg massa magra" : "sem dobras"}</span>
-       </div>` +
-      (delta ? `<div class="muted" style="font-size:11px;margin-top:4px">${delta} vs. anterior</div>` : "") +
-      `<div class="det" style="margin-top:8px;display:none">
+         <span class="badge ${pendente ? "pend" : "ok"}">${pendente ? "pendente" : "salva"}</span>
+         <span class="p">${nf(a.peso, 1)} kg · ${r.mm != null ? nf(r.mm, 1) + " kg magra" : "sem dobras"}</span>
+       </div>
+       <div class="det" style="margin-top:8px;display:none">
          ${r.metodo ? r.metodo + " · somatório " + nf(r.metodo.indexOf("7") >= 0 ? r.soma7 : r.soma3, 0) + " mm<br>" : ""}
-         IMC <b>${r.imc == null ? "—" : nf(r.imc, 1)}</b> · C/Q <b>${r.rcq == null ? "—" : nf(r.rcq, 2)}</b><br>
+         IMC <b>${r.imc == null ? "—" : nf(r.imc, 1)}</b> · C/Q <b>${r.rcq == null ? "—" : nf(r.rcq, 2)}</b> · idade <b>${a.idade || "—"}</b><br>
          Cintura <b>${a.medidas.cintura || "—"}</b> · Quadril <b>${a.medidas.quadril || "—"}</b> · Peito <b>${a.medidas.peito || "—"}</b><br>
-         Braço <b>${a.medidas.braco || "—"}</b> · Coxa <b>${a.medidas.coxa || "—"}</b> · Panturrilha <b>${a.medidas.panturrilha || "—"}</b>
+         Braço <b>${a.medidas.braco || "—"}</b> · Coxa <b>${a.medidas.coxa || "—"}</b> · Panturrilha <b>${a.medidas.panturrilha || "—"}</b> · Pescoço <b>${a.medidas.pescoco || "—"}</b><br>
+         <div class="row" style="gap:8px;margin-top:10px">
+           <button class="btn ghost" data-ed="${a.id}" style="padding:8px 12px;font-size:12px;flex:1">Editar</button>
+           <button class="btn ghost" data-del="${a.id}" style="padding:8px 12px;font-size:12px;flex:1;color:var(--err)">Excluir</button>
+         </div>
        </div>`;
 
-    el.onclick = () => {
+    el.addEventListener("click", (ev) => {
+      if (ev.target.closest("[data-ed]") || ev.target.closest("[data-del]")) return;
       const det = el.querySelector(".det");
       det.style.display = det.style.display === "none" ? "block" : "none";
+    });
+    el.querySelector("[data-ed]").onclick = (ev) => {
+      ev.stopPropagation();
+      abrirFormAval(a);
     };
+    el.querySelector("[data-del]").onclick = (ev) => {
+      ev.stopPropagation();
+      excluirAval(a.id);
+    };
+
     box.appendChild(el);
   });
 }
 
-/* ---------------- backup ---------------- */
+/* ---------------- backup ---------------- *//* ---------------- backup ---------------- */
 function baixarJson(obj, nome) {
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([JSON.stringify(obj, null, 2)], { type: "application/json" }));
