@@ -150,9 +150,9 @@
     <h2>Quem está treinando</h2>
 
     <div class="card" id="bannerCfg" hidden style="border-color:var(--gold);background:linear-gradient(180deg,#1a1710,#12141a)">
-      <div style="font-weight:800;margin-bottom:4px">Este aparelho não está ligado à planilha</div>
-      <p class="hint" style="margin:0">Sem a conexão, os check-ins ficam só neste celular e a lista de alunos não carrega.</p>
-      <button class="btn gold block" id="btnConectar" style="margin-top:12px">Conectar à planilha</button>
+      <div style="font-weight:800;margin-bottom:4px">Este aparelho não está ligado ao grupo</div>
+      <p class="hint" style="margin:0">Sem a conexão, os check-ins ficam só neste celular e você não vê o registro dos outros.</p>
+      <button class="btn gold block" id="btnConectar" style="margin-top:12px">Conectar ao grupo</button>
     </div>
 
     <div class="card tight" id="alunoAtualBox" hidden>
@@ -335,17 +335,13 @@
 
   <!-- ================= AJUSTES ================= -->
   <section id="v-cfg" hidden>
-    <h2>Conexão</h2>
+    <h2>Banco compartilhado</h2>
     <div class="card">
       <div class="field">
-        <label>Endereço do Web App</label>
-        <input type="url" id="cfgEndpoint" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off">
+        <label>Endereço do banco (Firebase)</label>
+        <input type="url" id="cfgSala" placeholder="https://seu-projeto-default-rtdb.firebaseio.com" autocomplete="off">
       </div>
-      <div class="field">
-        <label>Código de acesso</label>
-        <input type="text" id="cfgToken" placeholder="código entregue pelo treinador" autocomplete="off">
-      </div>
-      <button class="btn gold block" id="btnSalvarCfg">Salvar e testar</button>
+      <button class="btn gold block" id="btnSalvarSala">Salvar e testar</button>
       <p class="hint" id="cfgStatus" style="margin:10px 0 0"></p>
       <div class="sep"></div>
       <button class="btn ghost block" id="btnLink">Copiar link já configurado</button>
@@ -358,15 +354,11 @@
       <pre id="diagOut" style="white-space:pre-wrap;font-size:11.5px;line-height:1.5;color:var(--steel);
         background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px;margin:0;
         font-family:ui-monospace,SFMono-Regular,Menlo,monospace;overflow-x:auto">Ainda não testado.</pre>
-      <p class="hint" style="margin:10px 0 0">
-        O endereço precisa terminar em <b>/exec</b> e a implantação deve ser
-        <b>Executar como: Eu</b> e <b>Quem tem acesso: Qualquer pessoa</b>.
-      </p>
     </div>
 
     <h2>Alunos</h2>
     <div class="card">
-      <button class="btn ghost block" id="btnRoster">Atualizar lista da planilha</button>
+      <button class="btn ghost block" id="btnRoster">Buscar nomes do grupo</button>
       <div class="field" style="margin-top:14px">
         <label>Lista offline (um nome por linha)</label>
         <textarea id="cfgRoster" rows="5" placeholder="Ana Souza&#10;Bruno Lima"></textarea>
@@ -386,7 +378,8 @@
     <h2>Backup</h2>
     <div class="card">
       <button class="btn ghost block" id="btnExport" style="margin-bottom:8px">Exportar backup (.json)</button>
-      <button class="btn ghost block" id="btnImport">Importar backup</button>
+      <button class="btn ghost block" id="btnImport" style="margin-bottom:8px">Importar backup</button>
+      <button class="btn ghost block" id="btnCsv">Exportar registros (.csv)</button>
       <input type="file" id="fileImport" accept="application/json,.json" hidden>
       <p class="hint" style="margin:10px 0 0">Troca de celular ou reinstalação: exporte aqui e importe no aparelho novo.</p>
     </div>
@@ -395,7 +388,7 @@
     <div class="card">
       <button class="btn ghost block" id="btnLimpar" style="color:var(--err)">Apagar dados deste aparelho</button>
       <p class="hint" style="margin-top:12px">
-        GH Desafio · v3.4 · build 7 · funciona offline. Os check-ins ficam neste aparelho até o envio concluir;
+        GH Desafio · v4.0 · build 8 · funciona offline. Os check-ins ficam neste aparelho até o envio concluir;
         apagar remove o histórico local, o que já foi para a planilha permanece lá.
       </p>
     </div>
@@ -432,8 +425,7 @@
    GH Desafio — v3 (cardio · água · peso)
    ===================================================================== */
 const PADRAO = {
-  endpoint: "",
-  token: "",
+  sala: "",
   meta: 90,
   inicio: "2026-01-05",
   dias: 30,
@@ -454,11 +446,10 @@ const LS = {
 (function lerLink() {
   try {
     const q = new URLSearchParams(location.search);
-    const e = (q.get("e") || "").trim();
-    const t = (q.get("t") || "").trim();
-    if (!e || !t) return;
+    const sala = (q.get("s") || q.get("sala") || "").trim();
+    if (!sala) return;
     const atual = LS.get("cfg", {});
-    LS.set("cfg", Object.assign(atual, { endpoint: e, token: t }));
+    LS.set("cfg", Object.assign(atual, { sala: sala }));
   } catch (err) {}
 })();
 
@@ -469,6 +460,7 @@ const S = {
   roster: LS.get("roster", []),
   ranking: LS.get("ranking", null),
   grupo: LS.get("grupo", null),
+  remoto: LS.get("remoto", {}),
   lastOk: LS.get("lastok", 0),
   diag: LS.get("diag", null)
 };
@@ -578,7 +570,7 @@ function ir(view) {
   if (view === "v-aluno") renderLista();
   if (view === "v-checkin") renderCheckin();
   if (view === "v-prog") renderProgresso();
-  if (view === "v-grupo") { renderGrupo(); carregarGrupo(true); }
+  if (view === "v-grupo") { renderGrupo(); sincronizar(true); }
   if (view === "v-cfg") renderCfg();
   window.scrollTo({ top: 0 });
 }
@@ -586,7 +578,7 @@ $$("footer button").forEach((b) => b.addEventListener("click", () => ir(b.datase
 
 /* ---------------- aluno ---------------- */
 function renderLista() {
-  const semConexao = !S.cfg.endpoint || !S.cfg.token;
+  const semConexao = !temSala();
   const banner = $("#bannerCfg");
   if (banner) banner.hidden = !semConexao;
 
@@ -616,7 +608,7 @@ function escolherAluno(nome) {
 
 $("#busca").addEventListener("input", renderLista);
 $("#btnTrocar").onclick = () => { S.aluno = ""; LS.set("aluno", ""); renderLista(); };
-$("#btnConectar").onclick = () => { ir("v-cfg"); setTimeout(() => $("#cfgEndpoint").focus(), 250); };
+$("#btnConectar").onclick = () => { ir("v-cfg"); setTimeout(() => $("#cfgSala").focus(), 250); };
 
 /* ---------------- check-in ---------------- */
 const CHIPS_CARDIO = [0, 15, 30, 45, 60, 90];
@@ -923,7 +915,62 @@ function sequenciaMax(meus) {
   return max;
 }
 
-/* ---------------- grupo (feed compartilhado) ---------------- */
+/* ---------------- dados compartilhados ---------------- */
+function salaUrl() { return String(S.cfg.sala || "").replace(/\/+$/, ""); }
+function temSala() { return !!salaUrl(); }
+function chaveReg(r) { return so(r.aluno) + "|" + iso(new Date(r.ts)); }
+
+function regsCompartilhados() {
+  const mapa = new Map();
+  Object.keys(S.remoto || {}).forEach((k) => {
+    const r = S.remoto[k];
+    if (!r || !r.aluno || !r.ts) return;
+    mapa.set(chaveReg(r), {
+      aluno: r.aluno, ts: r.ts,
+      cardio: Number(r.cardio) || 0, agua: Number(r.agua) || 0, peso: Number(r.peso) || 0,
+      pontos: Number(r.pontos != null ? r.pontos : r.pts) || 0
+    });
+  });
+  S.regs.forEach((r) => mapa.set(chaveReg(r), {
+    aluno: r.aluno, ts: r.ts,
+    cardio: Number(r.cardio) || 0, agua: Number(r.agua) || 0, peso: Number(r.peso) || 0,
+    pontos: ptsDe(r)
+  }));
+  return Array.from(mapa.values()).sort((a, b) => String(a.ts).localeCompare(String(b.ts)));
+}
+
+function rankingDe(regs) {
+  const por = new Map();
+  regs.forEach((r) => {
+    const k = so(r.aluno);
+    const o = por.get(k) || { nome: r.aluno, pontos: 0, dias: 0 };
+    o.pontos += Number(r.pontos) || 0;
+    o.dias++;
+    por.set(k, o);
+  });
+  return Array.from(por.values())
+    .sort((a, b) => b.pontos - a.pontos || a.nome.localeCompare(b.nome))
+    .map((o, i) => Object.assign(o, { pos: i + 1 }));
+}
+
+function hojeDe(regs, nomes) {
+  const hoje = iso(new Date());
+  const feitos = new Map();
+  regs.filter((r) => iso(new Date(r.ts)) === hoje).forEach((r) => feitos.set(so(r.aluno), r.pontos));
+  const lista = new Set([].concat(nomes, Array.from(feitos.keys())));
+  return Array.from(nomes).map((n) => ({ nome: n, fez: feitos.has(so(n)), pontos: feitos.get(so(n)) || 0 }));
+}
+
+/* ---------------- grupo ---------------- */
+function linhaHoje(h) {
+  const el = document.createElement("div");
+  el.className = "rk" + (so(h.nome) === so(S.aluno) ? " me" : "");
+  el.innerHTML = `<span class="p">${h.fez ? "✓" : "·"}</span>
+    <span class="info"><div class="nm">${h.nome}</div></span>
+    <span class="pt">${h.fez ? h.pontos + "<small>pts hoje</small>" : '<span class="ph">—</span><small>aguardando</small>'}</span>`;
+  return el;
+}
+
 function linhaRank(x, i) {
   const meta = Number(S.cfg.meta) || 90;
   const pct = Math.max(0, Math.min(1, (Number(x.pontos) || 0) / meta));
@@ -938,152 +985,85 @@ function linhaRank(x, i) {
   return el;
 }
 
-function linhaHoje(h) {
-  const el = document.createElement("div");
-  el.className = "rk" + (so(h.nome) === so(S.aluno) ? " me" : "");
-  el.innerHTML = `<span class="p">${h.fez ? "✓" : "·"}</span>
-    <span class="info"><div class="nm">${h.nome}</div></span>
-    <span class="pt">${h.fez ? h.pontos + "<small>pts hoje</small>" : '<span class="ph">—</span><small>aguardando</small>'}</span>`;
-  return el;
-}
-
 function linhaFeed(r) {
   const d = new Date(r.ts);
   const hoje = iso(d) === iso(new Date());
   const ontem = iso(d) === iso(new Date(Date.now() - 86400000));
   const quando = hoje ? "hoje" : ontem ? "ontem"
     : String(d.getDate()).padStart(2, "0") + "/" + String(d.getMonth() + 1).padStart(2, "0");
-  const peso = Number(r.peso) > 1 ? nf(r.peso, 1) + " kg" : (Number(r.peso) === 1 ? "peso ok" : "");
+  const peso = Number(r.peso) > 1 ? nf(r.peso, 1) + " kg" : "";
 
   const el = document.createElement("div");
-  el.className = "rk" + (so(r.nome) === so(S.aluno) ? " me" : "");
+  el.className = "rk" + (so(r.aluno) === so(S.aluno) ? " me" : "");
   el.style.flexDirection = "column";
   el.style.alignItems = "stretch";
   el.style.gap = "6px";
   el.innerHTML =
     `<div class="row" style="gap:8px">
-       <span class="nm" style="flex:1">${r.nome}</span>
+       <span class="nm" style="flex:1">${r.aluno}</span>
        <span class="muted" style="font-size:11px">${quando}</span>
        <span class="pt">${r.pontos}<small>pts</small></span>
      </div>
      <div class="muted" style="font-size:12px">
-       ${(r.cardio || 0)} min cardio · ${nf(r.agua, 1)} L água${peso ? " · " + peso : ""}
-     </div>` +
-    (r.foto ? `<img src="${r.foto}" alt="" style="width:100%;max-height:150px;object-fit:cover;border-radius:10px;margin-top:4px">` : "");
+       ${r.cardio} min cardio · ${nf(r.agua, 1)} L água${peso ? " · " + peso : ""}
+     </div>`;
   return el;
 }
 
 function renderGrupo() {
-  const g = S.grupo || { registros: [], hoje: [], ranking: [] };
-  const est = S.grupoEstado || "sem-config";
-  const dot = $("#gDot"), txt = $("#gTxt"), cta = $("#gCta");
+  const regs = regsCompartilhados();
+  const ranking = rankingDe(regs);
+  const nomes = S.roster.length ? S.roster : ranking.map((x) => x.nome);
+  const hoje = hojeDe(regs, nomes);
 
-  const textos = {
-    "ok": ["ok", g.em ? "Conectado · atualizado às " + new Date(g.em).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "Conectado", null],
-    "sem-config": ["pend", "Falta ligar este aparelho à planilha.", "Conectar agora"],
-    "servidor-antigo": ["off", "O servidor respondeu, mas sem os registros. Reimplante o Web App com o script novo.", "Abrir Ajustes"],
-    "erro": ["off", S.diag ? mensagemDe(S.diag) : "Sem resposta do servidor agora. Mostrando o último dado salvo.", "Tentar de novo"],
-    "vazio": ["pend", "Conectado. Nenhum check-in registrado ainda.", null],
-    "parcial": ["pend", "Conectado (só ranking). Reimplante o script para ver os registros.", "Abrir Ajustes"]
-  };
-  const t = textos[est] || textos["ok"];
-  dot.className = "dot " + t[0];
-  txt.textContent = t[1];
-  cta.hidden = !t[2];
-  if (t[2]) { cta.textContent = t[2]; cta.dataset.acao = (est === "erro") ? "retry" : "cfg"; }
+  const dot = $("#gDot"), txt = $("#gTxt"), cta = $("#gCta");
+  cta.hidden = true;
+
+  if (!temSala()) {
+    dot.className = "dot pend";
+    txt.textContent = "Falta colar o endereço do banco compartilhado para os três se verem.";
+    cta.hidden = false; cta.textContent = "Conectar agora"; cta.dataset.acao = "cfg";
+  } else if (S.diag && S.diag.tipo && S.diag.em && (!S.lastOk || new Date(S.diag.em) > new Date(S.lastOk))) {
+    dot.className = "dot off";
+    txt.textContent = mensagemDe(S.diag);
+    cta.hidden = false; cta.textContent = "Tentar de novo"; cta.dataset.acao = "retry";
+  } else if (S.lastOk) {
+    dot.className = "dot ok";
+    txt.textContent = "Sincronizado às " + new Date(S.lastOk).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  } else {
+    dot.className = "dot pend";
+    txt.textContent = "Conectado. Ainda sem sincronização.";
+  }
 
   const hojeBox = $("#hojeLista"), rankBox = $("#rankLista"), feedBox = $("#feedLista");
   hojeBox.innerHTML = ""; rankBox.innerHTML = ""; feedBox.innerHTML = "";
 
-  const ranking = g.ranking || [];
-  const hoje = g.hoje || [];
-  const registros = g.registros || [];
+  if (!hoje.length) {
+    const v = document.createElement("p");
+    v.className = "hint";
+    v.textContent = "Cadastre os nomes em Ajustes → Lista de alunos.";
+    hojeBox.appendChild(v);
+  } else hoje.forEach((h) => hojeBox.appendChild(linhaHoje(h)));
 
-  (hoje.length ? hoje : S.roster.slice(0, 6).map((n) => ({ nome: n, fez: false, pontos: 0 })))
-    .forEach((h) => hojeBox.appendChild(linhaHoje(h)));
-
-  if (ranking.length) {
-    ranking.slice(0, 12).forEach((x, i) => rankBox.appendChild(linhaRank(x, i)));
-  } else {
-    S.roster.slice(0, 6).forEach((n, i) => {
-      const el = document.createElement("div");
-      el.className = "rk";
-      el.innerHTML = `<span class="p">${i + 1}</span>
-        <span class="info"><div class="nm">${n}</div><div class="bar"><i style="width:0"></i></div></span>
-        <span class="pt"><span class="ph">—</span><small>sem dados</small></span>`;
-      rankBox.appendChild(el);
-    });
+  ranking.forEach((x, i) => rankBox.appendChild(linhaRank(x, i)));
+  if (!ranking.length) {
+    const v = document.createElement("p");
+    v.className = "hint";
+    v.textContent = "Nenhum check-in ainda. O primeiro aparece aqui.";
+    rankBox.appendChild(v);
   }
 
-  registros.forEach((r) => feedBox.appendChild(linhaFeed(r)));
-
-  const semFeed = !registros.length;
-  const vazio = $("#grupoVazio");
-  vazio.hidden = !semFeed;
-  if (semFeed) {
-    vazio.textContent = est === "ok" || est === "vazio"
-      ? "O primeiro check-in do grupo aparece aqui."
-      : "Assim que a conexão estiver ativa, os registros dos três aparecem aqui.";
-  }
+  regs.slice().reverse().slice(0, 40).forEach((r) => feedBox.appendChild(linhaFeed(r)));
+  $("#grupoVazio").hidden = regs.length > 0;
+  $("#grupoVazio").textContent = "Sem registros ainda para mostrar.";
 }
+
+$("#btnGrupo").onclick = () => sincronizar(false);
 
 $("#gCta").onclick = () => {
-  if ($("#gCta").dataset.acao === "retry") carregarGrupo(false);
-  else { ir("v-cfg"); setTimeout(() => $("#cfgEndpoint").focus(), 250); }
+  if ($("#gCta").dataset.acao === "retry") sincronizar(false);
+  else { ir("v-cfg"); setTimeout(() => $("#cfgSala").focus(), 250); }
 };
-
-async function pegarJson(params) {
-  const url = S.cfg.endpoint + (S.cfg.endpoint.includes("?") ? "&" : "?") +
-    params + "&token=" + encodeURIComponent(S.cfg.token);
-  return lerJson(await pedir(url));
-}
-
-async function carregarGrupo(silencioso) {
-  if (!S.cfg.endpoint || !S.cfg.token) {
-    S.grupoEstado = "sem-config";
-    renderGrupo();
-    if (!silencioso) toast("Conecte o app em Ajustes", true);
-    return;
-  }
-
-  try {
-    const d = await pegarJson("acao=feed&dias=14");
-    if (d && d.ok && d.dados) {
-      S.grupo = {
-        registros: d.dados.registros || [],
-        hoje: d.dados.hoje || [],
-        ranking: d.ranking || [],
-        em: new Date().toISOString()
-      };
-      S.ranking = { lista: d.ranking || [], em: S.grupo.em };
-      S.grupoEstado = (S.grupo.registros.length || S.grupo.hoje.length) ? "ok" : "vazio";
-      LS.set("grupo", S.grupo);
-      aplicarConfig(d.config);
-      renderGrupo();
-      if (!silencioso) toast("Grupo atualizado");
-      return;
-    }
-
-    // servidor sem a rota de feed (script antigo): tenta o ranking
-    const r = await pegarJson("acao=ranking");
-    if (r && r.ok && Array.isArray(r.ranking)) {
-      S.grupo = { registros: [], hoje: [], ranking: r.ranking, em: new Date().toISOString() };
-      S.grupoEstado = "parcial";
-      aplicarConfig(r.config);
-      LS.set("grupo", S.grupo);
-    } else {
-      S.grupoEstado = "servidor-antigo";
-    }
-  } catch (e) {
-    if (e && e.tipo) guardarDiag("grupo", e);
-    S.grupoEstado = "erro";
-    if (!silencioso) toast(e && e.tipo ? mensagemDe(e) : "Não consegui atualizar o grupo", true);
-  }
-
-  renderGrupo();
-}
-
-$("#btnGrupo").onclick = () => carregarGrupo(false);
 
 /* ---------------- configuração ---------------- */
 function aplicarConfig(c) {
@@ -1091,7 +1071,6 @@ function aplicarConfig(c) {
   if (c.meta != null) S.cfg.meta = c.meta;
   if (c.inicio) S.cfg.inicio = c.inicio;
   if (c.dias != null) S.cfg.dias = c.dias;
-  else if (c.semanas != null) S.cfg.dias = c.semanas * 7;
   if (c.metaCardio != null) S.cfg.metaCardio = c.metaCardio;
   if (c.metaAgua != null) S.cfg.metaAgua = c.metaAgua;
   if (c.pontos) S.cfg.pontos = c.pontos;
@@ -1099,99 +1078,56 @@ function aplicarConfig(c) {
 }
 
 function renderCfg() {
-  $("#cfgEndpoint").value = S.cfg.endpoint || "";
-  $("#cfgToken").value = S.cfg.token || "";
+  const campo = $("#cfgSala");
+  if (campo && document.activeElement !== campo) campo.value = S.cfg.sala || "";
   $("#cfgPend").textContent = S.regs.filter((r) => !r.sync).length;
   $("#cfgRoster").value = S.roster.join("\n");
   atualizarChip();
 }
 
-async function testarConexao() {
-  if (!S.cfg.endpoint) return false;
+async function testarSala() {
+  if (!temSala()) return false;
   try {
-    const url = S.cfg.endpoint + (S.cfg.endpoint.includes("?") ? "&" : "?") +
-      "acao=roster&token=" + encodeURIComponent(S.cfg.token);
-    const d = lerJson(await pedir(url));
-    if (!d || !d.ok) return false;
-    if (Array.isArray(d.alunos) && d.alunos.length) { S.roster = d.alunos; LS.set("roster", S.roster); }
-    aplicarConfig(d.config);
+    const r = await pedir(salaUrl() + "/regs.json");
+    const d = lerJson(r);
+    if (d && typeof d === "object") { S.remoto = d; LS.set("remoto", d); }
     S.lastOk = Date.now(); LS.set("lastok", S.lastOk);
-    renderLista(); renderCfg(); atualizarChip();
+    S.diag = null; LS.set("diag", null);
+    renderGrupo(); renderCfg(); atualizarChip();
     return true;
-  } catch (e) { return false; }
-}
-
-function descrever(r) {
-  const tipo = classificar(r.status, r.texto);
-  let json = "não é JSON";
-  try { JSON.parse(r.texto); json = "JSON válido"; } catch (e) {}
-  return r.status + " · " + json + (json === "não é JSON" ? " (" + tipo + ")" : "") + " · " + r.ms + " ms";
-}
-
-$("#btnDiag").onclick = async () => {
-  const out = $("#diagOut");
-  const url = ($("#cfgEndpoint").value || "").trim();
-  const token = ($("#cfgToken").value || "").trim();
-  const linhas = [];
-
-  if (!url) { out.textContent = "Preencha o endereço do Web App."; return; }
-  if (!/\/exec$/.test(url)) linhas.push("AVISO: o endereço não termina em /exec — normalmente é esse o problema.");
-  if (/\/dev(\?|$)/.test(url)) linhas.push("AVISO: endereço /dev só funciona para você logado; use o /exec.");
-  linhas.push("Endereço: " + url);
-  out.textContent = "Testando…";
-
-  const base = url + (url.includes("?") ? "&" : "?") + "token=" + encodeURIComponent(token);
-
-  try {
-    const g = await pedir(base + "&acao=roster");
-    linhas.push("GET  roster → " + descrever(g));
-    if (classificar(g.status, g.texto) !== "desconhecido") {
-      try { lerJson(g); } catch (d) { linhas.push("→ " + mensagemDe(d)); }
-    }
-  } catch (d) { linhas.push("GET  roster → falhou: " + mensagemDe(d)); }
-
-  try {
-    const pr = await pedir(url, {
-      method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({ token: token, registros: [] })
-    });
-    linhas.push("POST envio  → " + descrever(pr));
-    try { JSON.parse(pr.texto); } catch (d) { linhas.push("→ " + mensagemDe({ tipo: classificar(pr.status, pr.texto) })); }
-  } catch (d) { linhas.push("POST envio  → falhou: " + mensagemDe(d)); }
-
-  if (S.diag && S.diag.em) {
-    linhas.push("");
-    linhas.push("Último erro (" + new Date(S.diag.em).toLocaleString("pt-BR") + ", " + S.diag.origem + "):");
-    linhas.push("  " + S.diag.tipo + " · HTTP " + S.diag.status);
-    if (S.diag.amostra) linhas.push("  resposta: " + S.diag.amostra.replace(/\s+/g, " ").slice(0, 120));
+  } catch (e) {
+    if (e && e.tipo) guardarDiag("teste", e);
+    return false;
   }
+}
 
-  out.textContent = linhas.join("\n");
-};
-
-$("#btnSalvarCfg").onclick = async () => {
-  S.cfg.endpoint = $("#cfgEndpoint").value.trim();
-  S.cfg.token = $("#cfgToken").value.trim();
+$("#btnSalvarSala").onclick = async () => {
+  S.cfg.sala = ($("#cfgSala").value || "").trim().replace(/\/+$/, "");
   LS.set("cfg", S.cfg);
   $("#cfgStatus").textContent = "Testando…";
-  const ok = await testarConexao();
+  const ok = await testarSala();
   $("#cfgStatus").textContent = ok
-    ? "Conectado. Lista e regras atualizadas."
-    : "Não consegui falar com a planilha. O app continua funcionando offline.";
-  if (ok) carregarGrupo(true);
+    ? "Conectado. Os registros dos três já aparecem na aba Grupo."
+    : "Não consegui ler o banco: " + (S.diag ? mensagemDe(S.diag) : "verifique o endereço.");
+  if (ok) sincronizar(true);
 };
 
 $("#btnLink").onclick = async () => {
-  if (!S.cfg.endpoint || !S.cfg.token) { toast("Salve o endereço e o código primeiro", true); return; }
+  if (!temSala()) { toast("Salve o endereço primeiro", true); return; }
   const base = location.origin + location.pathname;
-  const link = base + "?e=" + encodeURIComponent(S.cfg.endpoint) + "&t=" + encodeURIComponent(S.cfg.token);
+  const link = base + "?s=" + encodeURIComponent(salaUrl());
   try { await navigator.clipboard.writeText(link); toast("Link copiado"); }
-  catch (e) { prompt("Copie o link de configuração:", link); }
+  catch (e) { prompt("Copie o link:", link); }
 };
 
 $("#btnRoster").onclick = async () => {
-  const ok = await testarConexao();
-  toast(ok ? "Lista atualizada" : "Sem conexão com a planilha", !ok);
+  const ok = await testarSala();
+  if (!ok) { toast("Sem conexão com o banco", true); return; }
+  const nomes = Object.keys(S.remoto || {}).map((k) => S.remoto[k] && S.remoto[k].aluno).filter(Boolean);
+  S.roster = Array.from(new Set([].concat(S.roster, nomes)));
+  LS.set("roster", S.roster);
+  renderLista(); renderCfg(); renderGrupo();
+  toast(ok ? "Nomes atualizados" : "Sem conexão");
 };
 
 $("#btnRosterLocal").onclick = () => {
@@ -1200,21 +1136,57 @@ $("#btnRosterLocal").onclick = () => {
   S.roster = Array.from(new Set(nomes));
   LS.set("roster", S.roster);
   toast(S.roster.length + " alunos salvos");
-  renderLista();
+  renderLista(); renderGrupo();
 };
 
 $("#btnSync").onclick = () => sincronizar(false);
 
 $("#btnLimpar").onclick = () => {
-  if (!confirm("Apagar todos os check-ins deste aparelho? O que já foi enviado continua na planilha.")) return;
+  if (!confirm("Apagar todos os check-ins deste aparelho? O que já foi enviado continua no banco.")) return;
   S.regs = []; LS.set("regs", S.regs);
   toast("Dados locais apagados");
-  renderCfg(); renderProgresso(); renderLista();
+  renderCfg(); renderProgresso(); renderLista(); renderGrupo();
+};
+
+/* ---------------- diagnóstico ---------------- */
+function descrever(r) {
+  let json = "não é JSON";
+  try { JSON.parse(r.texto); json = "JSON válido"; } catch (e) {}
+  return r.status + " · " + json + " · " + r.ms + " ms";
+}
+
+$("#btnDiag").onclick = async () => {
+  const out = $("#diagOut");
+  const url = ($("#cfgSala").value || "").trim().replace(/\/+$/, "");
+  if (!url) { out.textContent = "Preencha o endereço do banco."; return; }
+  out.textContent = "Testando…";
+  const linhas = ["Endereço: " + url];
+
+  try {
+    const g = await pedir(url + "/regs.json");
+    linhas.push("GET  leitura → " + descrever(g));
+    const tipo = classificar(g.status, g.texto);
+    if (tipo !== "desconhecido") linhas.push("→ " + MENSAGENS[tipo]);
+  } catch (e) { linhas.push("GET  leitura → falhou: " + mensagemDe(e)); }
+
+  try {
+    const pr = await pedir(url + "/ping.json", {
+      method: "PUT", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ em: new Date().toISOString() })
+    });
+    linhas.push("PUT  escrita → " + descrever(pr));
+    const tipo = classificar(pr.status, pr.texto);
+    if (tipo !== "desconhecido") linhas.push("→ " + MENSAGENS[tipo]);
+  } catch (e) { linhas.push("PUT  escrita → falhou: " + mensagemDe(e)); }
+
+  linhas.push("");
+  linhas.push("Se a leitura e a escrita derem 200 e JSON, está tudo certo.");
+  out.textContent = linhas.join("\n");
 };
 
 /* ---------------- backup ---------------- */
 $("#btnExport").onclick = () => {
-  const dump = { app: "gh-desafio", versao: 3, em: new Date().toISOString(),
+  const dump = { app: "gh-desafio", versao: 4, em: new Date().toISOString(),
                  cfg: S.cfg, roster: S.roster, regs: S.regs };
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([JSON.stringify(dump, null, 2)], { type: "application/json" }));
@@ -1223,26 +1195,41 @@ $("#btnExport").onclick = () => {
   setTimeout(() => URL.revokeObjectURL(a.href), 4000);
 };
 
+$("#btnCsv").onclick = () => {
+  const regs = regsCompartilhados();
+  const linhas = [["Data", "Nome", "Minutos Cardio", "Litros Água", "Peso (kg)", "Check-in", "Pontos do Dia"]];
+  regs.forEach((r) => {
+    const d = new Date(r.ts);
+    linhas.push([
+      iso(d).split("-").reverse().join("/"),
+      r.aluno, r.cardio, String(r.agua).replace(".", ","),
+      r.peso ? String(r.peso).replace(".", ",") : "", "Sim", r.pontos
+    ]);
+  });
+  const csv = linhas.map((l) => l.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(";")).join("\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" }));
+  a.download = "gh-desafio-registros-" + iso(new Date()) + ".csv";
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  toast("CSV gerado — importe na planilha se quiser");
+};
+
 $("#btnImport").onclick = () => $("#fileImport").click();
 $("#fileImport").addEventListener("change", async (e) => {
   const f = e.target.files && e.target.files[0];
   if (!f) return;
   try {
-    const txt = await f.text();
-    const d = JSON.parse(txt);
+    const d = JSON.parse(await f.text());
     if (!d || !Array.isArray(d.regs)) throw new Error("formato");
-
     const mapa = new Map(S.regs.map((r) => [r.id, r]));
     d.regs.forEach((r) => mapa.set(r.id, r));
     S.regs = Array.from(mapa.values());
     LS.set("regs", S.regs);
-
     if (Array.isArray(d.roster) && d.roster.length) { S.roster = d.roster; LS.set("roster", d.roster); }
     toast(S.regs.length + " registros restaurados");
-    renderLista(); renderProgresso(); renderCfg();
-  } catch (err) {
-    toast("Arquivo inválido", true);
-  }
+    renderLista(); renderProgresso(); renderCfg(); renderGrupo();
+  } catch (err) { toast("Arquivo inválido", true); }
   e.target.value = "";
 });
 
@@ -1250,69 +1237,86 @@ $("#fileImport").addEventListener("change", async (e) => {
 function atualizarChip() {
   const pend = S.regs.filter((r) => !r.sync).length;
   const dot = $("#syncChip").querySelector(".dot");
-  if (!S.cfg.endpoint || !S.cfg.token) { dot.className = "dot"; $("#syncTxt").textContent = "só local"; }
+  if (!temSala()) { dot.className = "dot"; $("#syncTxt").textContent = "só local"; }
   else if (pend) { dot.className = "dot pend"; $("#syncTxt").textContent = pend + " pendente" + (pend > 1 ? "s" : ""); }
   else if (navigator.onLine === false) { dot.className = "dot off"; $("#syncTxt").textContent = "offline"; }
-  else if (S.lastOk) { dot.className = "dot ok"; $("#syncTxt").textContent = "tudo enviado"; }
+  else if (S.lastOk) { dot.className = "dot ok"; $("#syncTxt").textContent = "sincronizado"; }
   else { dot.className = "dot pend"; $("#syncTxt").textContent = "sem conexão"; }
   const p = $("#cfgPend"); if (p) p.textContent = pend;
 }
 
 async function sincronizar(silencioso) {
   if (sincronizando) return;
-  const pend = S.regs.filter((r) => !r.sync);
   atualizarChip();
-  if (!pend.length) { if (!silencioso) toast("Nada para enviar"); return; }
-  if (!S.cfg.endpoint || !S.cfg.token) { if (!silencioso) toast("Configure endereço e código em Ajustes", true); return; }
-  if (navigator.onLine === false) { if (!silencioso) toast("Sem internet — os registros ficam guardados", true); return; }
+
+  if (!temSala()) {
+    if (!silencioso) toast("Cole o endereço do banco em Ajustes", true);
+    return;
+  }
+  if (navigator.onLine === false) {
+    if (!silencioso) toast("Sem internet — fica guardado no aparelho", true);
+    return;
+  }
 
   sincronizando = true;
   let ok = 0, erro = "";
-  for (const r of pend) {
+
+  try {
+    const d = lerJson(await pedir(salaUrl() + "/regs.json"));
+    if (d && typeof d === "object") { S.remoto = d; LS.set("remoto", d); }
+  } catch (e) {
+    if (e && e.tipo) guardarDiag("leitura", e);
+    erro = mensagemDe(e);
+  }
+
+  for (const r of S.regs.filter((x) => !x.sync)) {
+    if (erro) break;
     try {
-      const corpo = { token: S.cfg.token, registros: [{
-        id: r.id, aluno: r.aluno, ts: r.ts,
-        cardio: r.cardio, agua: r.agua, peso: r.peso, foto: r.foto || null
-      }] };
-      const resposta = await pedir(S.cfg.endpoint, {
-        method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(corpo)
+      const resp = await pedir(salaUrl() + "/regs/" + encodeURIComponent(r.id) + ".json", {
+        method: "PUT", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          aluno: r.aluno, ts: r.ts, cardio: r.cardio || 0,
+          agua: r.agua || 0, peso: r.peso || 0, pontos: r.pts || 0, v: 4
+        })
       });
-      const data = lerJson(resposta);
-      if (!data || !data.ok) throw new Error((data && data.erro) || "falha no envio");
-      const res = (data.resultados || [])[0] || { status: "erro" };
-      if (res.status === "erro") throw new Error(res.mensagem || "registro recusado");
-      r.sync = 1;
-      r.pts = res.pontos != null ? res.pontos : r.pts;
-      r.foto = null;
-      ok++;
+      if (resp.status >= 300) throw { tipo: classificar(resp.status, resp.texto), status: resp.status, ms: resp.ms };
+      r.sync = 1; ok++;
       LS.set("regs", S.regs);
     } catch (e) {
       if (e && e.tipo) guardarDiag("envio", e);
-      erro = (e && e.tipo) ? mensagemDe(e) : (e.message || "erro");
+      erro = mensagemDe(e);
       break;
     }
   }
-  sincronizando = false;
-  if (ok && !erro) { S.lastOk = Date.now(); LS.set("lastok", S.lastOk); }
-  LS.set("regs", S.regs);
-  atualizarChip(); renderLista(); renderProgresso(); renderCfg();
 
-  if (ok) { toast(ok + " check-in" + (ok > 1 ? "s" : "") + " enviado" + (ok > 1 ? "s" : "")); carregarGrupo(true); }
-  else if (!silencioso) toast(erro || "Nada enviado", true);
+  if (ok) {
+    try {
+      const d2 = lerJson(await pedir(salaUrl() + "/regs.json"));
+      if (d2 && typeof d2 === "object") { S.remoto = d2; LS.set("remoto", d2); }
+    } catch (e) {}
+  }
+
+  sincronizando = false;
+  if (!erro) { S.lastOk = Date.now(); LS.set("lastok", S.lastOk); }
+  LS.set("regs", S.regs);
+
+  atualizarChip(); renderLista(); renderGrupo(); renderProgresso(); renderCfg();
+
+  if (ok) toast(ok + " check-in" + (ok > 1 ? "s" : "") + " sincronizado" + (ok > 1 ? "s" : ""));
+  else if (!silencioso) toast(erro || "Nada para enviar", !!erro);
 }
 
 window.addEventListener("online", () => { atualizarChip(); sincronizar(true); });
 window.addEventListener("offline", atualizarChip);
 document.addEventListener("visibilitychange", () => { if (!document.hidden) { atualizarChip(); sincronizar(true); } });
-setInterval(() => { if (S.regs.some((r) => !r.sync)) sincronizar(true); }, 90000);
+setInterval(() => { if (temSala()) sincronizar(true); }, 120000);
 
 /* ---------------- boot ---------------- */
 (function boot() {
   renderLista();
   atualizarChip();
   if (S.aluno) $("#alunoAtual").textContent = S.aluno;
-  if (S.cfg.endpoint && S.cfg.token) { testarConexao(); sincronizar(true); }
+  if (temSala()) sincronizar(true);
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
   ir(S.aluno ? "v-checkin" : "v-aluno");
 })();
