@@ -87,7 +87,7 @@ foto se quiser → *Salvar check-in*. Acabou. Não precisa de sinal.
 | Água | 1 | se ≥ meta de água (3 L) |
 | Peso registrado | 1 | se o peso do dia foi informado |
 
-Máximo de 4 pontos por dia. Meta do ciclo padrão: **160 pontos** (8 semanas).
+Máximo de 4 pontos por dia. Ciclo de **30 dias**, meta padrão **90 pontos**.
 
 **Treinador**: abre a planilha. O Registro Diário recebe a linha, o Painel soma os
 pontos e Ranking, Semanal e Dashboard se atualizam sozinhos.
@@ -103,8 +103,12 @@ pontos e Ranking, Semanal e Dashboard se atualizam sozinhos.
 - **Foto**: vai comprimida (~1.000 px, JPEG), é salva na pasta `GH Desafio — Fotos`
   do Drive e o link entra na coluna *Link Foto*.
 - **Data retroativa**: o app aceita "Hoje" e "Ontem".
-- **Ranking, gráfico semanal, sequência, conquistas e backup** ficam no próprio app;
-  o ranking é lido da planilha (aba Painel) quando há conexão.
+- **Grupo (feed compartilhado)**: a aba Grupo mostra quem já registrou hoje, o ranking
+  e os registros de todos dos últimos 14 dias, com foto. Lido da planilha.
+- **Gráfico semanal, sequência, peso e conquistas** ficam no próprio app (aba Progresso).
+- **Backup**: exporta/importa um .json com todos os check-ins do aparelho.
+- **Peso compartilhado é opcional**: `Config!C17` = "Não" esconde o valor dos outros
+  (o app mostra "peso ok" em vez do número).
 
 ## 7. Problemas comuns
 
