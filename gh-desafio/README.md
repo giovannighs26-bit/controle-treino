@@ -75,8 +75,19 @@ Se o aluno instalar o app num lugar sem internet, a lista pode ser colada à mã
 
 ## 5. Operação diária
 
-**Aluno**: abre o app → escolhe o nome na lista → marca treino, cardio, hábito,
+**Aluno**: abre o app → escolhe o nome → informa cardio (min), água (L) e peso (kg),
 foto se quiser → *Salvar check-in*. Acabou. Não precisa de sinal.
+
+**Regra de pontuação** (tudo configurável em `Config`):
+
+| Item | Ponto | Padrão |
+|---|---|---|
+| Check-in do dia | 1 | sempre |
+| Cardio | 1 | se ≥ meta de cardio (20 min) |
+| Água | 1 | se ≥ meta de água (3 L) |
+| Peso registrado | 1 | se o peso do dia foi informado |
+
+Máximo de 4 pontos por dia. Meta do ciclo padrão: **160 pontos** (8 semanas).
 
 **Treinador**: abre a planilha. O Registro Diário recebe a linha, o Painel soma os
 pontos e Ranking, Semanal e Dashboard se atualizam sozinhos.
@@ -87,12 +98,13 @@ pontos e Ranking, Semanal e Dashboard se atualizam sozinhos.
   abrir o app, ao voltar o sinal e a cada 90 segundos.
 - **Um check-in por dia**: reenviar no mesmo dia **corrige** o registro anterior
   (delta recalculado no Painel), não duplica.
-- **Cardio com teto**: o servidor recalcula tudo a partir de `Config!C14` e `C15`,
-  então a regra de pontos do app e da planilha nunca divergem.
+- **Regra única**: o servidor recalcula os pontos a partir de `Config!C11..C16`,
+  então a regra do app e da planilha nunca divergem.
 - **Foto**: vai comprimida (~1.000 px, JPEG), é salva na pasta `GH Desafio — Fotos`
   do Drive e o link entra na coluna *Link Foto*.
-- **Data retroativa**: o app aceita "Hoje" e "Ontem" — útil para quem treinou e
-  esqueceu de registrar.
+- **Data retroativa**: o app aceita "Hoje" e "Ontem".
+- **Ranking, gráfico semanal, sequência, conquistas e backup** ficam no próprio app;
+  o ranking é lido da planilha (aba Painel) quando há conexão.
 
 ## 7. Problemas comuns
 
