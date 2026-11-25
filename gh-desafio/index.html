@@ -195,40 +195,7 @@
       </div>
     </div>
 
-    <div class="card">
-      <div class="row between" style="margin-bottom:10px">
-        <h2 style="margin:0">Cardio</h2>
-        <span class="muted" id="lblMetaCardio">meta 20 min</span>
-      </div>
-      <div class="chips" id="cardioChips"></div>
-      <div class="row" style="margin-top:12px;gap:8px">
-        <input type="number" id="cardioOutro" inputmode="numeric" min="0" max="600" placeholder="Outro valor" style="flex:1">
-        <span class="muted" style="min-width:70px;text-align:right" id="cardioLbl">0 min</span>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="row between" style="margin-bottom:10px">
-        <h2 style="margin:0">Água</h2>
-        <span class="muted" id="lblMetaAgua">meta 3,0 L</span>
-      </div>
-      <div class="chips" id="aguaChips"></div>
-      <div class="row" style="margin-top:12px;gap:8px">
-        <input type="number" id="aguaOutro" inputmode="decimal" step="0.1" min="0" max="15" placeholder="Outro valor" style="flex:1">
-        <span class="muted" style="min-width:70px;text-align:right" id="aguaLbl">0,0 L</span>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="row between" style="margin-bottom:8px">
-        <h2 style="margin:0">Peso</h2>
-        <span class="muted" id="lblPesoAnt">—</span>
-      </div>
-      <div class="row" style="gap:8px">
-        <input type="number" id="pesoInput" inputmode="decimal" step="0.1" min="20" max="300" placeholder="kg" style="flex:1">
-        <button class="btn ghost" id="btnPesoIgual" style="padding:12px 14px;font-size:13px">Mesmo de antes</button>
-      </div>
-    </div>
+    <div id="metasBox"></div>
 
     <div class="card">
       <div class="row between">
@@ -248,10 +215,7 @@
         <span class="muted">Pontos de hoje</span>
         <span class="hero" id="ciPts">0<small> pts</small></span>
       </div>
-      <div class="goal" id="gCheck"><span class="mark">✓</span><span>Check-in</span><span class="v" id="vCheck"></span></div>
-      <div class="goal" id="gCardio"><span class="mark">✓</span><span>Meta de cardio</span><span class="v" id="vCardio"></span></div>
-      <div class="goal" id="gAgua"><span class="mark">✓</span><span>Meta de água</span><span class="v" id="vAgua"></span></div>
-      <div class="goal" id="gPeso"><span class="mark">✓</span><span>Peso registrado</span><span class="v" id="vPeso"></span></div>
+      <div id="goalsBox"></div>
     </div>
 
     <button class="btn gold block" id="btnSalvar" style="padding:18px">Salvar check-in</button>
@@ -348,6 +312,18 @@
       <p class="hint" style="margin:8px 0 0">Quem abrir por esse link já entra conectado.</p>
     </div>
 
+    <h2>Metas do check-in</h2>
+    <div class="card">
+      <div id="metasCfg"></div>
+      <div class="sep"></div>
+      <div class="field" style="margin-bottom:10px">
+        <label>Meta do ciclo (pontos)</label>
+        <input type="number" id="cfgMetaCiclo" min="1" step="1">
+      </div>
+      <button class="btn gold block" id="btnSalvarMetas">Salvar metas</button>
+      <p class="hint" style="margin:10px 0 0">Cada meta ligada vale 1 ponto (editável). O check-in em si já vale 1.</p>
+    </div>
+
     <h2>Diagnóstico</h2>
     <div class="card">
       <button class="btn ghost block" id="btnDiag" style="margin-bottom:10px">Testar conexão</button>
@@ -400,7 +376,7 @@
     <div class="card">
       <button class="btn ghost block" id="btnLimpar" style="color:var(--err)">Apagar dados deste aparelho</button>
       <p class="hint" style="margin-top:12px">
-        GH Desafio · v4.1 · build 9 · funciona offline. Os check-ins ficam neste aparelho até o envio concluir;
+        GH Desafio · v4.2 · build 10 · funciona offline. Os check-ins ficam neste aparelho até o envio concluir;
         apagar remove o histórico local, o que já foi para a planilha permanece lá.
       </p>
     </div>
@@ -438,12 +414,17 @@
    ===================================================================== */
 const PADRAO = {
   sala: "",
-  meta: 90,
   inicio: "2026-01-05",
   dias: 30,
-  metaCardio: 20,
-  metaAgua: 3,
-  pontos: { checkin: 1, cardio: 1, agua: 1, peso: 1 }
+  meta: 120,
+  metas: {
+    cardio:   { on: true,  alvo: 20,   pts: 1 },
+    agua:     { on: true,  alvo: 3,    pts: 1 },
+    sono:     { on: true,  alvo: 8,    pts: 1 },
+    peso:     { on: true,  alvo: 0,    pts: 1 },
+    passos:   { on: false, alvo: 8000, pts: 1 },
+    proteina: { on: false, alvo: 120,  pts: 1 }
+  }
 };
 
 const LS = {
@@ -476,9 +457,9 @@ const S = {
   lastOk: LS.get("lastok", 0),
   diag: LS.get("diag", null)
 };
+S.cfg.metas = Object.assign({}, PADRAO.metas, S.cfg.metas || {});
 if (!S.cfg.pontos) S.cfg.pontos = Object.assign({}, PADRAO.pontos);
 
-const ci = { cardio: 0, agua: 0, peso: null, foto: null, dia: 0 };
 let sincronizando = false;
 
 const $ = (s) => document.querySelector(s);
@@ -543,28 +524,50 @@ function toast(msg, erro) {
   toast._t = setTimeout(() => { t.className = ""; }, 3200);
 }
 
-/* ---------------- regra de pontuação ---------------- */
-function metas() {
-  return {
-    cardio: Number(S.cfg.metaCardio) || 20,
-    agua: Number(S.cfg.metaAgua) || 3,
-    p: S.cfg.pontos || PADRAO.pontos
-  };
+/* ---------------- metas e pontuação ---------------- */
+const METAS = [
+  { id: "cardio",   nome: "Cardio",   un: "min", chips: [0, 15, 30, 45, 60, 90], step: 1 },
+  { id: "agua",     nome: "Água",     un: "L",   chips: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4], step: 0.5, dec: 1 },
+  { id: "sono",     nome: "Sono",     un: "h",   chips: [5, 6, 7, 8, 9], step: 0.5, dec: 1 },
+  { id: "passos",   nome: "Passos",   un: "",    chips: [3000, 5000, 8000, 10000, 12000], step: 500 },
+  { id: "proteina", nome: "Proteína", un: "g",   chips: [60, 90, 120, 150, 180], step: 10 },
+  { id: "peso",     nome: "Peso",     un: "kg",  step: 0.1, dec: 1, tipo: "peso" }
+];
+
+function cfgMeta(id) {
+  const m = (S.cfg.metas || {})[id];
+  return m || (PADRAO.metas[id] || { on: false, alvo: 0, pts: 1 });
+}
+
+function metasAtivas() {
+  return METAS.filter((d) => cfgMeta(d.id).on);
+}
+
+function fmtMeta(d, v) {
+  const n = Number(v) || 0;
+  return (d.dec ? nf(n, d.dec) : Math.round(n)) + (d.un ? " " + d.un : "");
 }
 
 function pontuar(r) {
-  const m = metas();
-  const c = Number(r.cardio) || 0, a = Number(r.agua) || 0, p = Number(r.peso) || 0;
-  const det = {
-    checkin: m.p.checkin || 0,
-    cardio: (c >= m.cardio && c > 0) ? (m.p.cardio || 0) : 0,
-    agua: (a >= m.agua && a > 0) ? (m.p.agua || 0) : 0,
-    peso: (p > 0) ? (m.p.peso || 0) : 0
-  };
-  det.total = det.checkin + det.cardio + det.agua + det.peso;
+  const det = { checkin: 1 };
+  let total = 1;
+  METAS.forEach((d) => {
+    const c = cfgMeta(d.id);
+    if (!c.on) return;
+    const v = Number(r[d.id]) || 0;
+    const ok = d.id === "peso" ? v > 0 : (v > 0 && v >= Number(c.alvo));
+    det[d.id] = ok ? Number(c.pts || 0) : 0;
+    total += det[d.id];
+  });
+  det.total = total;
   return det;
 }
+
 function ptsDe(r) { return r.pts != null ? r.pts : pontuar(r).total; }
+
+function maxPontosDia() {
+  return 1 + metasAtivas().reduce((s, d) => s + Number(cfgMeta(d.id).pts || 0), 0);
+}
 
 function diaDoReg(r) { return iso(new Date(r.ts)); }
 function diaAlvo() { const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - ci.dia); return iso(d); }
@@ -614,7 +617,7 @@ function renderLista() {
 
 function escolherAluno(nome) {
   S.aluno = nome; LS.set("aluno", nome);
-  ci.cardio = 0; ci.agua = 0; ci.peso = null; ci.foto = null; ci.dia = 0;
+  carregarDia();
   ir("v-checkin");
 }
 
@@ -623,70 +626,151 @@ $("#btnTrocar").onclick = () => { S.aluno = ""; LS.set("aluno", ""); renderLista
 $("#btnConectar").onclick = () => { ir("v-cfg"); setTimeout(() => $("#cfgSala").focus(), 250); };
 
 /* ---------------- check-in ---------------- */
-const CHIPS_CARDIO = [0, 15, 30, 45, 60, 90];
-const CHIPS_AGUA = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4];
+let ci = { v: {}, foto: null, dia: 0 };
 
-function renderChips() {
-  const cc = $("#cardioChips"), ac = $("#aguaChips");
-  cc.innerHTML = ""; ac.innerHTML = "";
-  CHIPS_CARDIO.forEach((v) => {
-    const b = document.createElement("button");
-    b.className = "chipBtn" + (Number(ci.cardio) === v ? " on" : "");
-    b.textContent = v === 0 ? "0" : v + "'";
-    b.onclick = () => { ci.cardio = v; $("#cardioOutro").value = ""; renderChips(); atualizarPreview(); };
-    cc.appendChild(b);
+function ciNovo() { ci = { v: {}, foto: null, dia: 0 }; }
+
+function carregarDia() {
+  ciNovo();
+  ci.dia = 0;
+  const ja = regsDoAluno().find((r) => diaDoReg(r) === diaAlvo());
+  if (ja) METAS.forEach((d) => { if (ja[d.id] != null) ci.v[d.id] = Number(ja[d.id]); });
+}
+
+function renderMetas() {
+  const box = $("#metasBox");
+  box.innerHTML = "";
+
+  metasAtivas().forEach((d) => {
+    const c = cfgMeta(d.id);
+    const card = document.createElement("div");
+    card.className = "card";
+
+    if (d.tipo === "peso") {
+      const ant = ultimoPeso();
+      card.innerHTML =
+        `<div class="row between" style="margin-bottom:8px">
+           <h2 style="margin:0">${d.nome}</h2>
+           <span class="muted">${ant ? "último " + nf(ant, 1) + " kg" : "sem registro"}</span>
+         </div>
+         <div class="row" style="gap:8px">
+           <input type="number" id="in_peso" inputmode="decimal" step="0.1" min="20" max="300"
+                  placeholder="kg" style="flex:1" value="${ci.v.peso != null ? ci.v.peso : ""}">
+           <button class="btn ghost" id="btnPesoIgual" style="padding:12px 14px;font-size:13px"
+                   ${ant ? "" : "disabled"}>Mesmo de antes</button>
+         </div>`;
+    } else {
+      const chips = (d.chips || []).map((v) => {
+        const on = Number(ci.v[d.id]) === v;
+        return `<button class="chipBtn${on ? " on" : ""}" data-id="${d.id}" data-v="${v}">${v === 0 ? "0" : fmtMeta(d, v)}</button>`;
+      }).join("");
+
+      const mostraInput = ci.v[d.id] != null && !(d.chips || []).includes(Number(ci.v[d.id])) ? ci.v[d.id] : "";
+
+      card.innerHTML =
+        `<div class="row between" style="margin-bottom:10px">
+           <h2 style="margin:0">${d.nome}</h2>
+           <span class="muted">meta ${fmtMeta(d, c.alvo)}</span>
+         </div>
+         <div class="chips">${chips}</div>
+         <div class="row" style="margin-top:12px;gap:8px">
+           <input type="number" id="in_${d.id}" inputmode="${d.dec ? "decimal" : "numeric"}"
+                  step="${d.step}" min="0" placeholder="outro valor" style="flex:1" value="${mostraInput}">
+           <span class="muted" style="min-width:82px;text-align:right" id="lbl_${d.id}">
+             ${ci.v[d.id] != null ? fmtMeta(d, ci.v[d.id]) : "—"}
+           </span>
+         </div>`;
+    }
+    box.appendChild(card);
   });
-  CHIPS_AGUA.forEach((v) => {
-    const b = document.createElement("button");
-    b.className = "chipBtn" + (Number(ci.agua) === v ? " on" : "");
-    b.textContent = v === 0 ? "0" : nf(v, 1) + " L";
-    b.onclick = () => { ci.agua = v; $("#aguaOutro").value = ""; renderChips(); atualizarPreview(); };
-    ac.appendChild(b);
+
+  box.querySelectorAll(".chipBtn").forEach((b) => {
+    b.onclick = () => {
+      const id = b.dataset.id, v = Number(b.dataset.v);
+      ci.v[id] = Number(ci.v[id]) === v ? 0 : v;
+      renderMetas();
+      atualizarPreview();
+    };
+  });
+
+  box.querySelectorAll("input[type=number]").forEach((inp) => {
+    inp.oninput = () => {
+      const id = inp.id.replace("in_", "");
+      const val = parseFloat(String(inp.value).replace(",", "."));
+      ci.v[id] = isNaN(val) ? null : val;
+      const d = METAS.find((x) => x.id === id);
+      const lbl = document.getElementById("lbl_" + id);
+      if (lbl && d) lbl.textContent = ci.v[id] != null ? fmtMeta(d, ci.v[id]) : "—";
+      atualizarPreview();
+    };
+  });
+
+  const igual = $("#btnPesoIgual");
+  if (igual) igual.onclick = () => {
+    const p = ultimoPeso();
+    if (p) { ci.v.peso = p; renderMetas(); atualizarPreview(); }
+  };
+}
+
+function ehMetaOk(d, v) {
+  const c = cfgMeta(d.id);
+  return d.id === "peso" ? v > 0 : (v > 0 && v >= Number(c.alvo));
+}
+
+function atualizarPreview() {
+  const det = pontuar(ci.v);
+  $("#ciPts").innerHTML = det.total + "<small> / " + maxPontosDia() + " pts</small>";
+
+  const box = $("#goalsBox");
+  box.innerHTML = "";
+  const add = (nome, ok, val) => {
+    const el = document.createElement("div");
+    el.className = "goal" + (ok ? " done" : "");
+    el.innerHTML = `<span class="mark">✓</span><span>${nome}</span><span class="v">${val}</span>`;
+    box.appendChild(el);
+  };
+
+  add("Check-in", true, "+1");
+  metasAtivas().forEach((d) => {
+    const c = cfgMeta(d.id);
+    const raw = ci.v[d.id];
+    const v = Number(raw) || 0;
+    let label;
+    if (d.id === "peso") label = v ? nf(v, 1) + " kg" : "—";
+    else label = v ? fmtMeta(d, v) + " / " + fmtMeta(d, c.alvo) : "—";
+    add(d.nome, ehMetaOk(d, v), label);
   });
 }
 
 function renderCheckin() {
-  const m = metas();
   $("#ciAluno").textContent = S.aluno || "—";
   const d = new Date(); d.setDate(d.getDate() - ci.dia);
   $("#ciDataTxt").textContent = iso(d).split("-").reverse().join("/");
-  $("#lblMetaCardio").textContent = "meta " + m.cardio + " min";
-  $("#lblMetaAgua").textContent = "meta " + nf(m.agua, 1) + " L";
   $("#diaHoje").classList.toggle("on", ci.dia === 0);
   $("#diaOntem").classList.toggle("on", ci.dia === 1);
 
-  const anterior = ultimoPeso();
-  $("#lblPesoAnt").textContent = anterior ? "último " + nf(anterior, 1) + " kg" : "sem registro";
-  $("#btnPesoIgual").disabled = !anterior;
-
-  $("#cardioOutro").value = CHIPS_CARDIO.includes(Number(ci.cardio)) ? "" : ci.cardio;
-  $("#aguaOutro").value = CHIPS_AGUA.includes(Number(ci.agua)) ? "" : ci.agua;
-  if (ci.peso != null) $("#pesoInput").value = ci.peso;
-  renderChips();
-  if (ci.foto) { $("#fotoPrev").src = ci.foto; $("#fotoPrev").hidden = false; $("#btnRemFoto").hidden = false; }
-  else { $("#fotoPrev").hidden = true; $("#btnRemFoto").hidden = true; }
+  renderMetas();
   atualizarPreview();
+
+  if (ci.foto) {
+    $("#fotoPrev").src = ci.foto;
+    $("#fotoPrev").hidden = false;
+    $("#btnRemFoto").hidden = false;
+  } else {
+    $("#fotoPrev").hidden = true;
+    $("#btnRemFoto").hidden = true;
+  }
   checarDuplicado();
 }
 
-$("#diaHoje").onclick = () => { ci.dia = 0; renderCheckin(); };
-$("#diaOntem").onclick = () => { ci.dia = 1; renderCheckin(); };
-$("#cardioOutro").addEventListener("input", (e) => {
-  ci.cardio = Math.max(0, Math.min(600, parseInt(e.target.value || "0", 10) || 0));
-  $$("#cardioChips .chipBtn").forEach((b) => b.classList.remove("on"));
-  atualizarPreview();
-});
-$("#aguaOutro").addEventListener("input", (e) => {
-  ci.agua = Math.max(0, Math.min(15, parseFloat(String(e.target.value).replace(",", ".")) || 0));
-  $$("#aguaChips .chipBtn").forEach((b) => b.classList.remove("on"));
-  atualizarPreview();
-});
-$("#pesoInput").addEventListener("input", (e) => {
-  const v = parseFloat(String(e.target.value).replace(",", "."));
-  ci.peso = isNaN(v) ? null : v;
-  atualizarPreview();
-});
-$("#btnPesoIgual").onclick = () => { const p = ultimoPeso(); if (p) { ci.peso = p; $("#pesoInput").value = p; atualizarPreview(); } };
+$("#diaHoje").onclick = () => { carregarDia(); renderCheckin(); };
+$("#diaOntem").onclick = () => {
+  ciNovo();
+  ci.dia = 1;
+  const ja = regsDoAluno().find((r) => diaDoReg(r) === diaAlvo());
+  if (ja) METAS.forEach((d) => { if (ja[d.id] != null) ci.v[d.id] = Number(ja[d.id]); });
+  renderCheckin();
+};
 
 $("#btnFoto").onclick = () => $("#fileFoto").click();
 $("#btnRemFoto").onclick = () => { ci.foto = null; renderCheckin(); };
@@ -716,26 +800,6 @@ function comprimir(file, maxLado, q) {
   });
 }
 
-function atualizarPreview() {
-  const m = metas();
-  const det = pontuar({ cardio: ci.cardio, agua: ci.agua, peso: ci.peso });
-  $("#ciPts").innerHTML = det.total + "<small> pts</small>";
-  $("#cardioLbl").textContent = (Number(ci.cardio) || 0) + " min";
-  $("#aguaLbl").textContent = nf(ci.agua, 1) + " L";
-
-  $("#gCheck").className = "goal done";
-  $("#vCheck").textContent = "+" + (m.p.checkin || 0);
-
-  $("#gCardio").className = "goal" + (det.cardio ? " done" : "");
-  $("#vCardio").textContent = (Number(ci.cardio) || 0) + "/" + m.cardio + " min";
-
-  $("#gAgua").className = "goal" + (det.agua ? " done" : "");
-  $("#vAgua").textContent = nf(ci.agua, 1) + "/" + nf(m.agua, 1) + " L";
-
-  $("#gPeso").className = "goal" + (det.peso ? " done" : "");
-  $("#vPeso").textContent = ci.peso ? nf(ci.peso, 1) + " kg" : "—";
-}
-
 function checarDuplicado() {
   const ja = regsDoAluno().find((r) => diaDoReg(r) === diaAlvo());
   $("#ciAviso").innerHTML = ja
@@ -745,7 +809,7 @@ function checarDuplicado() {
 
 $("#btnSalvar").onclick = () => {
   if (!S.aluno) { toast("Escolha o aluno primeiro"); ir("v-aluno"); return; }
-  if (ci.peso == null) { toast("Informe o peso de hoje"); return; }
+  if (ci.v.peso == null) { toast("Informe o peso de hoje"); return; }
 
   const dia = diaAlvo();
   const base = new Date(dia + "T12:00:00");
@@ -755,12 +819,11 @@ $("#btnSalvar").onclick = () => {
     id: existente ? existente.id : uid(),
     aluno: S.aluno,
     ts: base.toISOString(),
-    cardio: Number(ci.cardio) || 0,
-    agua: Number(ci.agua) || 0,
-    peso: Number(ci.peso),
     foto: ci.foto,
-    pts: 0, sync: 0
+    pts: 0,
+    sync: 0
   };
+  METAS.forEach((d) => { novo[d.id] = Number(ci.v[d.id]) || 0; });
   novo.pts = pontuar(novo).total;
 
   if (existente) Object.assign(existente, novo);
@@ -768,8 +831,8 @@ $("#btnSalvar").onclick = () => {
   LS.set("regs", S.regs);
   LS.set("cfg", S.cfg);
 
-  toast("Check-in salvo · " + novo.pts + " pts");
-  ci.cardio = 0; ci.agua = 0; ci.peso = null; ci.foto = null;
+  toast("Check-in salvo · " + novo.pts + " de " + maxPontosDia() + " pts");
+  carregarDia();
   renderLista();
   sincronizar(true);
   ir("v-prog");
@@ -878,8 +941,9 @@ function desenharPeso(meus) {
 }
 
 function desenharConquistas(meus, total, meta) {
-  const aguaOk = meus.filter((r) => Number(r.agua) >= (Number(S.cfg.metaAgua) || 3)).length;
-  const cardioOk = meus.filter((r) => Number(r.cardio) >= (Number(S.cfg.metaCardio) || 20)).length;
+  const aguaOk = meus.filter((r) => ehMetaOk(METAS[1], Number(r.agua) || 0)).length;
+  const cardioOk = meus.filter((r) => ehMetaOk(METAS[0], Number(r.cardio) || 0)).length;
+  const sonoOk = meus.filter((r) => ehMetaOk(METAS[2], Number(r.sono) || 0)).length;
   const seq = sequenciaMax(meus);
   const diasCiclo = Number(S.cfg.dias) || 30;
 
@@ -889,6 +953,7 @@ function desenharConquistas(meus, total, meta) {
     { ok: seq >= 15, t: "15 dias seguidos", d: "Metade do desafio." },
     { ok: seq >= diasCiclo, t: diasCiclo + " dias seguidos", d: "Ciclo completo, todos os dias." },
     { ok: aguaOk >= 10, t: "Hidratação", d: "Bateu a meta de água em 10 dias." },
+    { ok: sonoOk >= 10, t: "Sono em dia", d: "Bateu a meta de sono em 10 dias." },
     { ok: cardioOk >= 15, t: "Cardio em dia", d: "Bateu a meta de cardio em 15 dias." },
     { ok: total >= meta, t: "Meta do ciclo", d: "Chegou aos " + meta + " pontos." },
     { ok: (meus.filter((r) => Number(r.peso) > 0).length) >= 10, t: "Peso acompanhado", d: "Registrou o peso em 10 dias." }
@@ -1017,7 +1082,14 @@ function linhaFeed(r) {
        <span class="pt">${r.pontos}<small>pts</small></span>
      </div>
      <div class="muted" style="font-size:12px">
-       ${r.cardio} min cardio · ${nf(r.agua, 1)} L água${peso ? " · " + peso : ""}
+       ${[
+         r.cardio ? r.cardio + " min cardio" : "",
+         r.agua ? nf(r.agua, 1) + " L água" : "",
+         r.sono ? nf(r.sono, 1) + " h sono" : "",
+         r.passos ? Math.round(r.passos) + " passos" : "",
+         r.proteina ? Math.round(r.proteina) + " g prot." : "",
+         peso
+       ].filter(Boolean).join(" · ")}
      </div>`;
   return el;
 }
@@ -1089,11 +1161,70 @@ function aplicarConfig(c) {
   LS.set("cfg", S.cfg);
 }
 
+function renderMetasCfg() {
+  const box = $("#metasCfg");
+  if (!box) return;
+  box.innerHTML = "";
+  METAS.forEach((d) => {
+    const c = cfgMeta(d.id);
+    const row = document.createElement("div");
+    row.style.cssText = "display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--line)";
+    row.innerHTML =
+      `<button class="chipBtn${c.on ? " on" : ""}" data-tog="${d.id}"
+               style="padding:7px 10px;font-size:11.5px;min-width:74px">${c.on ? "ligada" : "off"}</button>
+       <span style="flex:1;font-size:13.5px;font-weight:600">${d.nome}${d.un ? " (" + d.un + ")" : ""}</span>
+       ${d.id === "peso" ? "" : `<input type="number" data-alvo="${d.id}" value="${c.alvo}" step="${d.step}"
+             style="width:86px;padding:8px;text-align:right;background:var(--card2);border:1px solid var(--line);
+             color:var(--txt);border-radius:10px">`}
+       <input type="number" data-pts="${d.id}" value="${c.pts}" min="0" step="1"
+             style="width:54px;padding:8px;text-align:right;background:var(--card2);border:1px solid var(--line);
+             color:var(--txt);border-radius:10px">`;
+    box.appendChild(row);
+  });
+
+  box.querySelectorAll("[data-tog]").forEach((b) => {
+    b.onclick = () => {
+      const id = b.dataset.tog;
+      const atual = S.cfg.metas[id] || Object.assign({}, PADRAO.metas[id]);
+      S.cfg.metas[id] = Object.assign({}, atual, { on: !atual.on });
+      LS.set("cfg", S.cfg);
+      renderMetasCfg();
+      atualizarPreview();
+      renderLista();
+    };
+  });
+
+  const ciclo = $("#cfgMetaCiclo");
+  if (ciclo) ciclo.value = Number(S.cfg.meta) || 0;
+  const max = $("#metasMax");
+  if (max) max.textContent = maxPontosDia();
+}
+
+$("#btnSalvarMetas").onclick = () => {
+  METAS.forEach((d) => {
+    const alvo = document.querySelector(`[data-alvo="${d.id}"]`);
+    const pts = document.querySelector(`[data-pts="${d.id}"]`);
+    const atual = S.cfg.metas[d.id] || Object.assign({}, PADRAO.metas[d.id]);
+    if (alvo && alvo.value !== "") atual.alvo = Number(alvo.value);
+    if (pts && pts.value !== "") atual.pts = Number(pts.value);
+    S.cfg.metas[d.id] = atual;
+  });
+  const ciclo = Number($("#cfgMetaCiclo").value);
+  if (ciclo > 0) S.cfg.meta = ciclo;
+  LS.set("cfg", S.cfg);
+  toast("Metas salvas · máx " + maxPontosDia() + " pts/dia");
+  renderMetasCfg();
+  renderCheckin();
+  renderProgresso();
+  renderGrupo();
+};
+
 function renderCfg() {
   const campo = $("#cfgSala");
   if (campo && document.activeElement !== campo) campo.value = S.cfg.sala || "";
   $("#cfgPend").textContent = S.regs.filter((r) => !r.sync).length;
   $("#cfgRoster").value = S.roster.join("\n");
+  renderMetasCfg();
   atualizarChip();
 }
 
