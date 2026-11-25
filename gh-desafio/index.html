@@ -13,14 +13,13 @@
   :root{
     --bg:#0a0b0e; --card:#14161b; --card2:#1b1e25; --line:#262a33;
     --gold:#c9a227; --gold-soft:#2a2416; --steel:#c3cad3; --txt:#f2f4f7; --muted:#8b93a1;
-    --ok:#3ecf8e; --warn:#e0b13a; --err:#ef5e5e;
-    --r:16px;
+    --ok:#3ecf8e; --warn:#e0b13a; --err:#ef5e5e; --r:16px;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0;background:var(--bg);color:var(--txt);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     overscroll-behavior-y:contain}
-  body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+  body{padding-bottom:calc(78px + env(safe-area-inset-bottom))}
   header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;
     padding:calc(10px + env(safe-area-inset-top)) 16px 10px;background:rgba(10,11,14,.92);
     backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
@@ -48,61 +47,81 @@
     border-radius:12px;padding:12px 14px;outline:none}
   input:focus,textarea:focus{border-color:var(--gold)}
   .btn{border:none;border-radius:14px;padding:15px 18px;font-weight:700;font-size:15px;
-    background:var(--card2);color:var(--txt);cursor:pointer;transition:transform .08s, filter .15s;
+    background:var(--card2);color:var(--txt);cursor:pointer;transition:transform .08s;
     display:flex;align-items:center;justify-content:center;gap:8px}
   .btn:active{transform:scale(.985)}
   .btn.gold{background:var(--gold);color:#0a0b0e}
   .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--steel)}
-  .btn:disabled{opacity:.45}
   .btn.block{width:100%}
-  .seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  .seg .btn{border:1px solid var(--line);background:var(--card2);font-weight:600;padding:16px 8px}
-  .seg .btn.on{background:var(--gold-soft);border-color:var(--gold);color:var(--gold)}
   .chips{display:flex;flex-wrap:wrap;gap:8px}
   .chipBtn{border:1px solid var(--line);background:var(--card2);color:var(--txt);
-    border-radius:999px;padding:10px 16px;font-size:14px;font-weight:600;cursor:pointer}
+    border-radius:999px;padding:10px 15px;font-size:14px;font-weight:600;cursor:pointer}
   .chipBtn.on{background:var(--gold);border-color:var(--gold);color:#0a0b0e}
   .names{display:flex;flex-direction:column;gap:8px;max-height:52vh;overflow:auto}
   .nameItem{display:flex;align-items:center;justify-content:space-between;gap:10px;
     padding:15px 16px;border:1px solid var(--line);border-radius:14px;background:var(--card);
     font-size:15px;font-weight:600;cursor:pointer}
-  .nameItem:active{background:var(--card2)}
   .nameItem .tag{font-size:10.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
     color:var(--ok);border:1px solid rgba(62,207,142,.35);border-radius:999px;padding:4px 9px}
-  .nameItem .tag.pend{color:var(--warn);border-color:rgba(224,177,58,.35)}
-  .hero{font-size:34px;font-weight:800;letter-spacing:-1px;line-height:1}
+  .hero{font-size:32px;font-weight:800;letter-spacing:-1px;line-height:1}
   .hero small{font-size:13px;font-weight:600;color:var(--muted);letter-spacing:0}
   .kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
   .kpi div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
-  .kpi b{display:block;font-size:22px;letter-spacing:-.5px}
-  .kpi span{font-size:10.5px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase}
+  .kpi b{display:block;font-size:21px;letter-spacing:-.5px}
+  .kpi span{font-size:10px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase}
   .hist{display:flex;flex-direction:column;gap:8px}
-  .histItem{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);
-    border-radius:14px;background:var(--card)}
-  .histItem .d{font-size:12px;color:var(--muted);min-width:64px}
-  .histItem .p{margin-left:auto;font-weight:800;color:var(--gold)}
-  .badge{font-size:9.5px;letter-spacing:.6px;text-transform:uppercase;padding:3px 7px;border-radius:6px;
+  .histItem{display:flex;align-items:center;gap:10px;padding:12px 14px;border:1px solid var(--line);
+    border-radius:14px;background:var(--card);font-size:12px}
+  .histItem .d{color:var(--muted);min-width:56px;font-variant-numeric:tabular-nums}
+  .histItem .p{margin-left:auto;font-weight:800;color:var(--gold);font-size:14px}
+  .badge{font-size:9px;letter-spacing:.6px;text-transform:uppercase;padding:3px 7px;border-radius:6px;
     border:1px solid var(--line);color:var(--muted)}
   .badge.ok{color:var(--ok);border-color:rgba(62,207,142,.35)}
   .badge.pend{color:var(--warn);border-color:rgba(224,177,58,.35)}
   .photo{width:100%;max-height:220px;object-fit:cover;border-radius:12px;margin-top:10px;display:block}
-  footer{position:fixed;left:0;right:0;bottom:0;z-index:20;display:grid;grid-template-columns:repeat(4,1fr);
+  footer{position:fixed;left:0;right:0;bottom:0;z-index:20;display:grid;grid-template-columns:repeat(5,1fr);
     gap:2px;background:rgba(10,11,14,.96);backdrop-filter:blur(12px);
-    border-top:1px solid var(--line);padding:8px 6px calc(8px + env(safe-area-inset-bottom))}
-  footer button{background:none;border:none;color:var(--muted);font-size:10.5px;font-weight:600;
-    letter-spacing:.4px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
-  footer button svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.8;
+    border-top:1px solid var(--line);padding:8px 4px calc(8px + env(safe-area-inset-bottom))}
+  footer button{background:none;border:none;color:var(--muted);font-size:9.5px;font-weight:700;
+    letter-spacing:.3px;padding:6px 1px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
+  footer button svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;
     stroke-linecap:round;stroke-linejoin:round}
   footer button.on{color:var(--gold)}
-  #toast{position:fixed;left:50%;transform:translateX(-50%) translateY(20px);bottom:calc(92px + env(safe-area-inset-bottom));
-    background:#fff;color:#111;padding:12px 18px;border-radius:12px;font-size:13.5px;font-weight:700;
-    opacity:0;pointer-events:none;transition:.22s;z-index:40;max-width:88vw;text-align:center}
+  #toast{position:fixed;left:50%;transform:translateX(-50%) translateY(20px);
+    bottom:calc(94px + env(safe-area-inset-bottom));background:#fff;color:#111;padding:12px 18px;
+    border-radius:12px;font-size:13.5px;font-weight:700;opacity:0;pointer-events:none;
+    transition:.22s;z-index:40;max-width:88vw;text-align:center}
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   #toast.err{background:#ef5e5e;color:#fff}
   .sep{height:1px;background:var(--line);margin:14px 0}
   .field{margin-bottom:12px}
   .field label{display:block;font-size:11px;letter-spacing:.8px;text-transform:uppercase;
     color:var(--muted);margin-bottom:6px;font-weight:700}
+  .goal{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:13.5px}
+  .goal .mark{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--line);
+    display:grid;place-items:center;font-size:11px;color:var(--muted);flex:0 0 auto}
+  .goal.done .mark{background:var(--gold);border-color:var(--gold);color:#0a0b0e}
+  .goal.done{color:var(--txt);font-weight:600}
+  .goal .v{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--muted);font-size:12.5px}
+  .goal.done .v{color:var(--gold)}
+  .bars{display:flex;align-items:flex-end;gap:8px;height:110px;margin-top:6px}
+  .bars .b{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px;height:100%}
+  .bars .b .fill{width:100%;border-radius:6px 6px 3px 3px;background:linear-gradient(180deg,#c9a227,#8a6d0b);min-height:2px}
+  .bars .b .fill.zero{background:#22262e}
+  .bars .b span{font-size:9px;color:var(--muted);letter-spacing:.4px}
+  .bars .b b{font-size:10.5px;color:var(--steel);font-weight:700}
+  .ach{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .ach div{border:1px solid var(--line);border-radius:14px;padding:12px;background:var(--card);opacity:.45}
+  .ach div.on{opacity:1;border-color:rgba(201,162,39,.5);background:linear-gradient(180deg,#1a1710,#14161b)}
+  .ach b{display:block;font-size:12.5px;margin-bottom:3px}
+  .ach span{font-size:10.5px;color:var(--muted);line-height:1.35}
+  .rankItem{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);
+    border-radius:14px;background:var(--card)}
+  .rankItem.me{border-color:var(--gold);background:linear-gradient(180deg,#1a1710,#14161b)}
+  .rankItem .pos{width:24px;font-weight:800;color:var(--gold);font-size:13px;text-align:center}
+  .rankItem .nm{font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .rankItem .pt{margin-left:auto;font-weight:800;font-size:14px}
+  .rankItem .pt small{color:var(--muted);font-weight:600;font-size:10px}
   [hidden]{display:none !important}
 </style>
 </head>
@@ -111,16 +130,17 @@
 <header>
   <div class="logo">GH</div>
   <div class="brand"><b>Desafio</b><span id="brandSub">Performance</span></div>
-  <div class="chip" id="syncChip"><span class="dot" ></span><span id="syncTxt">local</span></div>
+  <div class="chip" id="syncChip"><span class="dot"></span><span id="syncTxt">só local</span></div>
 </header>
 
 <main>
   <!-- ================= ALUNO ================= -->
   <section id="v-aluno">
     <h2>Quem está treinando</h2>
+
     <div class="card" id="bannerCfg" hidden style="border-color:var(--gold);background:linear-gradient(180deg,#1a1710,#12141a)">
       <div style="font-weight:800;margin-bottom:4px">Este aparelho não está ligado à planilha</div>
-      <p class="hint" style="margin:0">Sem a conexão, os check-ins ficam só neste celular. Toque em conectar e cole o endereço e o código do desafio.</p>
+      <p class="hint" style="margin:0">Sem a conexão, os check-ins ficam só neste celular e a lista de alunos não carrega.</p>
       <button class="btn gold block" id="btnConectar" style="margin-top:12px">Conectar à planilha</button>
     </div>
 
@@ -138,54 +158,64 @@
       <input type="text" id="busca" placeholder="Buscar nome…" autocomplete="off" style="margin-bottom:10px">
       <div class="names" id="listaNomes"></div>
       <p class="hint" id="listaVazia" hidden style="margin:12px 2px 2px">
-        Nenhum nome carregado. Toque em <b>Ajustes → Atualizar lista</b> (precisa de internet uma vez)
-        ou cole a lista em <b>Ajustes → Lista offline</b>.
+        Nenhum nome carregado. Toque em <b>Ajustes → Atualizar lista</b> (precisa de internet uma vez).
       </p>
     </div>
   </section>
 
   <!-- ================= CHECK-IN ================= -->
   <section id="v-checkin" hidden>
-    <h2>Check-in</h2>
-    <div class="card">
+    <h2>Check-in do dia</h2>
+
+    <div class="card tight">
       <div class="row between" style="margin-bottom:12px">
         <div>
           <div class="muted">Aluno</div>
-          <div style="font-size:18px;font-weight:800" id="ciAluno">—</div>
+          <div style="font-size:17px;font-weight:800" id="ciAluno">—</div>
         </div>
         <div style="text-align:right">
           <div class="muted">Data</div>
           <div style="font-weight:700" id="ciDataTxt">—</div>
         </div>
       </div>
-      <div class="seg" style="grid-template-columns:1fr 1fr">
-        <button class="btn" id="diaHoje">Hoje</button>
-        <button class="btn" id="diaOntem">Ontem</button>
+      <div class="chips">
+        <button class="chipBtn" id="diaHoje">Hoje</button>
+        <button class="chipBtn" id="diaOntem">Ontem</button>
       </div>
     </div>
 
     <div class="card">
-      <h2 style="margin-bottom:10px">Treino</h2>
-      <div class="seg">
-        <button class="btn" data-t="1" data-g="treino">Fiz</button>
-        <button class="btn" data-t="0" data-g="treino">Não fiz</button>
+      <div class="row between" style="margin-bottom:10px">
+        <h2 style="margin:0">Cardio</h2>
+        <span class="muted" id="lblMetaCardio">meta 20 min</span>
       </div>
-    </div>
-
-    <div class="card">
-      <h2 style="margin-bottom:10px">Cardio (minutos)</h2>
       <div class="chips" id="cardioChips"></div>
       <div class="row" style="margin-top:12px;gap:8px">
         <input type="number" id="cardioOutro" inputmode="numeric" min="0" max="600" placeholder="Outro valor" style="flex:1">
-        <span class="muted" style="min-width:64px;text-align:right" id="cardioLbl">0 min</span>
+        <span class="muted" style="min-width:70px;text-align:right" id="cardioLbl">0 min</span>
       </div>
     </div>
 
     <div class="card">
-      <h2 style="margin-bottom:10px">Hábito</h2>
-      <div class="seg">
-        <button class="btn" data-t="1" data-g="habito">Cumpri</button>
-        <button class="btn" data-t="0" data-g="habito">Não cumpri</button>
+      <div class="row between" style="margin-bottom:10px">
+        <h2 style="margin:0">Água</h2>
+        <span class="muted" id="lblMetaAgua">meta 3,0 L</span>
+      </div>
+      <div class="chips" id="aguaChips"></div>
+      <div class="row" style="margin-top:12px;gap:8px">
+        <input type="number" id="aguaOutro" inputmode="decimal" step="0.1" min="0" max="15" placeholder="Outro valor" style="flex:1">
+        <span class="muted" style="min-width:70px;text-align:right" id="aguaLbl">0,0 L</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row between" style="margin-bottom:8px">
+        <h2 style="margin:0">Peso</h2>
+        <span class="muted" id="lblPesoAnt">—</span>
+      </div>
+      <div class="row" style="gap:8px">
+        <input type="number" id="pesoInput" inputmode="decimal" step="0.1" min="20" max="300" placeholder="kg" style="flex:1">
+        <button class="btn ghost" id="btnPesoIgual" style="padding:12px 14px;font-size:13px">Mesmo de antes</button>
       </div>
     </div>
 
@@ -193,7 +223,7 @@
       <div class="row between">
         <div>
           <h2 style="margin:0 0 4px">Foto</h2>
-          <div class="muted">Opcional · comprovante do treino</div>
+          <div class="muted">Opcional</div>
         </div>
         <button class="btn ghost" id="btnFoto" style="padding:10px 14px;font-size:13px">Anexar</button>
       </div>
@@ -203,35 +233,86 @@
     </div>
 
     <div class="card" style="border-color:var(--gold);background:linear-gradient(180deg,#1a1710,#12141a)">
-      <div class="row between">
-        <div>
-          <div class="muted">Pontos deste check-in</div>
-          <div class="hero" id="ciPts">0<small> pts</small></div>
-        </div>
-        <div class="muted" id="ciDetalhe" style="text-align:right;line-height:1.6"></div>
+      <div class="row between" style="margin-bottom:6px">
+        <span class="muted">Pontos de hoje</span>
+        <span class="hero" id="ciPts">0<small> pts</small></span>
       </div>
+      <div class="goal" id="gCheck"><span class="mark">✓</span><span>Check-in</span><span class="v" id="vCheck"></span></div>
+      <div class="goal" id="gCardio"><span class="mark">✓</span><span>Meta de cardio</span><span class="v" id="vCardio"></span></div>
+      <div class="goal" id="gAgua"><span class="mark">✓</span><span>Meta de água</span><span class="v" id="vAgua"></span></div>
+      <div class="goal" id="gPeso"><span class="mark">✓</span><span>Peso registrado</span><span class="v" id="vPeso"></span></div>
     </div>
 
     <button class="btn gold block" id="btnSalvar" style="padding:18px">Salvar check-in</button>
     <p class="hint" id="ciAviso" style="margin-top:10px"></p>
   </section>
 
-  <!-- ================= HISTÓRICO ================= -->
-  <section id="v-hist" hidden>
-    <h2>Meu histórico</h2>
-    <div class="kpi" style="margin-bottom:14px">
-      <div><b id="hTotal">0</b><span>pontos</span></div>
-      <div><b id="hDias">0</b><span>check-ins</span></div>
-      <div><b id="hMeta">0%</b><span>da meta</span></div>
+  <!-- ================= PROGRESSO ================= -->
+  <section id="v-prog" hidden>
+    <h2>Meu progresso</h2>
+    <div class="kpi" style="margin-bottom:12px">
+      <div><b id="pTotal">0</b><span>pontos</span></div>
+      <div><b id="pDias">0</b><span>dias</span></div>
+      <div><b id="pMeta">0%</b><span>da meta</span></div>
     </div>
     <div class="card tight" style="margin-bottom:14px">
       <div class="row between">
         <span class="muted">Sequência atual</span>
-        <b id="hSeq" style="color:var(--gold)">0 dias</b>
+        <b id="pSeq" style="color:var(--gold)">0 dias</b>
+      </div>
+      <div class="sep" style="margin:10px 0"></div>
+      <div class="row between">
+        <span class="muted">Melhor sequência</span>
+        <b id="pSeqMax">0 dias</b>
       </div>
     </div>
+
+    <h2>Pontos por semana</h2>
+    <div class="card">
+      <div class="bars" id="chartSem"></div>
+      <div class="hint" id="chartInfo" style="margin-top:10px"></div>
+    </div>
+
+    <h2>Peso</h2>
+    <div class="card">
+      <div class="row between">
+        <div>
+          <div class="muted">Último registro</div>
+          <div class="hero" id="pesoAtual">—<small> kg</small></div>
+        </div>
+        <div style="text-align:right">
+          <div class="muted">Variação</div>
+          <div style="font-weight:800;font-size:18px" id="pesoVar">—</div>
+        </div>
+      </div>
+      <div class="bars" id="chartPeso" style="height:70px"></div>
+    </div>
+
+    <h2>Conquistas</h2>
+    <div class="ach" id="achLista"></div>
+
+    <h2 style="margin-top:20px">Últimos check-ins</h2>
     <div class="hist" id="histLista"></div>
     <p class="hint" id="histVazio" hidden>Nenhum check-in salvo neste aparelho ainda.</p>
+  </section>
+
+  <!-- ================= RANKING ================= -->
+  <section id="v-rank" hidden>
+    <div class="row between" style="margin-bottom:12px">
+      <h2 style="margin:0">Ranking do grupo</h2>
+      <button class="btn ghost" id="btnRank" style="padding:8px 12px;font-size:12px">Atualizar</button>
+    </div>
+    <div class="card tight" id="minhaPos" hidden>
+      <div class="row between">
+        <span class="muted">Sua posição</span>
+        <b id="minhaPosTxt" style="color:var(--gold)">—</b>
+      </div>
+    </div>
+    <div class="hist" id="rankLista"></div>
+    <p class="hint" id="rankVazio" hidden>
+      Ranking indisponível. Ele é calculado na planilha — conecte o app em <b>Ajustes</b> e toque em Atualizar.
+    </p>
+    <p class="hint" id="rankData" style="margin-top:12px"></p>
   </section>
 
   <!-- ================= AJUSTES ================= -->
@@ -250,7 +331,7 @@
       <p class="hint" id="cfgStatus" style="margin:10px 0 0"></p>
       <div class="sep"></div>
       <button class="btn ghost block" id="btnLink">Copiar link já configurado</button>
-      <p class="hint" style="margin:8px 0 0">Mande esse link para os alunos: quem abrir por ele já entra conectado, sem digitar nada.</p>
+      <p class="hint" style="margin:8px 0 0">Quem abrir por esse link já entra conectado.</p>
     </div>
 
     <h2>Alunos</h2>
@@ -258,7 +339,7 @@
       <button class="btn ghost block" id="btnRoster">Atualizar lista da planilha</button>
       <div class="field" style="margin-top:14px">
         <label>Lista offline (um nome por linha)</label>
-        <textarea id="cfgRoster" rows="5" placeholder="Ana Souza&#10;Bruno Lima&#10;…"></textarea>
+        <textarea id="cfgRoster" rows="5" placeholder="Ana Souza&#10;Bruno Lima"></textarea>
       </div>
       <button class="btn ghost block" id="btnRosterLocal">Usar esta lista</button>
     </div>
@@ -270,15 +351,22 @@
         <b id="cfgPend">0</b>
       </div>
       <button class="btn block" id="btnSync" style="margin-bottom:8px">Enviar agora</button>
-      <button class="btn ghost block" id="btnExport">Exportar backup (.csv)</button>
+    </div>
+
+    <h2>Backup</h2>
+    <div class="card">
+      <button class="btn ghost block" id="btnExport" style="margin-bottom:8px">Exportar backup (.json)</button>
+      <button class="btn ghost block" id="btnImport">Importar backup</button>
+      <input type="file" id="fileImport" accept="application/json,.json" hidden>
+      <p class="hint" style="margin:10px 0 0">Troca de celular ou reinstalação: exporte aqui e importe no aparelho novo.</p>
     </div>
 
     <h2>Dados e versão</h2>
     <div class="card">
       <button class="btn ghost block" id="btnLimpar" style="color:var(--err)">Apagar dados deste aparelho</button>
       <p class="hint" style="margin-top:12px">
-        GH Desafio · v1.0 · funciona offline. Os check-ins ficam neste aparelho até o envio concluir.
-        Apagar os dados remove o histórico local (o que já foi para a planilha permanece lá).
+        GH Desafio · v3.0 · funciona offline. Os check-ins ficam neste aparelho até o envio concluir;
+        apagar remove o histórico local, o que já foi para a planilha permanece lá.
       </p>
     </div>
   </section>
@@ -293,12 +381,16 @@
     <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
     Check-in
   </button>
-  <button data-view="v-hist">
+  <button data-view="v-prog">
     <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>
-    Histórico
+    Progresso
+  </button>
+  <button data-view="v-rank">
+    <svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4"/><path d="M17 4h3v3a4 4 0 0 1-4 4h-1"/><path d="M7 4H4v3a4 4 0 0 0 4 4h1"/><path d="M7 4h10v5a5 5 0 0 1-10 0z"/></svg>
+    Ranking
   </button>
   <button data-view="v-cfg">
-    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 7 19.3a1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0-1.2-2.9H1a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 3 7a1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.7 1.7 0 0 0 8 3h.1A1.7 1.7 0 0 0 9.3 1V1a2 2 0 1 1 4 0v.1A1.7 1.7 0 0 0 15 3a1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1A1.7 1.7 0 0 0 21 8v.1a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M4 12a8 8 0 0 1 .2-1.8l2 .4a6 6 0 0 0 0 2.8l-2 .4A8 8 0 0 1 4 12z"/><path d="M12 4a8 8 0 0 1 1.8.2l-.4 2a6 6 0 0 0-2.8 0l-.4-2A8 8 0 0 1 12 4z"/><path d="M20 12a8 8 0 0 1-.2 1.8l-2-.4a6 6 0 0 0 0-2.8l2-.4A8 8 0 0 1 20 12z"/><path d="M12 20a8 8 0 0 1-1.8-.2l.4-2a6 6 0 0 0 2.8 0l.4 2A8 8 0 0 1 12 20z"/></svg>
     Ajustes
   </button>
 </footer>
@@ -307,18 +399,17 @@
 
 <script>
 /* =====================================================================
-   GH Desafio — app offline
-   Ajuste abaixo apenas se quiser pré-configurar o app para todos.
-   O aluno também pode colar endereço e código em Ajustes.
+   GH Desafio — v3 (cardio · água · peso)
    ===================================================================== */
 const PADRAO = {
   endpoint: "",
   token: "",
-  meta: 35,
+  meta: 160,
   inicio: "2026-01-05",
   semanas: 8,
-  minPorPonto: 20,
-  teto: 60
+  metaCardio: 20,
+  metaAgua: 3,
+  pontos: { checkin: 1, cardio: 1, agua: 1, peso: 1 }
 };
 
 const LS = {
@@ -329,9 +420,8 @@ const LS = {
   }
 };
 
-/* Link de configuração: .../gh-desafio/?e=<url do web app>&t=<codigo>
-   Quem abrir por esse endereço fica conectado sem digitar nada. */
-(function lerLinkDeConfiguracao() {
+/* link de configuração: ?e=<web app>&t=<codigo> */
+(function lerLink() {
   try {
     const q = new URLSearchParams(location.search);
     const e = (q.get("e") || "").trim();
@@ -347,19 +437,21 @@ const S = {
   aluno: LS.get("aluno", ""),
   regs: LS.get("regs", []),
   roster: LS.get("roster", []),
+  ranking: LS.get("ranking", null),
   lastOk: LS.get("lastok", 0)
 };
+if (!S.cfg.pontos) S.cfg.pontos = Object.assign({}, PADRAO.pontos);
 
-const ci = { treino: null, habito: null, cardio: 0, foto: null, dia: 0 };
+const ci = { cardio: 0, agua: 0, peso: null, foto: null, dia: 0 };
 let sincronizando = false;
 
-/* ---------------- utilidades ---------------- */
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => Array.from(document.querySelectorAll(s));
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 const so = (s) => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-const br = (d) => `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+const nf = (n, d) => Number(n || 0).toFixed(d).replace(".", ",");
+const $fmt = (n) => Number(n || 0).toFixed(0);
 
 function toast(msg, erro) {
   const t = $("#toast");
@@ -369,17 +461,37 @@ function toast(msg, erro) {
   toast._t = setTimeout(() => { t.className = ""; }, 3200);
 }
 
-function ptsDe(r) {
-  const teto = Number(S.cfg.teto) || 60;
-  const passo = Number(S.cfg.minPorPonto) || 20;
-  const min = Math.min(Math.max(Number(r.cardio) || 0, 0), teto);
-  const pt = (r.treino ? 1 : 0) + Math.floor(min / passo) + (r.habito ? 1 : 0) + 1;
-  return pt;
+/* ---------------- regra de pontuação ---------------- */
+function metas() {
+  return {
+    cardio: Number(S.cfg.metaCardio) || 20,
+    agua: Number(S.cfg.metaAgua) || 3,
+    p: S.cfg.pontos || PADRAO.pontos
+  };
 }
+
+function pontuar(r) {
+  const m = metas();
+  const c = Number(r.cardio) || 0, a = Number(r.agua) || 0, p = Number(r.peso) || 0;
+  const det = {
+    checkin: m.p.checkin || 0,
+    cardio: (c >= m.cardio && c > 0) ? (m.p.cardio || 0) : 0,
+    agua: (a >= m.agua && a > 0) ? (m.p.agua || 0) : 0,
+    peso: (p > 0) ? (m.p.peso || 0) : 0
+  };
+  det.total = det.checkin + det.cardio + det.agua + det.peso;
+  return det;
+}
+function ptsDe(r) { return r.pts != null ? r.pts : pontuar(r).total; }
 
 function diaDoReg(r) { return iso(new Date(r.ts)); }
 function diaAlvo() { const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - ci.dia); return iso(d); }
 function regsDoAluno() { return S.regs.filter((r) => so(r.aluno) === so(S.aluno)); }
+function ultimoPeso() {
+  const p = regsDoAluno().filter((r) => Number(r.peso) > 0)
+    .sort((a, b) => a.ts.localeCompare(b.ts));
+  return p.length ? Number(p[p.length - 1].peso) : null;
+}
 
 /* ---------------- navegação ---------------- */
 function ir(view) {
@@ -387,17 +499,19 @@ function ir(view) {
   $$("footer button").forEach((b) => b.classList.toggle("on", b.dataset.view === view));
   if (view === "v-aluno") renderLista();
   if (view === "v-checkin") renderCheckin();
-  if (view === "v-hist") renderHist();
+  if (view === "v-prog") renderProgresso();
+  if (view === "v-rank") renderRanking();
   if (view === "v-cfg") renderCfg();
   window.scrollTo({ top: 0 });
 }
 $$("footer button").forEach((b) => b.addEventListener("click", () => ir(b.dataset.view)));
 
-/* ---------------- lista de alunos ---------------- */
+/* ---------------- aluno ---------------- */
 function renderLista() {
   const semConexao = !S.cfg.endpoint || !S.cfg.token;
   const banner = $("#bannerCfg");
   if (banner) banner.hidden = !semConexao;
+
   const q = so($("#busca").value);
   const box = $("#listaNomes");
   const nomes = S.roster.filter((n) => !q || so(n).includes(q));
@@ -407,81 +521,98 @@ function renderLista() {
   if (S.aluno) $("#alunoAtual").textContent = S.aluno;
 
   nomes.forEach((nome) => {
-    const hoje = regsDoAluno().some((r) => diaDoReg(r) === iso(new Date()) && so(r.aluno) === so(nome));
+    const feito = S.regs.some((r) => so(r.aluno) === so(nome) && diaDoReg(r) === iso(new Date()));
     const el = document.createElement("div");
     el.className = "nameItem";
-    el.innerHTML = `<span>${nome}</span>` + (hoje ? `<span class="tag">hoje ✓</span>` : "");
-    el.onclick = () => { escolherAluno(nome); };
+    el.innerHTML = `<span>${nome}</span>` + (feito ? `<span class="tag">hoje ✓</span>` : "");
+    el.onclick = () => escolherAluno(nome);
     box.appendChild(el);
   });
 }
 
 function escolherAluno(nome) {
-  S.aluno = nome;
-  LS.set("aluno", nome);
-  ci.treino = null; ci.habito = null; ci.cardio = 0; ci.foto = null; ci.dia = 0;
+  S.aluno = nome; LS.set("aluno", nome);
+  ci.cardio = 0; ci.agua = 0; ci.peso = null; ci.foto = null; ci.dia = 0;
   ir("v-checkin");
 }
 
 $("#busca").addEventListener("input", renderLista);
 $("#btnTrocar").onclick = () => { S.aluno = ""; LS.set("aluno", ""); renderLista(); };
+$("#btnConectar").onclick = () => { ir("v-cfg"); setTimeout(() => $("#cfgEndpoint").focus(), 250); };
 
 /* ---------------- check-in ---------------- */
-const VALORES = [0, 10, 20, 30, 40, 50, 60, 75, 90];
+const CHIPS_CARDIO = [0, 15, 30, 45, 60, 90];
+const CHIPS_AGUA = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4];
 
-function renderCardioChips() {
-  const box = $("#cardioChips");
-  box.innerHTML = "";
-  VALORES.forEach((v) => {
+function renderChips() {
+  const cc = $("#cardioChips"), ac = $("#aguaChips");
+  cc.innerHTML = ""; ac.innerHTML = "";
+  CHIPS_CARDIO.forEach((v) => {
     const b = document.createElement("button");
     b.className = "chipBtn" + (Number(ci.cardio) === v ? " on" : "");
     b.textContent = v === 0 ? "0" : v + "'";
-    b.onclick = () => { ci.cardio = v; $("#cardioOutro").value = ""; renderCardioChips(); atualizarPreview(); };
-    box.appendChild(b);
+    b.onclick = () => { ci.cardio = v; $("#cardioOutro").value = ""; renderChips(); atualizarPreview(); };
+    cc.appendChild(b);
+  });
+  CHIPS_AGUA.forEach((v) => {
+    const b = document.createElement("button");
+    b.className = "chipBtn" + (Number(ci.agua) === v ? " on" : "");
+    b.textContent = v === 0 ? "0" : nf(v, 1) + " L";
+    b.onclick = () => { ci.agua = v; $("#aguaOutro").value = ""; renderChips(); atualizarPreview(); };
+    ac.appendChild(b);
   });
 }
 
 function renderCheckin() {
+  const m = metas();
   $("#ciAluno").textContent = S.aluno || "—";
   const d = new Date(); d.setDate(d.getDate() - ci.dia);
   $("#ciDataTxt").textContent = iso(d).split("-").reverse().join("/");
+  $("#lblMetaCardio").textContent = "meta " + m.cardio + " min";
+  $("#lblMetaAgua").textContent = "meta " + nf(m.agua, 1) + " L";
   $("#diaHoje").classList.toggle("on", ci.dia === 0);
   $("#diaOntem").classList.toggle("on", ci.dia === 1);
 
-  $$('[data-g="treino"]').forEach((b) => b.classList.toggle("on", Number(b.dataset.t) === ci.treino));
-  $$('[data-g="habito"]').forEach((b) => b.classList.toggle("on", Number(b.dataset.t) === ci.habito));
+  const anterior = ultimoPeso();
+  $("#lblPesoAnt").textContent = anterior ? "último " + nf(anterior, 1) + " kg" : "sem registro";
+  $("#btnPesoIgual").disabled = !anterior;
 
-  $("#cardioOutro").value = VALORES.includes(Number(ci.cardio)) ? "" : ci.cardio;
-  renderCardioChips();
+  $("#cardioOutro").value = CHIPS_CARDIO.includes(Number(ci.cardio)) ? "" : ci.cardio;
+  $("#aguaOutro").value = CHIPS_AGUA.includes(Number(ci.agua)) ? "" : ci.agua;
+  if (ci.peso != null) $("#pesoInput").value = ci.peso;
+  renderChips();
   if (ci.foto) { $("#fotoPrev").src = ci.foto; $("#fotoPrev").hidden = false; $("#btnRemFoto").hidden = false; }
   else { $("#fotoPrev").hidden = true; $("#btnRemFoto").hidden = true; }
   atualizarPreview();
   checarDuplicado();
 }
 
-$$('[data-g="treino"]').forEach((b) => b.onclick = () => { ci.treino = Number(b.dataset.t); renderCheckin(); });
-$$('[data-g="habito"]').forEach((b) => b.onclick = () => { ci.habito = Number(b.dataset.t); renderCheckin(); });
 $("#diaHoje").onclick = () => { ci.dia = 0; renderCheckin(); };
 $("#diaOntem").onclick = () => { ci.dia = 1; renderCheckin(); };
 $("#cardioOutro").addEventListener("input", (e) => {
-  const v = Math.max(0, Math.min(600, parseInt(e.target.value || "0", 10) || 0));
-  ci.cardio = v;
+  ci.cardio = Math.max(0, Math.min(600, parseInt(e.target.value || "0", 10) || 0));
   $$("#cardioChips .chipBtn").forEach((b) => b.classList.remove("on"));
   atualizarPreview();
 });
+$("#aguaOutro").addEventListener("input", (e) => {
+  ci.agua = Math.max(0, Math.min(15, parseFloat(String(e.target.value).replace(",", ".")) || 0));
+  $$("#aguaChips .chipBtn").forEach((b) => b.classList.remove("on"));
+  atualizarPreview();
+});
+$("#pesoInput").addEventListener("input", (e) => {
+  const v = parseFloat(String(e.target.value).replace(",", "."));
+  ci.peso = isNaN(v) ? null : v;
+  atualizarPreview();
+});
+$("#btnPesoIgual").onclick = () => { const p = ultimoPeso(); if (p) { ci.peso = p; $("#pesoInput").value = p; atualizarPreview(); } };
 
 $("#btnFoto").onclick = () => $("#fileFoto").click();
 $("#btnRemFoto").onclick = () => { ci.foto = null; renderCheckin(); };
-
 $("#fileFoto").addEventListener("change", async (e) => {
   const f = e.target.files && e.target.files[0];
   if (!f) return;
-  try {
-    ci.foto = await comprimir(f, 1000, 0.7);
-    renderCheckin();
-  } catch (err) {
-    toast("Não consegui ler a foto", true);
-  }
+  try { ci.foto = await comprimir(f, 1000, 0.7); renderCheckin(); }
+  catch (err) { toast("Não consegui ler a foto", true); }
   e.target.value = "";
 });
 
@@ -504,28 +635,35 @@ function comprimir(file, maxLado, q) {
 }
 
 function atualizarPreview() {
-  const r = { treino: ci.treino === 1, habito: ci.habito === 1, cardio: ci.cardio };
-  const passo = Number(S.cfg.minPorPonto) || 20;
-  const min = Math.min(Math.max(Number(ci.cardio) || 0, 0), Number(S.cfg.teto) || 60);
-  const pCardio = Math.floor(min / passo);
-  $("#ciPts").innerHTML = ptsDe(r) + "<small> pts</small>";
-  $("#cardioLbl").textContent = min + " min" + (Number(ci.cardio) > Number(S.cfg.teto) ? " · teto" : "");
-  $("#ciDetalhe").innerHTML =
-    `check-in 1<br>treino ${r.treino ? 1 : 0}<br>cardio ${pCardio}<br>hábito ${r.habito ? 1 : 0}`;
+  const m = metas();
+  const det = pontuar({ cardio: ci.cardio, agua: ci.agua, peso: ci.peso });
+  $("#ciPts").innerHTML = det.total + "<small> pts</small>";
+  $("#cardioLbl").textContent = (Number(ci.cardio) || 0) + " min";
+  $("#aguaLbl").textContent = nf(ci.agua, 1) + " L";
+
+  $("#gCheck").className = "goal done";
+  $("#vCheck").textContent = "+" + (m.p.checkin || 0);
+
+  $("#gCardio").className = "goal" + (det.cardio ? " done" : "");
+  $("#vCardio").textContent = (Number(ci.cardio) || 0) + "/" + m.cardio + " min";
+
+  $("#gAgua").className = "goal" + (det.agua ? " done" : "");
+  $("#vAgua").textContent = nf(ci.agua, 1) + "/" + nf(m.agua, 1) + " L";
+
+  $("#gPeso").className = "goal" + (det.peso ? " done" : "");
+  $("#vPeso").textContent = ci.peso ? nf(ci.peso, 1) + " kg" : "—";
 }
 
 function checarDuplicado() {
   const ja = regsDoAluno().find((r) => diaDoReg(r) === diaAlvo());
-  const aviso = $("#ciAviso");
-  if (ja) {
-    aviso.innerHTML = "Já existe um check-in registrado nesse dia (" + ptsDe(ja) +
-      " pts). Salvar de novo <b>corrige</b> o registro anterior.";
-  } else aviso.textContent = "";
+  $("#ciAviso").innerHTML = ja
+    ? "Já existe check-in nesse dia (" + ptsDe(ja) + " pts). Salvar de novo <b>corrige</b> o registro."
+    : "";
 }
 
 $("#btnSalvar").onclick = () => {
   if (!S.aluno) { toast("Escolha o aluno primeiro"); ir("v-aluno"); return; }
-  if (ci.treino === null || ci.habito === null) { toast("Responda treino e hábito"); return; }
+  if (ci.peso == null) { toast("Informe o peso de hoje"); return; }
 
   const dia = diaAlvo();
   const base = new Date(dia + "T12:00:00");
@@ -535,10 +673,13 @@ $("#btnSalvar").onclick = () => {
     id: existente ? existente.id : uid(),
     aluno: S.aluno,
     ts: base.toISOString(),
-    treino: ci.treino, cardio: Number(ci.cardio) || 0, habito: ci.habito,
-    foto: ci.foto, pts: 0, sync: 0
+    cardio: Number(ci.cardio) || 0,
+    agua: Number(ci.agua) || 0,
+    peso: Number(ci.peso),
+    foto: ci.foto,
+    pts: 0, sync: 0
   };
-  novo.pts = ptsDe(novo);
+  novo.pts = pontuar(novo).total;
 
   if (existente) Object.assign(existente, novo);
   else S.regs.push(novo);
@@ -546,38 +687,126 @@ $("#btnSalvar").onclick = () => {
   LS.set("cfg", S.cfg);
 
   toast("Check-in salvo · " + novo.pts + " pts");
-  ci.treino = null; ci.habito = null; ci.cardio = 0; ci.foto = null;
+  ci.cardio = 0; ci.agua = 0; ci.peso = null; ci.foto = null;
   renderLista();
   sincronizar(true);
-  ir("v-hist");
+  ir("v-prog");
 };
 
-/* ---------------- histórico ---------------- */
-function renderHist() {
-  const meus = regsDoAluno().sort((a, b) => b.ts.localeCompare(a.ts));
-  const total = meus.reduce((s, r) => s + (r.pts || ptsDe(r)), 0);
-  const meta = Number(S.cfg.meta) || 35;
+/* ---------------- progresso ---------------- */
+function renderProgresso() {
+  const meus = regsDoAluno().sort((a, b) => a.ts.localeCompare(b.ts));
+  const total = meus.reduce((s, r) => s + ptsDe(r), 0);
+  const meta = Number(S.cfg.meta) || 160;
 
-  $("#hTotal").textContent = total;
-  $("#hDias").textContent = meus.length;
-  $("#hMeta").textContent = Math.round((total / meta) * 100) + "%";
+  $("#pTotal").textContent = total;
+  $("#pDias").textContent = meus.length;
+  $("#pMeta").textContent = Math.round((total / meta) * 100) + "%";
   const seq = sequencia(meus);
-  $("#hSeq").textContent = seq + (seq === 1 ? " dia" : " dias");
-  $("#histVazio").hidden = meus.length > 0;
+  $("#pSeq").textContent = seq + (seq === 1 ? " dia" : " dias");
+  const mx = sequenciaMax(meus);
+  $("#pSeqMax").textContent = mx + (mx === 1 ? " dia" : " dias");
+
+  desenharSemanas(meus);
+  desenharPeso(meus);
+  desenharConquistas(meus, total, meta);
 
   const box = $("#histLista");
   box.innerHTML = "";
-  meus.slice(0, 40).forEach((r) => {
+  $("#histVazio").hidden = meus.length > 0;
+  meus.slice().reverse().slice(0, 20).forEach((r) => {
     const d = new Date(r.ts);
     const el = document.createElement("div");
     el.className = "histItem";
     el.innerHTML =
       `<span class="d">${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}</span>` +
       `<span class="badge ${r.sync ? "ok" : "pend"}">${r.sync ? "enviado" : "pendente"}</span>` +
-      `<span class="muted" style="font-size:11px">` +
-        `${r.treino ? "treino" : "—"} · ${r.cardio || 0}min · ${r.habito ? "hábito" : "—"}` +
-      `</span><span class="p">${r.pts || ptsDe(r)}</span>`;
+      `<span class="muted">${(r.cardio || 0)}min · ${nf(r.agua, 1)}L · ${nf(r.peso, 1)}kg</span>` +
+      `<span class="p">${ptsDe(r)}</span>`;
     box.appendChild(el);
+  });
+}
+
+function desenharSemanas(meus) {
+  const box = $("#chartSem");
+  box.innerHTML = "";
+  const nsem = Number(S.cfg.semanas) || 8;
+  const inicio = new Date((S.cfg.inicio || iso(new Date())) + "T12:00:00");
+  const pts = new Array(nsem).fill(0);
+
+  meus.forEach((r) => {
+    const d = new Date(r.ts);
+    const idx = Math.floor((d - inicio) / 86400000 / 7);
+    if (idx >= 0 && idx < nsem) pts[idx] += ptsDe(r);
+  });
+
+  const max = Math.max(4, ...pts);
+  pts.forEach((p, i) => {
+    const el = document.createElement("div");
+    el.className = "b";
+    el.innerHTML = `<b>${p || ""}</b>
+      <div class="fill${p ? "" : " zero"}" style="height:${Math.max(2, (p / max) * 82)}px"></div>
+      <span>S${i + 1}</span>`;
+    box.appendChild(el);
+  });
+
+  const semanaAtual = Math.min(nsem, Math.max(1, Math.floor((new Date() - inicio) / 86400000 / 7) + 1));
+  $("#chartInfo").textContent = "Você está na semana " + semanaAtual + " de " + nsem +
+    ". A meta do ciclo é " + (Number(S.cfg.meta) || 160) + " pontos.";
+}
+
+function desenharPeso(meus) {
+  const box = $("#chartPeso");
+  const comPeso = meus.filter((r) => Number(r.peso) > 0).slice(-10);
+  box.innerHTML = "";
+  const ult = comPeso[comPeso.length - 1];
+  const prim = comPeso[0];
+
+  if (!ult) {
+    $("#pesoAtual").innerHTML = "—<small> kg</small>";
+    $("#pesoVar").textContent = "—";
+    return;
+  }
+  $("#pesoAtual").innerHTML = nf(ult.peso, 1) + "<small> kg</small>";
+  const delta = Number(ult.peso) - Number(prim.peso);
+  const el = $("#pesoVar");
+  el.textContent = (delta > 0 ? "+" : "") + nf(delta, 1) + " kg";
+  el.style.color = Math.abs(delta) < 0.05 ? "var(--steel)" : (delta < 0 ? "var(--ok)" : "var(--warn)");
+
+  const vals = comPeso.map((r) => Number(r.peso));
+  const min = Math.min(...vals) - 0.6, max = Math.max(...vals) + 0.6;
+  const span = Math.max(0.1, max - min);
+  comPeso.forEach((r) => {
+    const h = 8 + ((Number(r.peso) - min) / span) * 54;
+    const d = document.createElement("div");
+    d.className = "b";
+    d.innerHTML = `<div class="fill" style="height:${h}px"></div>
+      <span>${String(new Date(r.ts).getDate()).padStart(2, "0")}/${String(new Date(r.ts).getMonth() + 1).padStart(2, "0")}</span>`;
+    box.appendChild(d);
+  });
+}
+
+function desenharConquistas(meus, total, meta) {
+  const aguaOk = meus.filter((r) => Number(r.agua) >= (Number(S.cfg.metaAgua) || 3)).length;
+  const cardioOk = meus.filter((r) => Number(r.cardio) >= (Number(S.cfg.metaCardio) || 20)).length;
+  const seq = sequenciaMax(meus);
+
+  const lista = [
+    { ok: meus.length >= 1, t: "Primeiro check-in", d: "Começou. O difícil é o dia 1." },
+    { ok: seq >= 7, t: "7 dias seguidos", d: "Uma semana inteira sem falhar." },
+    { ok: seq >= 30, t: "30 dias seguidos", d: "Constância de atleta." },
+    { ok: aguaOk >= 7, t: "Hidratado", d: "Bateu a meta de água 7 vezes." },
+    { ok: cardioOk >= 10, t: "Cardio em dia", d: "10 dias batendo a meta de cardio." },
+    { ok: total >= meta, t: "Meta do ciclo", d: "Chegou aos " + meta + " pontos." }
+  ];
+
+  const box = $("#achLista");
+  box.innerHTML = "";
+  lista.forEach((a) => {
+    const d = document.createElement("div");
+    d.className = a.ok ? "on" : "";
+    d.innerHTML = `<b>${a.ok ? "🏅 " : "🔒 "}${a.t}</b><span>${a.d}</span>`;
+    box.appendChild(d);
   });
 }
 
@@ -590,7 +819,82 @@ function sequencia(meus) {
   return n;
 }
 
-/* ---------------- ajustes ---------------- */
+function sequenciaMax(meus) {
+  const dias = Array.from(new Set(meus.map(diaDoReg))).sort();
+  let max = 0, at = 0, ant = null;
+  dias.forEach((d) => {
+    if (ant) {
+      const dif = (new Date(d) - new Date(ant)) / 86400000;
+      at = dif === 1 ? at + 1 : 1;
+    } else at = 1;
+    max = Math.max(max, at);
+    ant = d;
+  });
+  return max;
+}
+
+/* ---------------- ranking ---------------- */
+function renderRanking() {
+  const box = $("#rankLista");
+  box.innerHTML = "";
+  const r = S.ranking;
+  const vazio = !r || !r.lista || !r.lista.length;
+  $("#rankVazio").hidden = !vazio;
+  $("#minhaPos").hidden = vazio || !S.aluno;
+
+  if (!vazio) {
+    r.lista.slice(0, 10).forEach((x, i) => {
+      const el = document.createElement("div");
+      el.className = "rankItem" + (so(x.nome) === so(S.aluno) ? " me" : "");
+      el.innerHTML = `<span class="pos">${x.pos || (i + 1)}</span>
+        <span class="nm">${x.nome}</span>
+        <span class="pt">${x.pontos}<small> pts</small></span>`;
+      box.appendChild(el);
+    });
+
+    const eu = r.lista.find((x) => so(x.nome) === so(S.aluno));
+    if (eu) $("#minhaPosTxt").textContent = (eu.pos || "?") + "º de " + r.lista.length + " · " + eu.pontos + " pts";
+
+    const quando = r.em ? new Date(r.em) : null;
+    $("#rankData").textContent = quando
+      ? "Atualizado " + quando.toLocaleDateString("pt-BR") + " às " +
+        quando.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+      : "";
+  }
+}
+
+async function carregarRanking(silencioso) {
+  if (!S.cfg.endpoint || !S.cfg.token) { if (!silencioso) toast("Conecte o app em Ajustes", true); return; }
+  try {
+    const url = S.cfg.endpoint + (S.cfg.endpoint.includes("?") ? "&" : "?") +
+      "acao=ranking&token=" + encodeURIComponent(S.cfg.token);
+    const resp = await fetch(url, { cache: "no-store" });
+    const data = await resp.json();
+    if (!data || !data.ok) throw new Error((data && data.erro) || "falha");
+    S.ranking = { lista: data.ranking || [], em: new Date().toISOString() };
+    LS.set("ranking", S.ranking);
+    aplicarConfig(data.config);
+    renderRanking();
+    if (!silencioso) toast("Ranking atualizado");
+  } catch (e) {
+    if (!silencioso) toast("Não consegui atualizar o ranking", true);
+  }
+}
+
+$("#btnRank").onclick = () => carregarRanking(false);
+
+/* ---------------- configuração ---------------- */
+function aplicarConfig(c) {
+  if (!c) return;
+  if (c.meta != null) S.cfg.meta = c.meta;
+  if (c.inicio) S.cfg.inicio = c.inicio;
+  if (c.semanas != null) S.cfg.semanas = c.semanas;
+  if (c.metaCardio != null) S.cfg.metaCardio = c.metaCardio;
+  if (c.metaAgua != null) S.cfg.metaAgua = c.metaAgua;
+  if (c.pontos) S.cfg.pontos = c.pontos;
+  LS.set("cfg", S.cfg);
+}
+
 function renderCfg() {
   $("#cfgEndpoint").value = S.cfg.endpoint || "";
   $("#cfgToken").value = S.cfg.token || "";
@@ -599,19 +903,21 @@ function renderCfg() {
   atualizarChip();
 }
 
-$("#btnConectar").onclick = () => { ir("v-cfg"); setTimeout(() => $("#cfgEndpoint").focus(), 250); };
-
-$("#btnLink").onclick = async () => {
-  if (!S.cfg.endpoint || !S.cfg.token) { toast("Salve o endereço e o código primeiro", true); return; }
-  const base = location.origin + location.pathname;
-  const link = base + "?e=" + encodeURIComponent(S.cfg.endpoint) + "&t=" + encodeURIComponent(S.cfg.token);
+async function testarConexao() {
+  if (!S.cfg.endpoint) return false;
   try {
-    await navigator.clipboard.writeText(link);
-    toast("Link copiado");
-  } catch (e) {
-    prompt("Copie o link de configuração:", link);
-  }
-};
+    const url = S.cfg.endpoint + (S.cfg.endpoint.includes("?") ? "&" : "?") +
+      "acao=roster&token=" + encodeURIComponent(S.cfg.token);
+    const r = await fetch(url, { cache: "no-store" });
+    const d = await r.json();
+    if (!d || !d.ok) return false;
+    if (Array.isArray(d.alunos)) { S.roster = d.alunos; LS.set("roster", S.roster); }
+    aplicarConfig(d.config);
+    S.lastOk = Date.now(); LS.set("lastok", S.lastOk);
+    renderLista(); renderCfg(); atualizarChip();
+    return true;
+  } catch (e) { return false; }
+}
 
 $("#btnSalvarCfg").onclick = async () => {
   S.cfg.endpoint = $("#cfgEndpoint").value.trim();
@@ -620,32 +926,18 @@ $("#btnSalvarCfg").onclick = async () => {
   $("#cfgStatus").textContent = "Testando…";
   const ok = await testarConexao();
   $("#cfgStatus").textContent = ok
-    ? "Conectado. Lista e configuração atualizadas."
+    ? "Conectado. Lista e regras atualizadas."
     : "Não consegui falar com a planilha. O app continua funcionando offline.";
+  if (ok) carregarRanking(true);
 };
 
-async function testarConexao() {
-  if (!S.cfg.endpoint) return false;
-  try {
-    const url = S.cfg.endpoint + (S.cfg.endpoint.includes("?") ? "&" : "?") +
-      "acao=roster&token=" + encodeURIComponent(S.cfg.token);
-    const r = await fetch(url, { method: "GET", cache: "no-store" });
-    const d = await r.json();
-    if (!d || !d.ok) return false;
-    if (Array.isArray(d.alunos)) { S.roster = d.alunos; LS.set("roster", S.roster); }
-    if (d.config) {
-      S.cfg.meta = d.config.meta ?? S.cfg.meta;
-      S.cfg.inicio = d.config.inicio || S.cfg.inicio;
-      S.cfg.semanas = d.config.semanas ?? S.cfg.semanas;
-      S.cfg.minPorPonto = d.config.minPorPonto ?? S.cfg.minPorPonto;
-      S.cfg.teto = d.config.teto ?? S.cfg.teto;
-      LS.set("cfg", S.cfg);
-    }
-    S.lastOk = Date.now(); LS.set("lastok", S.lastOk);
-    renderLista(); renderCfg(); atualizarChip();
-    return true;
-  } catch (e) { return false; }
-}
+$("#btnLink").onclick = async () => {
+  if (!S.cfg.endpoint || !S.cfg.token) { toast("Salve o endereço e o código primeiro", true); return; }
+  const base = location.origin + location.pathname;
+  const link = base + "?e=" + encodeURIComponent(S.cfg.endpoint) + "&t=" + encodeURIComponent(S.cfg.token);
+  try { await navigator.clipboard.writeText(link); toast("Link copiado"); }
+  catch (e) { prompt("Copie o link de configuração:", link); }
+};
 
 $("#btnRoster").onclick = async () => {
   const ok = await testarConexao();
@@ -667,39 +959,52 @@ $("#btnLimpar").onclick = () => {
   if (!confirm("Apagar todos os check-ins deste aparelho? O que já foi enviado continua na planilha.")) return;
   S.regs = []; LS.set("regs", S.regs);
   toast("Dados locais apagados");
-  renderCfg(); renderHist(); renderLista();
+  renderCfg(); renderProgresso(); renderLista();
 };
 
+/* ---------------- backup ---------------- */
 $("#btnExport").onclick = () => {
-  const linhas = [["data", "aluno", "treino", "cardio_min", "habito", "pontos", "enviado"]];
-  regsDoAluno().sort((a, b) => a.ts.localeCompare(b.ts)).forEach((r) => {
-    linhas.push([diaDoReg(r), r.aluno, r.treino ? "Sim" : "Não", r.cardio || 0,
-                 r.habito ? "Sim" : "Não", r.pts || ptsDe(r), r.sync ? "Sim" : "Não"]);
-  });
-  const csv = linhas.map((l) => l.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(";")).join("\n");
+  const dump = { app: "gh-desafio", versao: 3, em: new Date().toISOString(),
+                 cfg: S.cfg, roster: S.roster, regs: S.regs };
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" }));
-  a.download = "gh-desafio-" + iso(new Date()) + ".csv";
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(dump, null, 2)], { type: "application/json" }));
+  a.download = "gh-desafio-backup-" + iso(new Date()) + ".json";
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 4000);
 };
 
+$("#btnImport").onclick = () => $("#fileImport").click();
+$("#fileImport").addEventListener("change", async (e) => {
+  const f = e.target.files && e.target.files[0];
+  if (!f) return;
+  try {
+    const txt = await f.text();
+    const d = JSON.parse(txt);
+    if (!d || !Array.isArray(d.regs)) throw new Error("formato");
+
+    const mapa = new Map(S.regs.map((r) => [r.id, r]));
+    d.regs.forEach((r) => mapa.set(r.id, r));
+    S.regs = Array.from(mapa.values());
+    LS.set("regs", S.regs);
+
+    if (Array.isArray(d.roster) && d.roster.length) { S.roster = d.roster; LS.set("roster", d.roster); }
+    toast(S.regs.length + " registros restaurados");
+    renderLista(); renderProgresso(); renderCfg();
+  } catch (err) {
+    toast("Arquivo inválido", true);
+  }
+  e.target.value = "";
+});
+
 /* ---------------- sincronização ---------------- */
 function atualizarChip() {
   const pend = S.regs.filter((r) => !r.sync).length;
-  const chip = $("#syncChip");
-  const dot = chip.querySelector(".dot");
-  if (!S.cfg.endpoint || !S.cfg.token) {
-    dot.className = "dot"; $("#syncTxt").textContent = "só local";
-  } else if (pend) {
-    dot.className = "dot pend"; $("#syncTxt").textContent = pend + " pendente" + (pend > 1 ? "s" : "");
-  } else if (navigator.onLine === false) {
-    dot.className = "dot off"; $("#syncTxt").textContent = "offline";
-  } else if (S.lastOk) {
-    dot.className = "dot ok"; $("#syncTxt").textContent = "tudo enviado";
-  } else {
-    dot.className = "dot pend"; $("#syncTxt").textContent = "sem conexão";
-  }
+  const dot = $("#syncChip").querySelector(".dot");
+  if (!S.cfg.endpoint || !S.cfg.token) { dot.className = "dot"; $("#syncTxt").textContent = "só local"; }
+  else if (pend) { dot.className = "dot pend"; $("#syncTxt").textContent = pend + " pendente" + (pend > 1 ? "s" : ""); }
+  else if (navigator.onLine === false) { dot.className = "dot off"; $("#syncTxt").textContent = "offline"; }
+  else if (S.lastOk) { dot.className = "dot ok"; $("#syncTxt").textContent = "tudo enviado"; }
+  else { dot.className = "dot pend"; $("#syncTxt").textContent = "sem conexão"; }
   const p = $("#cfgPend"); if (p) p.textContent = pend;
 }
 
@@ -708,31 +1013,20 @@ async function sincronizar(silencioso) {
   const pend = S.regs.filter((r) => !r.sync);
   atualizarChip();
   if (!pend.length) { if (!silencioso) toast("Nada para enviar"); return; }
-  if (!S.cfg.endpoint || !S.cfg.token) {
-    if (!silencioso) toast("Configure endereço e código em Ajustes", true);
-    return;
-  }
-  if (navigator.onLine === false) {
-    if (!silencioso) toast("Sem internet — os registros ficam guardados", true);
-    return;
-  }
+  if (!S.cfg.endpoint || !S.cfg.token) { if (!silencioso) toast("Configure endereço e código em Ajustes", true); return; }
+  if (navigator.onLine === false) { if (!silencioso) toast("Sem internet — os registros ficam guardados", true); return; }
 
   sincronizando = true;
   let ok = 0, erro = "";
   for (const r of pend) {
     try {
-      const corpo = {
-        token: S.cfg.token,
-        registros: [{
-          id: r.id, aluno: r.aluno, ts: r.ts, treino: r.treino,
-          cardio: r.cardio, habito: r.habito, foto: r.foto || null
-        }]
-      };
+      const corpo = { token: S.cfg.token, registros: [{
+        id: r.id, aluno: r.aluno, ts: r.ts,
+        cardio: r.cardio, agua: r.agua, peso: r.peso, foto: r.foto || null
+      }] };
       const resp = await fetch(S.cfg.endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(corpo),
-        redirect: "follow"
+        method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(corpo), redirect: "follow"
       });
       const data = await resp.json();
       if (!data || !data.ok) throw new Error((data && data.erro) || "falha no envio");
@@ -740,20 +1034,17 @@ async function sincronizar(silencioso) {
       if (res.status === "erro") throw new Error(res.mensagem || "registro recusado");
       r.sync = 1;
       r.pts = res.pontos != null ? res.pontos : r.pts;
-      r.foto = null;          // libera espaço depois de subir
+      r.foto = null;
       ok++;
       LS.set("regs", S.regs);
-    } catch (e) {
-      erro = e.message || "erro";
-      break;
-    }
+    } catch (e) { erro = e.message || "erro"; break; }
   }
   sincronizando = false;
   if (ok && !erro) { S.lastOk = Date.now(); LS.set("lastok", S.lastOk); }
   LS.set("regs", S.regs);
-  atualizarChip(); renderLista(); renderHist(); renderCfg();
+  atualizarChip(); renderLista(); renderProgresso(); renderCfg();
 
-  if (ok) toast(ok + " check-in" + (ok > 1 ? "s" : "") + " enviado" + (ok > 1 ? "s" : ""));
+  if (ok) { toast(ok + " check-in" + (ok > 1 ? "s" : "") + " enviado" + (ok > 1 ? "s" : "")); carregarRanking(true); }
   else if (!silencioso) toast(erro || "Nada enviado", true);
 }
 
@@ -764,14 +1055,11 @@ setInterval(() => { if (S.regs.some((r) => !r.sync)) sincronizar(true); }, 90000
 
 /* ---------------- boot ---------------- */
 (function boot() {
-  if (!S.roster.length) S.roster = [];
   renderLista();
   atualizarChip();
   if (S.aluno) $("#alunoAtual").textContent = S.aluno;
   if (S.cfg.endpoint && S.cfg.token) { testarConexao(); sincronizar(true); }
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("sw.js").catch(() => {});
-  }
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
   ir(S.aluno ? "v-checkin" : "v-aluno");
 })();
 </script>
