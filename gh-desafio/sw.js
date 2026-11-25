@@ -2,7 +2,7 @@
    Estratégia: pré-cache do shell na instalação e cache-first com atualização em
    segundo plano. O app precisa abrir sem internet, então nada de network-first. */
 
-const VERSAO = "gh-desafio-v1";
+const VERSAO = "gh-desafio-v2";
 
 /* Os ícones viajam como base64 em icones.js e são servidos daqui como PNG.
    Assim o repositório fica 100% em texto e o app continua instalável. */
