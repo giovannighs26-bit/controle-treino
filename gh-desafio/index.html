@@ -360,10 +360,11 @@
 
     <h2>Sincronização</h2>
     <div class="card">
-      <div class="row between" style="margin-bottom:12px">
+      <div class="row between" style="margin-bottom:6px">
         <span class="muted">Pendentes de envio</span>
         <b id="cfgPend">0</b>
       </div>
+      <p class="hint" id="cfgLast" style="margin:0 0 12px"></p>
       <button class="btn block" id="btnSync" style="margin-bottom:8px">Enviar agora</button>
     </div>
 
@@ -392,7 +393,7 @@
     <div class="card">
       <button class="btn ghost block" id="btnLimpar" style="color:var(--err)">Apagar dados deste aparelho</button>
       <p class="hint" style="margin-top:12px">
-        GH Desafio · v4.3 · build 11 · funciona offline. Os check-ins ficam neste aparelho até o envio concluir;
+        GH Desafio · v4.4 · build 12 · funciona offline. Os check-ins ficam neste aparelho até o envio concluir;
         apagar remove o histórico local, o que já foi para a planilha permanece lá.
       </p>
     </div>
@@ -474,7 +475,9 @@ const S = {
   diag: LS.get("diag", null)
 };
 S.cfg.metas = Object.assign({}, PADRAO.metas, S.cfg.metas || {});
-if (!S.cfg.pontos) S.cfg.pontos = Object.assign({}, PADRAO.pontos);
+delete S.cfg.pontos;
+delete S.cfg.metaCardio;
+delete S.cfg.metaAgua;
 
 let sincronizando = false;
 
@@ -485,6 +488,10 @@ const so = (s) => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "
 const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 const nf = (n, d) => Number(n || 0).toFixed(d).replace(".", ",");
 const $fmt = (n) => Number(n || 0).toFixed(0);
+const esc = (v) => String(v == null ? "" : v)
+  .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+  .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+function metaCiclo() { return Number(S.cfg.meta) || PADRAO.meta; }
 
 const MENSAGENS = {
   login: "O Web App está pedindo login do Google. Reimplante com \"Quem tem acesso: Qualquer pessoa\".",
@@ -492,6 +499,7 @@ const MENSAGENS = {
   "sem-acesso": "Acesso negado (401/403). Confira a permissão da implantação.",
   url: "Endereço não encontrado (404). Use a URL que termina em /exec.",
   html: "O servidor devolveu uma página em vez de dados — quase sempre é a implantação sem acesso público.",
+  timeout: "O banco demorou demais para responder. Tente de novo quando o sinal melhorar.",
   rede: "Não consegui chegar no servidor. Verifique a internet.",
   desconhecido: "Resposta inesperada do servidor."
 };
@@ -508,9 +516,18 @@ function classificar(status, texto) {
 
 async function pedir(url, opts) {
   const t0 = Date.now();
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 15000);
   let resp;
-  try { resp = await fetch(url, opts || {}); }
-  catch (e) { throw { tipo: "rede", status: 0, ms: Date.now() - t0, amostra: String(e && e.message || e) }; }
+  try {
+    resp = await fetch(url, Object.assign({ signal: ctrl.signal }, opts || {}));
+  } catch (e) {
+    const abortou = String(e && e.name) === "AbortError";
+    throw { tipo: abortou ? "timeout" : "rede", status: 0, ms: Date.now() - t0,
+            amostra: String(e && e.message || e) };
+  } finally {
+    clearTimeout(timer);
+  }
   const texto = await resp.text();
   return { status: resp.status, texto: texto, ms: Date.now() - t0 };
 }
@@ -625,7 +642,7 @@ function renderLista() {
     const feito = S.regs.some((r) => so(r.aluno) === so(nome) && diaDoReg(r) === iso(new Date()));
     const el = document.createElement("div");
     el.className = "nameItem";
-    el.innerHTML = `<span>${nome}</span>` + (feito ? `<span class="tag">hoje ✓</span>` : "");
+    el.innerHTML = `<span>${esc(nome)}</span>` + (feito ? `<span class="tag">hoje ✓</span>` : "");
     el.onclick = () => escolherAluno(nome);
     box.appendChild(el);
   });
@@ -825,7 +842,7 @@ function checarDuplicado() {
 
 $("#btnSalvar").onclick = () => {
   if (!S.aluno) { toast("Escolha o aluno primeiro"); ir("v-aluno"); return; }
-  if (ci.v.peso == null) { toast("Informe o peso de hoje"); return; }
+  if (cfgMeta("peso").on && ci.v.peso == null) { toast("Informe o peso de hoje"); return; }
 
   const dia = diaAlvo();
   const base = new Date(dia + "T12:00:00");
@@ -1018,17 +1035,15 @@ function regsCompartilhados() {
   Object.keys(S.remoto || {}).forEach((k) => {
     const r = S.remoto[k];
     if (!r || !r.aluno || !r.ts) return;
-    mapa.set(chaveReg(r), {
-      aluno: r.aluno, ts: r.ts,
-      cardio: Number(r.cardio) || 0, agua: Number(r.agua) || 0, peso: Number(r.peso) || 0,
-      pontos: Number(r.pontos != null ? r.pontos : r.pts) || 0
-    });
+    mapa.set(chaveReg(r), Object.assign(
+      { aluno: r.aluno, ts: r.ts, pontos: Number(r.pontos != null ? r.pontos : r.pts) || 0 },
+      METAS.reduce((o, d) => { o[d.id] = Number(r[d.id]) || 0; return o; }, {})
+    ));
   });
-  S.regs.forEach((r) => mapa.set(chaveReg(r), {
-    aluno: r.aluno, ts: r.ts,
-    cardio: Number(r.cardio) || 0, agua: Number(r.agua) || 0, peso: Number(r.peso) || 0,
-    pontos: ptsDe(r)
-  }));
+  S.regs.forEach((r) => mapa.set(chaveReg(r), Object.assign(
+    { aluno: r.aluno, ts: r.ts, pontos: ptsDe(r) },
+    METAS.reduce((o, d) => { o[d.id] = Number(r[d.id]) || 0; return o; }, {})
+  )));
   return Array.from(mapa.values()).sort((a, b) => String(a.ts).localeCompare(String(b.ts)));
 }
 
@@ -1050,8 +1065,14 @@ function hojeDe(regs, nomes) {
   const hoje = iso(new Date());
   const feitos = new Map();
   regs.filter((r) => iso(new Date(r.ts)) === hoje).forEach((r) => feitos.set(so(r.aluno), r.pontos));
-  const lista = new Set([].concat(nomes, Array.from(feitos.keys())));
-  return Array.from(nomes).map((n) => ({ nome: n, fez: feitos.has(so(n)), pontos: feitos.get(so(n)) || 0 }));
+  const todos = new Map();
+  nomes.forEach((n) => todos.set(so(n), n));
+  regs.filter((r) => iso(new Date(r.ts)) === hoje).forEach((r) => {
+    if (!todos.has(so(r.aluno))) todos.set(so(r.aluno), r.aluno);
+  });
+  return Array.from(todos.values()).map((n) => ({
+    nome: n, fez: feitos.has(so(n)), pontos: feitos.get(so(n)) || 0
+  }));
 }
 
 /* ---------------- grupo ---------------- */
@@ -1059,19 +1080,19 @@ function linhaHoje(h) {
   const el = document.createElement("div");
   el.className = "rk" + (so(h.nome) === so(S.aluno) ? " me" : "");
   el.innerHTML = `<span class="p">${h.fez ? "✓" : "·"}</span>
-    <span class="info"><div class="nm">${h.nome}</div></span>
+    <span class="info"><div class="nm">${esc(h.nome)}</div></span>
     <span class="pt">${h.fez ? h.pontos + "<small>pts hoje</small>" : '<span class="ph">—</span><small>aguardando</small>'}</span>`;
   return el;
 }
 
 function linhaRank(x, i) {
-  const meta = Number(S.cfg.meta) || 90;
+  const meta = metaCiclo();
   const pct = Math.max(0, Math.min(1, (Number(x.pontos) || 0) / meta));
   const el = document.createElement("div");
   el.className = "rk" + (so(x.nome) === so(S.aluno) ? " me" : "");
   el.innerHTML = `<span class="p">${x.pos || (i + 1)}</span>
     <span class="info">
-      <div class="nm">${x.nome}</div>
+      <div class="nm">${esc(x.nome)}</div>
       <div class="bar"><i style="width:${(pct * 100).toFixed(0)}%"></i></div>
     </span>
     <span class="pt">${x.pontos || 0}<small>${Math.round(pct * 100)}% da meta</small></span>`;
@@ -1093,7 +1114,7 @@ function linhaFeed(r) {
   el.style.gap = "6px";
   el.innerHTML =
     `<div class="row" style="gap:8px">
-       <span class="nm" style="flex:1">${r.aluno}</span>
+       <span class="nm" style="flex:1">${esc(r.aluno)}</span>
        <span class="muted" style="font-size:11px">${quando}</span>
        <span class="pt">${r.pontos}<small>pts</small></span>
      </div>
@@ -1171,9 +1192,7 @@ function aplicarConfig(c) {
   if (c.meta != null) S.cfg.meta = c.meta;
   if (c.inicio) S.cfg.inicio = c.inicio;
   if (c.dias != null) S.cfg.dias = c.dias;
-  if (c.metaCardio != null) S.cfg.metaCardio = c.metaCardio;
-  if (c.metaAgua != null) S.cfg.metaAgua = c.metaAgua;
-  if (c.pontos) S.cfg.pontos = c.pontos;
+  if (c.metas) S.cfg.metas = Object.assign({}, S.cfg.metas, c.metas);
   LS.set("cfg", S.cfg);
 }
 
@@ -1239,6 +1258,12 @@ function renderCfg() {
   const campo = $("#cfgSala");
   if (campo && document.activeElement !== campo) campo.value = S.cfg.sala || "";
   $("#cfgPend").textContent = S.regs.filter((r) => !r.sync).length;
+  const last = $("#cfgLast");
+  if (last) {
+    last.textContent = S.lastOk
+      ? "Última sincronização: " + new Date(S.lastOk).toLocaleString("pt-BR")
+      : "Ainda sem sincronização.";
+  }
   $("#cfgRoster").value = S.roster.join("\n");
   renderMetasCfg();
   atualizarChip();
@@ -1250,6 +1275,12 @@ async function testarSala() {
     const r = await pedir(salaUrl() + "/regs.json");
     const d = lerJson(r);
     if (d && typeof d === "object") { S.remoto = d; LS.set("remoto", d); }
+
+    try {
+      const m = lerJson(await pedir(salaUrl() + "/meta.json"));
+      if (m && m.inicio) aplicarConfig({ inicio: m.inicio });
+    } catch (e2) {}
+
     S.lastOk = Date.now(); LS.set("lastok", S.lastOk);
     S.diag = null; LS.set("diag", null);
     renderGrupo(); renderCfg(); atualizarChip();
@@ -1507,62 +1538,76 @@ async function sincronizar(silencioso) {
   }
 
   sincronizando = true;
-  let ok = 0, erro = "";
+  let ok = 0, erroLeitura = "", erroEnvio = "";
 
   try {
-    const d = lerJson(await pedir(salaUrl() + "/regs.json"));
-    if (d && typeof d === "object") { S.remoto = d; LS.set("remoto", d); }
-    const meta = lerJson(await pedir(salaUrl() + "/meta.json"));
-    if (meta && meta.inicio && meta.inicio !== S.cfg.inicio) {
-      S.cfg.inicio = meta.inicio;
-      LS.set("cfg", S.cfg);
-    }
-  } catch (e) {
-    if (e && e.tipo) guardarDiag("leitura", e);
-    erro = mensagemDe(e);
-  }
-
-  for (const r of S.regs.filter((x) => !x.sync)) {
-    if (erro) break;
+    /* 1. leitura */
     try {
-      const resp = await pedir(salaUrl() + "/regs/" + encodeURIComponent(r.id) + ".json", {
-        method: "PUT", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          aluno: r.aluno, ts: r.ts, cardio: r.cardio || 0,
-          agua: r.agua || 0, peso: r.peso || 0, pontos: r.pts || 0, v: 4
-        })
-      });
-      if (resp.status >= 300) throw { tipo: classificar(resp.status, resp.texto), status: resp.status, ms: resp.ms };
-      r.sync = 1; ok++;
-      LS.set("regs", S.regs);
-    } catch (e) {
-      if (e && e.tipo) guardarDiag("envio", e);
-      erro = mensagemDe(e);
-      break;
-    }
-  }
+      const d = lerJson(await pedir(salaUrl() + "/regs.json"));
+      if (d && typeof d === "object") { S.remoto = d; LS.set("remoto", d); }
 
-  if (ok || !erro) {
-    try {
       const meta = lerJson(await pedir(salaUrl() + "/meta.json"));
-      if (!meta || !meta.inicio) {
-        await pedir(salaUrl() + "/meta.json", {
-          method: "PUT", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ inicio: S.cfg.inicio || iso(new Date()) })
-        });
+      if (meta && meta.inicio && meta.inicio !== S.cfg.inicio) {
+        S.cfg.inicio = meta.inicio;
+        LS.set("cfg", S.cfg);
       }
-    } catch (e) {}
+    } catch (e) {
+      if (e && e.tipo) guardarDiag("leitura", e);
+      erroLeitura = mensagemDe(e);
+    }
+
+    /* 2. envio (acontece mesmo se a leitura falhou) */
+    for (const r of S.regs.filter((x) => !x.sync)) {
+      try {
+        const corpo = Object.assign(
+          { aluno: r.aluno, ts: r.ts, pontos: r.pts || 0, v: 5 },
+          METAS.reduce((o, d) => { o[d.id] = Number(r[d.id]) || 0; return o; }, {})
+        );
+        const resp = await pedir(salaUrl() + "/regs/" + encodeURIComponent(r.id) + ".json", {
+          method: "PUT", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(corpo)
+        });
+        if (resp.status >= 300) {
+          throw { tipo: classificar(resp.status, resp.texto), status: resp.status, ms: resp.ms,
+                  amostra: String(resp.texto || "").slice(0, 160) };
+        }
+        r.sync = 1;
+        r.foto = null;          // libera espaço: a foto não vai para o banco
+        ok++;
+        LS.set("regs", S.regs);
+      } catch (e) {
+        if (e && e.tipo) guardarDiag("envio", e);
+        erroEnvio = mensagemDe(e);
+        break;
+      }
+    }
+
+    /* 3. data de início compartilhada */
+    if (!erroLeitura) {
+      try {
+        const meta = lerJson(await pedir(salaUrl() + "/meta.json"));
+        if (!meta || !meta.inicio) {
+          await pedir(salaUrl() + "/meta.json", {
+            method: "PUT", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ inicio: S.cfg.inicio || iso(new Date()) })
+          });
+        }
+      } catch (e) {}
+    }
+
+    /* 4. relê para trazer o que os outros enviaram */
+    if (ok) {
+      try {
+        const d2 = lerJson(await pedir(salaUrl() + "/regs.json"));
+        if (d2 && typeof d2 === "object") { S.remoto = d2; LS.set("remoto", d2); }
+      } catch (e) {}
+    }
+  } finally {
+    sincronizando = false;
   }
 
-  if (ok) {
-    try {
-      const d2 = lerJson(await pedir(salaUrl() + "/regs.json"));
-      if (d2 && typeof d2 === "object") { S.remoto = d2; LS.set("remoto", d2); }
-    } catch (e) {}
-  }
-
-  sincronizando = false;
-  if (!erro) { S.lastOk = Date.now(); LS.set("lastok", S.lastOk); }
+  const erro = erroEnvio || erroLeitura;
+  if (!erroEnvio) { S.lastOk = Date.now(); LS.set("lastok", S.lastOk); }
   LS.set("regs", S.regs);
 
   atualizarChip(); renderLista(); renderGrupo(); renderProgresso(); renderCfg();
