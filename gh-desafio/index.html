@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0b0e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>GH Desafio</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  :root{
+    --bg:#0a0b0e; --card:#14161b; --card2:#1b1e25; --line:#262a33;
+    --gold:#c9a227; --gold-soft:#2a2416; --steel:#c3cad3; --txt:#f2f4f7; --muted:#8b93a1;
+    --ok:#3ecf8e; --warn:#e0b13a; --err:#ef5e5e;
+    --r:16px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    overscroll-behavior-y:contain}
+  body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+  header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;
+    padding:calc(10px + env(safe-area-inset-top)) 16px 10px;background:rgba(10,11,14,.92);
+    backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .logo{width:38px;height:38px;border-radius:11px;background:var(--gold);color:#0a0b0e;
+    display:grid;place-items:center;font-weight:800;font-size:15px;letter-spacing:-.5px;flex:0 0 auto}
+  .brand{display:flex;flex-direction:column;line-height:1.15;min-width:0}
+  .brand b{font-size:14px;letter-spacing:.3px}
+  .brand span{font-size:10.5px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase}
+  .chip{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);
+    border:1px solid var(--line);border-radius:999px;padding:6px 10px;background:var(--card);flex:0 0 auto}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--muted)}
+  .dot.ok{background:var(--ok)} .dot.pend{background:var(--warn)} .dot.off{background:var(--err)}
+  main{padding:16px;max-width:620px;margin:0 auto}
+  h2{font-size:13px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);
+    margin:0 0 12px;font-weight:600}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:14px}
+  .card.tight{padding:12px}
+  .row{display:flex;align-items:center;gap:10px}
+  .between{justify-content:space-between}
+  .muted{color:var(--muted);font-size:12px}
+  .hint{color:var(--muted);font-size:12px;line-height:1.45}
+  input,textarea,button{font-family:inherit;font-size:15px}
+  input[type=text],input[type=url],input[type=number],textarea{
+    width:100%;background:var(--card2);border:1px solid var(--line);color:var(--txt);
+    border-radius:12px;padding:12px 14px;outline:none}
+  input:focus,textarea:focus{border-color:var(--gold)}
+  .btn{border:none;border-radius:14px;padding:15px 18px;font-weight:700;font-size:15px;
+    background:var(--card2);color:var(--txt);cursor:pointer;transition:transform .08s, filter .15s;
+    display:flex;align-items:center;justify-content:center;gap:8px}
+  .btn:active{transform:scale(.985)}
+  .btn.gold{background:var(--gold);color:#0a0b0e}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--steel)}
+  .btn:disabled{opacity:.45}
+  .btn.block{width:100%}
+  .seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .seg .btn{border:1px solid var(--line);background:var(--card2);font-weight:600;padding:16px 8px}
+  .seg .btn.on{background:var(--gold-soft);border-color:var(--gold);color:var(--gold)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chipBtn{border:1px solid var(--line);background:var(--card2);color:var(--txt);
+    border-radius:999px;padding:10px 16px;font-size:14px;font-weight:600;cursor:pointer}
+  .chipBtn.on{background:var(--gold);border-color:var(--gold);color:#0a0b0e}
+  .names{display:flex;flex-direction:column;gap:8px;max-height:52vh;overflow:auto}
+  .nameItem{display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:15px 16px;border:1px solid var(--line);border-radius:14px;background:var(--card);
+    font-size:15px;font-weight:600;cursor:pointer}
+  .nameItem:active{background:var(--card2)}
+  .nameItem .tag{font-size:10.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
+    color:var(--ok);border:1px solid rgba(62,207,142,.35);border-radius:999px;padding:4px 9px}
+  .nameItem .tag.pend{color:var(--warn);border-color:rgba(224,177,58,.35)}
+  .hero{font-size:34px;font-weight:800;letter-spacing:-1px;line-height:1}
+  .hero small{font-size:13px;font-weight:600;color:var(--muted);letter-spacing:0}
+  .kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .kpi div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
+  .kpi b{display:block;font-size:22px;letter-spacing:-.5px}
+  .kpi span{font-size:10.5px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase}
+  .hist{display:flex;flex-direction:column;gap:8px}
+  .histItem{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);
+    border-radius:14px;background:var(--card)}
+  .histItem .d{font-size:12px;color:var(--muted);min-width:64px}
+  .histItem .p{margin-left:auto;font-weight:800;color:var(--gold)}
+  .badge{font-size:9.5px;letter-spacing:.6px;text-transform:uppercase;padding:3px 7px;border-radius:6px;
+    border:1px solid var(--line);color:var(--muted)}
+  .badge.ok{color:var(--ok);border-color:rgba(62,207,142,.35)}
+  .badge.pend{color:var(--warn);border-color:rgba(224,177,58,.35)}
+  .photo{width:100%;max-height:220px;object-fit:cover;border-radius:12px;margin-top:10px;display:block}
+  footer{position:fixed;left:0;right:0;bottom:0;z-index:20;display:grid;grid-template-columns:repeat(4,1fr);
+    gap:2px;background:rgba(10,11,14,.96);backdrop-filter:blur(12px);
+    border-top:1px solid var(--line);padding:8px 6px calc(8px + env(safe-area-inset-bottom))}
+  footer button{background:none;border:none;color:var(--muted);font-size:10.5px;font-weight:600;
+    letter-spacing:.4px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
+  footer button svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.8;
+    stroke-linecap:round;stroke-linejoin:round}
+  footer button.on{color:var(--gold)}
+  #toast{position:fixed;left:50%;transform:translateX(-50%) translateY(20px);bottom:calc(92px + env(safe-area-inset-bottom));
+    background:#fff;color:#111;padding:12px 18px;border-radius:12px;font-size:13.5px;font-weight:700;
+    opacity:0;pointer-events:none;transition:.22s;z-index:40;max-width:88vw;text-align:center}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  #toast.err{background:#ef5e5e;color:#fff}
+  .sep{height:1px;background:var(--line);margin:14px 0}
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:11px;letter-spacing:.8px;text-transform:uppercase;
+    color:var(--muted);margin-bottom:6px;font-weight:700}
+  [hidden]{display:none !important}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">GH</div>
+  <div class="brand"><b>Desafio</b><span id="brandSub">Performance</span></div>
+  <div class="chip" id="syncChip"><span class="dot" ></span><span id="syncTxt">local</span></div>
+</header>
+
+<main>
+  <!-- ================= ALUNO ================= -->
+  <section id="v-aluno">
+    <h2>Quem está treinando</h2>
+    <div class="card tight" id="alunoAtualBox" hidden>
+      <div class="row between">
+        <div>
+          <div class="muted">Selecionado</div>
+          <div style="font-size:17px;font-weight:800" id="alunoAtual">—</div>
+        </div>
+        <button class="btn ghost" id="btnTrocar" style="padding:10px 14px;font-size:13px">Trocar</button>
+      </div>
+    </div>
+
+    <div class="card tight" id="listaBox">
+      <input type="text" id="busca" placeholder="Buscar nome…" autocomplete="off" style="margin-bottom:10px">
+      <div class="names" id="listaNomes"></div>
+      <p class="hint" id="listaVazia" hidden style="margin:12px 2px 2px">
+        Nenhum nome carregado. Toque em <b>Ajustes → Atualizar lista</b> (precisa de internet uma vez)
+        ou cole a lista em <b>Ajustes → Lista offline</b>.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= CHECK-IN ================= -->
+  <section id="v-checkin" hidden>
+    <h2>Check-in</h2>
+    <div class="card">
+      <div class="row between" style="margin-bottom:12px">
+        <div>
+          <div class="muted">Aluno</div>
+          <div style="font-size:18px;font-weight:800" id="ciAluno">—</div>
+        </div>
+        <div style="text-align:right">
+          <div class="muted">Data</div>
+          <div style="font-weight:700" id="ciDataTxt">—</div>
+        </div>
+      </div>
+      <div class="seg" style="grid-template-columns:1fr 1fr">
+        <button class="btn" id="diaHoje">Hoje</button>
+        <button class="btn" id="diaOntem">Ontem</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-bottom:10px">Treino</h2>
+      <div class="seg">
+        <button class="btn" data-t="1" data-g="treino">Fiz</button>
+        <button class="btn" data-t="0" data-g="treino">Não fiz</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-bottom:10px">Cardio (minutos)</h2>
+      <div class="chips" id="cardioChips"></div>
+      <div class="row" style="margin-top:12px;gap:8px">
+        <input type="number" id="cardioOutro" inputmode="numeric" min="0" max="600" placeholder="Outro valor" style="flex:1">
+        <span class="muted" style="min-width:64px;text-align:right" id="cardioLbl">0 min</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-bottom:10px">Hábito</h2>
+      <div class="seg">
+        <button class="btn" data-t="1" data-g="habito">Cumpri</button>
+        <button class="btn" data-t="0" data-g="habito">Não cumpri</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row between">
+        <div>
+          <h2 style="margin:0 0 4px">Foto</h2>
+          <div class="muted">Opcional · comprovante do treino</div>
+        </div>
+        <button class="btn ghost" id="btnFoto" style="padding:10px 14px;font-size:13px">Anexar</button>
+      </div>
+      <input type="file" id="fileFoto" accept="image/*" capture="environment" hidden>
+      <img id="fotoPrev" class="photo" hidden alt="">
+      <button class="btn ghost block" id="btnRemFoto" hidden style="margin-top:10px;padding:10px;font-size:13px">Remover foto</button>
+    </div>
+
+    <div class="card" style="border-color:var(--gold);background:linear-gradient(180deg,#1a1710,#12141a)">
+      <div class="row between">
+        <div>
+          <div class="muted">Pontos deste check-in</div>
+          <div class="hero" id="ciPts">0<small> pts</small></div>
+        </div>
+        <div class="muted" id="ciDetalhe" style="text-align:right;line-height:1.6"></div>
+      </div>
+    </div>
+
+    <button class="btn gold block" id="btnSalvar" style="padding:18px">Salvar check-in</button>
+    <p class="hint" id="ciAviso" style="margin-top:10px"></p>
+  </section>
+
+  <!-- ================= HISTÓRICO ================= -->
+  <section id="v-hist" hidden>
+    <h2>Meu histórico</h2>
+    <div class="kpi" style="margin-bottom:14px">
+      <div><b id="hTotal">0</b><span>pontos</span></div>
+      <div><b id="hDias">0</b><span>check-ins</span></div>
+      <div><b id="hMeta">0%</b><span>da meta</span></div>
+    </div>
+    <div class="card tight" style="margin-bottom:14px">
+      <div class="row between">
+        <span class="muted">Sequência atual</span>
+        <b id="hSeq" style="color:var(--gold)">0 dias</b>
+      </div>
+    </div>
+    <div class="hist" id="histLista"></div>
+    <p class="hint" id="histVazio" hidden>Nenhum check-in salvo neste aparelho ainda.</p>
+  </section>
+
+  <!-- ================= AJUSTES ================= -->
+  <section id="v-cfg" hidden>
+    <h2>Conexão</h2>
+    <div class="card">
+      <div class="field">
+        <label>Endereço do Web App</label>
+        <input type="url" id="cfgEndpoint" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>Código de acesso</label>
+        <input type="text" id="cfgToken" placeholder="código entregue pelo treinador" autocomplete="off">
+      </div>
+      <button class="btn gold block" id="btnSalvarCfg">Salvar e testar</button>
+      <p class="hint" id="cfgStatus" style="margin:10px 0 0"></p>
+    </div>
+
+    <h2>Alunos</h2>
+    <div class="card">
+      <button class="btn ghost block" id="btnRoster">Atualizar lista da planilha</button>
+      <div class="field" style="margin-top:14px">
+        <label>Lista offline (um nome por linha)</label>
+        <textarea id="cfgRoster" rows="5" placeholder="Ana Souza&#10;Bruno Lima&#10;…"></textarea>
+      </div>
+      <button class="btn ghost block" id="btnRosterLocal">Usar esta lista</button>
+    </div>
+
+    <h2>Sincronização</h2>
+    <div class="card">
+      <div class="row between" style="margin-bottom:12px">
+        <span class="muted">Pendentes de envio</span>
+        <b id="cfgPend">0</b>
+      </div>
+      <button class="btn block" id="btnSync" style="margin-bottom:8px">Enviar agora</button>
+      <button class="btn ghost block" id="btnExport">Exportar backup (.csv)</button>
+    </div>
+
+    <h2>Dados e versão</h2>
+    <div class="card">
+      <button class="btn ghost block" id="btnLimpar" style="color:var(--err)">Apagar dados deste aparelho</button>
+      <p class="hint" style="margin-top:12px">
+        GH Desafio · v1.0 · funciona offline. Os check-ins ficam neste aparelho até o envio concluir.
+        Apagar os dados remove o histórico local (o que já foi para a planilha permanece lá).
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <button data-view="v-aluno" class="on">
+    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    Aluno
+  </button>
+  <button data-view="v-checkin">
+    <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    Check-in
+  </button>
+  <button data-view="v-hist">
+    <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>
+    Histórico
+  </button>
+  <button data-view="v-cfg">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 7 19.3a1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0-1.2-2.9H1a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 3 7a1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.7 1.7 0 0 0 8 3h.1A1.7 1.7 0 0 0 9.3 1V1a2 2 0 1 1 4 0v.1A1.7 1.7 0 0 0 15 3a1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1A1.7 1.7 0 0 0 21 8v.1a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    Ajustes
+  </button>
+</footer>
+
+<div id="toast"></div>
+
+<script>
+/* =====================================================================
+   GH Desafio — app offline
+   Ajuste abaixo apenas se quiser pré-configurar o app para todos.
+   O aluno também pode colar endereço e código em Ajustes.
+   ===================================================================== */
+const PADRAO = {
+  endpoint: "",
+  token: "",
+  meta: 35,
+  inicio: "2026-01-05",
+  semanas: 8,
+  minPorPonto: 20,
+  teto: 60
+};
+
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem("gh." + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) {
+    try { localStorage.setItem("gh." + k, JSON.stringify(v)); return true; }
+    catch (e) { toast("Memória do aparelho cheia. Envie os pendentes.", true); return false; }
+  }
+};
+
+const S = {
+  cfg: Object.assign({}, PADRAO, LS.get("cfg", {})),
+  aluno: LS.get("aluno", ""),
+  regs: LS.get("regs", []),
+  roster: LS.get("roster", [])
+};
+
+const ci = { treino: null, habito: null, cardio: 0, foto: null, dia: 0 };
+let sincronizando = false;
+
+/* ---------------- utilidades ---------------- */
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => Array.from(document.querySelectorAll(s));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const so = (s) => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const br = (d) => `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+
+function toast(msg, erro) {
+  const t = $("#toast");
+  t.textContent = msg;
+  t.className = "show" + (erro ? " err" : "");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => { t.className = ""; }, 3200);
+}
+
+function ptsDe(r) {
+  const teto = Number(S.cfg.teto) || 60;
+  const passo = Number(S.cfg.minPorPonto) || 20;
+  const min = Math.min(Math.max(Number(r.cardio) || 0, 0), teto);
+  const pt = (r.treino ? 1 : 0) + Math.floor(min / passo) + (r.habito ? 1 : 0) + 1;
+  return pt;
+}
+
+function diaDoReg(r) { return iso(new Date(r.ts)); }
+function diaAlvo() { const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - ci.dia); return iso(d); }
+function regsDoAluno() { return S.regs.filter((r) => so(r.aluno) === so(S.aluno)); }
+
+/* ---------------- navegação ---------------- */
+function ir(view) {
+  $$("main > section").forEach((s) => (s.hidden = s.id !== view));
+  $$("footer button").forEach((b) => b.classList.toggle("on", b.dataset.view === view));
+  if (view === "v-aluno") renderLista();
+  if (view === "v-checkin") renderCheckin();
+  if (view === "v-hist") renderHist();
+  if (view === "v-cfg") renderCfg();
+  window.scrollTo({ top: 0 });
+}
+$$("footer button").forEach((b) => b.addEventListener("click", () => ir(b.dataset.view)));
+
+/* ---------------- lista de alunos ---------------- */
+function renderLista() {
+  const q = so($("#busca").value);
+  const box = $("#listaNomes");
+  const nomes = S.roster.filter((n) => !q || so(n).includes(q));
+  box.innerHTML = "";
+  $("#listaVazia").hidden = S.roster.length > 0;
+  $("#alunoAtualBox").hidden = !S.aluno;
+  if (S.aluno) $("#alunoAtual").textContent = S.aluno;
+
+  nomes.forEach((nome) => {
+    const hoje = regsDoAluno().some((r) => diaDoReg(r) === iso(new Date()) && so(r.aluno) === so(nome));
+    const el = document.createElement("div");
+    el.className = "nameItem";
+    el.innerHTML = `<span>${nome}</span>` + (hoje ? `<span class="tag">hoje ✓</span>` : "");
+    el.onclick = () => { escolherAluno(nome); };
+    box.appendChild(el);
+  });
+}
+
+function escolherAluno(nome) {
+  S.aluno = nome;
+  LS.set("aluno", nome);
+  ci.treino = null; ci.habito = null; ci.cardio = 0; ci.foto = null; ci.dia = 0;
+  ir("v-checkin");
+}
+
+$("#busca").addEventListener("input", renderLista);
+$("#btnTrocar").onclick = () => { S.aluno = ""; LS.set("aluno", ""); renderLista(); };
+
+/* ---------------- check-in ---------------- */
+const VALORES = [0, 10, 20, 30, 40, 50, 60, 75, 90];
+
+function renderCardioChips() {
+  const box = $("#cardioChips");
+  box.innerHTML = "";
+  VALORES.forEach((v) => {
+    const b = document.createElement("button");
+    b.className = "chipBtn" + (Number(ci.cardio) === v ? " on" : "");
+    b.textContent = v === 0 ? "0" : v + "'";
+    b.onclick = () => { ci.cardio = v; $("#cardioOutro").value = ""; renderCardioChips(); atualizarPreview(); };
+    box.appendChild(b);
+  });
+}
+
+function renderCheckin() {
+  $("#ciAluno").textContent = S.aluno || "—";
+  const d = new Date(); d.setDate(d.getDate() - ci.dia);
+  $("#ciDataTxt").textContent = iso(d).split("-").reverse().join("/");
+  $("#diaHoje").classList.toggle("on", ci.dia === 0);
+  $("#diaOntem").classList.toggle("on", ci.dia === 1);
+
+  $$('[data-g="treino"]').forEach((b) => b.classList.toggle("on", Number(b.dataset.t) === ci.treino));
+  $$('[data-g="habito"]').forEach((b) => b.classList.toggle("on", Number(b.dataset.t) === ci.habito));
+
+  $("#cardioOutro").value = VALORES.includes(Number(ci.cardio)) ? "" : ci.cardio;
+  renderCardioChips();
+  if (ci.foto) { $("#fotoPrev").src = ci.foto; $("#fotoPrev").hidden = false; $("#btnRemFoto").hidden = false; }
+  else { $("#fotoPrev").hidden = true; $("#btnRemFoto").hidden = true; }
+  atualizarPreview();
+  checarDuplicado();
+}
+
+$$('[data-g="treino"]').forEach((b) => b.onclick = () => { ci.treino = Number(b.dataset.t); renderCheckin(); });
+$$('[data-g="habito"]').forEach((b) => b.onclick = () => { ci.habito = Number(b.dataset.t); renderCheckin(); });
+$("#diaHoje").onclick = () => { ci.dia = 0; renderCheckin(); };
+$("#diaOntem").onclick = () => { ci.dia = 1; renderCheckin(); };
+$("#cardioOutro").addEventListener("input", (e) => {
+  const v = Math.max(0, Math.min(600, parseInt(e.target.value || "0", 10) || 0));
+  ci.cardio = v;
+  $$("#cardioChips .chipBtn").forEach((b) => b.classList.remove("on"));
+  atualizarPreview();
+});
+
+$("#btnFoto").onclick = () => $("#fileFoto").click();
+$("#btnRemFoto").onclick = () => { ci.foto = null; renderCheckin(); };
+
+$("#fileFoto").addEventListener("change", async (e) => {
+  const f = e.target.files && e.target.files[0];
+  if (!f) return;
+  try {
+    ci.foto = await comprimir(f, 1000, 0.7);
+    renderCheckin();
+  } catch (err) {
+    toast("Não consegui ler a foto", true);
+  }
+  e.target.value = "";
+});
+
+function comprimir(file, maxLado, q) {
+  return new Promise((res, rej) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const r = Math.min(1, maxLado / Math.max(img.width, img.height));
+      const c = document.createElement("canvas");
+      c.width = Math.round(img.width * r);
+      c.height = Math.round(img.height * r);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      res(c.toDataURL("image/jpeg", q));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error("img")); };
+    img.src = url;
+  });
+}
+
+function atualizarPreview() {
+  const r = { treino: ci.treino === 1, habito: ci.habito === 1, cardio: ci.cardio };
+  const passo = Number(S.cfg.minPorPonto) || 20;
+  const min = Math.min(Math.max(Number(ci.cardio) || 0, 0), Number(S.cfg.teto) || 60);
+  const pCardio = Math.floor(min / passo);
+  $("#ciPts").innerHTML = ptsDe(r) + "<small> pts</small>";
+  $("#cardioLbl").textContent = min + " min" + (Number(ci.cardio) > Number(S.cfg.teto) ? " · teto" : "");
+  $("#ciDetalhe").innerHTML =
+    `check-in 1<br>treino ${r.treino ? 1 : 0}<br>cardio ${pCardio}<br>hábito ${r.habito ? 1 : 0}`;
+}
+
+function checarDuplicado() {
+  const ja = regsDoAluno().find((r) => diaDoReg(r) === diaAlvo());
+  const aviso = $("#ciAviso");
+  if (ja) {
+    aviso.innerHTML = "Já existe um check-in registrado nesse dia (" + ptsDe(ja) +
+      " pts). Salvar de novo <b>corrige</b> o registro anterior.";
+  } else aviso.textContent = "";
+}
+
+$("#btnSalvar").onclick = () => {
+  if (!S.aluno) { toast("Escolha o aluno primeiro"); ir("v-aluno"); return; }
+  if (ci.treino === null || ci.habito === null) { toast("Responda treino e hábito"); return; }
+
+  const dia = diaAlvo();
+  const base = new Date(dia + "T12:00:00");
+  const existente = S.regs.find((r) => so(r.aluno) === so(S.aluno) && diaDoReg(r) === dia);
+
+  const novo = {
+    id: existente ? existente.id : uid(),
+    aluno: S.aluno,
+    ts: base.toISOString(),
+    treino: ci.treino, cardio: Number(ci.cardio) || 0, habito: ci.habito,
+    foto: ci.foto, pts: 0, sync: 0
+  };
+  novo.pts = ptsDe(novo);
+
+  if (existente) Object.assign(existente, novo);
+  else S.regs.push(novo);
+  LS.set("regs", S.regs);
+  LS.set("cfg", S.cfg);
+
+  toast("Check-in salvo · " + novo.pts + " pts");
+  ci.treino = null; ci.habito = null; ci.cardio = 0; ci.foto = null;
+  renderLista();
+  sincronizar(true);
+  ir("v-hist");
+};
+
+/* ---------------- histórico ---------------- */
+function renderHist() {
+  const meus = regsDoAluno().sort((a, b) => b.ts.localeCompare(a.ts));
+  const total = meus.reduce((s, r) => s + (r.pts || ptsDe(r)), 0);
+  const meta = Number(S.cfg.meta) || 35;
+
+  $("#hTotal").textContent = total;
+  $("#hDias").textContent = meus.length;
+  $("#hMeta").textContent = Math.round((total / meta) * 100) + "%";
+  const seq = sequencia(meus);
+  $("#hSeq").textContent = seq + (seq === 1 ? " dia" : " dias");
+  $("#histVazio").hidden = meus.length > 0;
+
+  const box = $("#histLista");
+  box.innerHTML = "";
+  meus.slice(0, 40).forEach((r) => {
+    const d = new Date(r.ts);
+    const el = document.createElement("div");
+    el.className = "histItem";
+    el.innerHTML =
+      `<span class="d">${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}</span>` +
+      `<span class="badge ${r.sync ? "ok" : "pend"}">${r.sync ? "enviado" : "pendente"}</span>` +
+      `<span class="muted" style="font-size:11px">` +
+        `${r.treino ? "treino" : "—"} · ${r.cardio || 0}min · ${r.habito ? "hábito" : "—"}` +
+      `</span><span class="p">${r.pts || ptsDe(r)}</span>`;
+    box.appendChild(el);
+  });
+}
+
+function sequencia(meus) {
+  const dias = new Set(meus.map(diaDoReg));
+  let n = 0;
+  const d = new Date(); d.setHours(12, 0, 0, 0);
+  if (!dias.has(iso(d))) d.setDate(d.getDate() - 1);
+  while (dias.has(iso(d))) { n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
+
+/* ---------------- ajustes ---------------- */
+function renderCfg() {
+  $("#cfgEndpoint").value = S.cfg.endpoint || "";
+  $("#cfgToken").value = S.cfg.token || "";
+  $("#cfgPend").textContent = S.regs.filter((r) => !r.sync).length;
+  $("#cfgRoster").value = S.roster.join("\n");
+  atualizarChip();
+}
+
+$("#btnSalvarCfg").onclick = async () => {
+  S.cfg.endpoint = $("#cfgEndpoint").value.trim();
+  S.cfg.token = $("#cfgToken").value.trim();
+  LS.set("cfg", S.cfg);
+  $("#cfgStatus").textContent = "Testando…";
+  const ok = await testarConexao();
+  $("#cfgStatus").textContent = ok
+    ? "Conectado. Lista e configuração atualizadas."
+    : "Não consegui falar com a planilha. O app continua funcionando offline.";
+};
+
+async function testarConexao() {
+  if (!S.cfg.endpoint) return false;
+  try {
+    const url = S.cfg.endpoint + (S.cfg.endpoint.includes("?") ? "&" : "?") +
+      "acao=roster&token=" + encodeURIComponent(S.cfg.token);
+    const r = await fetch(url, { method: "GET", cache: "no-store" });
+    const d = await r.json();
+    if (!d || !d.ok) return false;
+    if (Array.isArray(d.alunos)) { S.roster = d.alunos; LS.set("roster", S.roster); }
+    if (d.config) {
+      S.cfg.meta = d.config.meta ?? S.cfg.meta;
+      S.cfg.inicio = d.config.inicio || S.cfg.inicio;
+      S.cfg.semanas = d.config.semanas ?? S.cfg.semanas;
+      S.cfg.minPorPonto = d.config.minPorPonto ?? S.cfg.minPorPonto;
+      S.cfg.teto = d.config.teto ?? S.cfg.teto;
+      LS.set("cfg", S.cfg);
+    }
+    renderLista(); renderCfg();
+    return true;
+  } catch (e) { return false; }
+}
+
+$("#btnRoster").onclick = async () => {
+  const ok = await testarConexao();
+  toast(ok ? "Lista atualizada" : "Sem conexão com a planilha", !ok);
+};
+
+$("#btnRosterLocal").onclick = () => {
+  const nomes = $("#cfgRoster").value.split("\n").map((s) => s.trim()).filter(Boolean);
+  if (!nomes.length) { toast("Cole pelo menos um nome", true); return; }
+  S.roster = Array.from(new Set(nomes));
+  LS.set("roster", S.roster);
+  toast(S.roster.length + " alunos salvos");
+  renderLista();
+};
+
+$("#btnSync").onclick = () => sincronizar(false);
+
+$("#btnLimpar").onclick = () => {
+  if (!confirm("Apagar todos os check-ins deste aparelho? O que já foi enviado continua na planilha.")) return;
+  S.regs = []; LS.set("regs", S.regs);
+  toast("Dados locais apagados");
+  renderCfg(); renderHist(); renderLista();
+};
+
+$("#btnExport").onclick = () => {
+  const linhas = [["data", "aluno", "treino", "cardio_min", "habito", "pontos", "enviado"]];
+  regsDoAluno().sort((a, b) => a.ts.localeCompare(b.ts)).forEach((r) => {
+    linhas.push([diaDoReg(r), r.aluno, r.treino ? "Sim" : "Não", r.cardio || 0,
+                 r.habito ? "Sim" : "Não", r.pts || ptsDe(r), r.sync ? "Sim" : "Não"]);
+  });
+  const csv = linhas.map((l) => l.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(";")).join("\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" }));
+  a.download = "gh-desafio-" + iso(new Date()) + ".csv";
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+};
+
+/* ---------------- sincronização ---------------- */
+function atualizarChip() {
+  const pend = S.regs.filter((r) => !r.sync).length;
+  const chip = $("#syncChip");
+  const dot = chip.querySelector(".dot");
+  if (!S.cfg.endpoint || !S.cfg.token) {
+    dot.className = "dot"; $("#syncTxt").textContent = "local";
+  } else if (pend) {
+    dot.className = "dot pend"; $("#syncTxt").textContent = pend + " pendente" + (pend > 1 ? "s" : "");
+  } else if (navigator.onLine === false) {
+    dot.className = "dot off"; $("#syncTxt").textContent = "offline";
+  } else {
+    dot.className = "dot ok"; $("#syncTxt").textContent = "tudo enviado";
+  }
+  const p = $("#cfgPend"); if (p) p.textContent = pend;
+}
+
+async function sincronizar(silencioso) {
+  if (sincronizando) return;
+  const pend = S.regs.filter((r) => !r.sync);
+  atualizarChip();
+  if (!pend.length) { if (!silencioso) toast("Nada para enviar"); return; }
+  if (!S.cfg.endpoint || !S.cfg.token) {
+    if (!silencioso) toast("Configure endereço e código em Ajustes", true);
+    return;
+  }
+  if (navigator.onLine === false) {
+    if (!silencioso) toast("Sem internet — os registros ficam guardados", true);
+    return;
+  }
+
+  sincronizando = true;
+  let ok = 0, erro = "";
+  for (const r of pend) {
+    try {
+      const corpo = {
+        token: S.cfg.token,
+        registros: [{
+          id: r.id, aluno: r.aluno, ts: r.ts, treino: r.treino,
+          cardio: r.cardio, habito: r.habito, foto: r.foto || null
+        }]
+      };
+      const resp = await fetch(S.cfg.endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(corpo),
+        redirect: "follow"
+      });
+      const data = await resp.json();
+      if (!data || !data.ok) throw new Error((data && data.erro) || "falha no envio");
+      const res = (data.resultados || [])[0] || { status: "erro" };
+      if (res.status === "erro") throw new Error(res.mensagem || "registro recusado");
+      r.sync = 1;
+      r.pts = res.pontos != null ? res.pontos : r.pts;
+      r.foto = null;          // libera espaço depois de subir
+      ok++;
+      LS.set("regs", S.regs);
+    } catch (e) {
+      erro = e.message || "erro";
+      break;
+    }
+  }
+  sincronizando = false;
+  LS.set("regs", S.regs);
+  atualizarChip(); renderLista(); renderHist(); renderCfg();
+
+  if (ok) toast(ok + " check-in" + (ok > 1 ? "s" : "") + " enviado" + (ok > 1 ? "s" : ""));
+  else if (!silencioso) toast(erro || "Nada enviado", true);
+}
+
+window.addEventListener("online", () => { atualizarChip(); sincronizar(true); });
+window.addEventListener("offline", atualizarChip);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) { atualizarChip(); sincronizar(true); } });
+setInterval(() => { if (S.regs.some((r) => !r.sync)) sincronizar(true); }, 90000);
+
+/* ---------------- boot ---------------- */
+(function boot() {
+  if (!S.roster.length) S.roster = [];
+  renderLista();
+  atualizarChip();
+  if (S.aluno) $("#alunoAtual").textContent = S.aluno;
+  if (S.cfg.endpoint && S.cfg.token) { testarConexao(); sincronizar(true); }
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  }
+  ir(S.aluno ? "v-checkin" : "v-aluno");
+})();
+</script>
+</body>
+</html>
