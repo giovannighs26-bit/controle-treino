@@ -352,6 +352,18 @@
       <p class="hint" style="margin:8px 0 0">Quem abrir por esse link já entra conectado.</p>
     </div>
 
+    <h2>Diagnóstico</h2>
+    <div class="card">
+      <button class="btn ghost block" id="btnDiag" style="margin-bottom:10px">Testar conexão</button>
+      <pre id="diagOut" style="white-space:pre-wrap;font-size:11.5px;line-height:1.5;color:var(--steel);
+        background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px;margin:0;
+        font-family:ui-monospace,SFMono-Regular,Menlo,monospace;overflow-x:auto">Ainda não testado.</pre>
+      <p class="hint" style="margin:10px 0 0">
+        O endereço precisa terminar em <b>/exec</b> e a implantação deve ser
+        <b>Executar como: Eu</b> e <b>Quem tem acesso: Qualquer pessoa</b>.
+      </p>
+    </div>
+
     <h2>Alunos</h2>
     <div class="card">
       <button class="btn ghost block" id="btnRoster">Atualizar lista da planilha</button>
@@ -383,7 +395,7 @@
     <div class="card">
       <button class="btn ghost block" id="btnLimpar" style="color:var(--err)">Apagar dados deste aparelho</button>
       <p class="hint" style="margin-top:12px">
-        GH Desafio · v3.3 · build 6 · funciona offline. Os check-ins ficam neste aparelho até o envio concluir;
+        GH Desafio · v3.4 · build 7 · funciona offline. Os check-ins ficam neste aparelho até o envio concluir;
         apagar remove o histórico local, o que já foi para a planilha permanece lá.
       </p>
     </div>
@@ -457,7 +469,8 @@ const S = {
   roster: LS.get("roster", []),
   ranking: LS.get("ranking", null),
   grupo: LS.get("grupo", null),
-  lastOk: LS.get("lastok", 0)
+  lastOk: LS.get("lastok", 0),
+  diag: LS.get("diag", null)
 };
 if (!S.cfg.pontos) S.cfg.pontos = Object.assign({}, PADRAO.pontos);
 
@@ -471,6 +484,52 @@ const so = (s) => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "
 const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 const nf = (n, d) => Number(n || 0).toFixed(d).replace(".", ",");
 const $fmt = (n) => Number(n || 0).toFixed(0);
+
+const MENSAGENS = {
+  login: "O Web App está pedindo login do Google. Reimplante com \"Quem tem acesso: Qualquer pessoa\".",
+  script: "O script falhou no servidor. Abra Apps Script > Execuções para ver o erro.",
+  "sem-acesso": "Acesso negado (401/403). Confira a permissão da implantação.",
+  url: "Endereço não encontrado (404). Use a URL que termina em /exec.",
+  html: "O servidor devolveu uma página em vez de dados — quase sempre é a implantação sem acesso público.",
+  rede: "Não consegui chegar no servidor. Verifique a internet.",
+  desconhecido: "Resposta inesperada do servidor."
+};
+
+function classificar(status, texto) {
+  const t = String(texto || "");
+  if (status === 404) return "url";
+  if (/accounts\.google\.com|ServiceLogin|signin|Fazer login/i.test(t)) return "login";
+  if (status >= 500 || /Erro no script|Erro ao executar|Exception|BackendError|server error|Traceback/i.test(t)) return "script";
+  if (status === 401 || status === 403) return "sem-acesso";
+  if (/^\s*</.test(t)) return "html";
+  return "desconhecido";
+}
+
+async function pedir(url, opts) {
+  const t0 = Date.now();
+  let resp;
+  try { resp = await fetch(url, opts || {}); }
+  catch (e) { throw { tipo: "rede", status: 0, ms: Date.now() - t0, amostra: String(e && e.message || e) }; }
+  const texto = await resp.text();
+  return { status: resp.status, texto: texto, ms: Date.now() - t0 };
+}
+
+function lerJson(r) {
+  try { return JSON.parse(r.texto); }
+  catch (e) {
+    throw { tipo: classificar(r.status, r.texto), status: r.status, ms: r.ms,
+            amostra: String(r.texto || "").slice(0, 200) };
+  }
+}
+
+function guardarDiag(origem, d) {
+  S.diag = { origem: origem, tipo: d.tipo, status: d.status, ms: d.ms,
+             amostra: d.amostra, em: new Date().toISOString() };
+  LS.set("diag", S.diag);
+  return d;
+}
+
+function mensagemDe(d) { return MENSAGENS[d && d.tipo] || MENSAGENS.desconhecido; }
 
 function toast(msg, erro) {
   const t = $("#toast");
@@ -923,7 +982,7 @@ function renderGrupo() {
     "ok": ["ok", g.em ? "Conectado · atualizado às " + new Date(g.em).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "Conectado", null],
     "sem-config": ["pend", "Falta ligar este aparelho à planilha.", "Conectar agora"],
     "servidor-antigo": ["off", "O servidor respondeu, mas sem os registros. Reimplante o Web App com o script novo.", "Abrir Ajustes"],
-    "erro": ["off", "Sem resposta do servidor agora. Mostrando o último dado salvo.", "Tentar de novo"],
+    "erro": ["off", S.diag ? mensagemDe(S.diag) : "Sem resposta do servidor agora. Mostrando o último dado salvo.", "Tentar de novo"],
     "vazio": ["pend", "Conectado. Nenhum check-in registrado ainda.", null],
     "parcial": ["pend", "Conectado (só ranking). Reimplante o script para ver os registros.", "Abrir Ajustes"]
   };
@@ -976,8 +1035,7 @@ $("#gCta").onclick = () => {
 async function pegarJson(params) {
   const url = S.cfg.endpoint + (S.cfg.endpoint.includes("?") ? "&" : "?") +
     params + "&token=" + encodeURIComponent(S.cfg.token);
-  const resp = await fetch(url, { cache: "no-store" });
-  return resp.json();
+  return lerJson(await pedir(url));
 }
 
 async function carregarGrupo(silencioso) {
@@ -1017,8 +1075,9 @@ async function carregarGrupo(silencioso) {
       S.grupoEstado = "servidor-antigo";
     }
   } catch (e) {
-    S.grupoEstado = S.grupo ? "erro" : "erro";
-    if (!silencioso) toast("Não consegui atualizar o grupo", true);
+    if (e && e.tipo) guardarDiag("grupo", e);
+    S.grupoEstado = "erro";
+    if (!silencioso) toast(e && e.tipo ? mensagemDe(e) : "Não consegui atualizar o grupo", true);
   }
 
   renderGrupo();
@@ -1052,16 +1111,63 @@ async function testarConexao() {
   try {
     const url = S.cfg.endpoint + (S.cfg.endpoint.includes("?") ? "&" : "?") +
       "acao=roster&token=" + encodeURIComponent(S.cfg.token);
-    const r = await fetch(url, { cache: "no-store" });
-    const d = await r.json();
+    const d = lerJson(await pedir(url));
     if (!d || !d.ok) return false;
-    if (Array.isArray(d.alunos)) { S.roster = d.alunos; LS.set("roster", S.roster); }
+    if (Array.isArray(d.alunos) && d.alunos.length) { S.roster = d.alunos; LS.set("roster", S.roster); }
     aplicarConfig(d.config);
     S.lastOk = Date.now(); LS.set("lastok", S.lastOk);
     renderLista(); renderCfg(); atualizarChip();
     return true;
   } catch (e) { return false; }
 }
+
+function descrever(r) {
+  const tipo = classificar(r.status, r.texto);
+  let json = "não é JSON";
+  try { JSON.parse(r.texto); json = "JSON válido"; } catch (e) {}
+  return r.status + " · " + json + (json === "não é JSON" ? " (" + tipo + ")" : "") + " · " + r.ms + " ms";
+}
+
+$("#btnDiag").onclick = async () => {
+  const out = $("#diagOut");
+  const url = ($("#cfgEndpoint").value || "").trim();
+  const token = ($("#cfgToken").value || "").trim();
+  const linhas = [];
+
+  if (!url) { out.textContent = "Preencha o endereço do Web App."; return; }
+  if (!/\/exec$/.test(url)) linhas.push("AVISO: o endereço não termina em /exec — normalmente é esse o problema.");
+  if (/\/dev(\?|$)/.test(url)) linhas.push("AVISO: endereço /dev só funciona para você logado; use o /exec.");
+  linhas.push("Endereço: " + url);
+  out.textContent = "Testando…";
+
+  const base = url + (url.includes("?") ? "&" : "?") + "token=" + encodeURIComponent(token);
+
+  try {
+    const g = await pedir(base + "&acao=roster");
+    linhas.push("GET  roster → " + descrever(g));
+    if (classificar(g.status, g.texto) !== "desconhecido") {
+      try { lerJson(g); } catch (d) { linhas.push("→ " + mensagemDe(d)); }
+    }
+  } catch (d) { linhas.push("GET  roster → falhou: " + mensagemDe(d)); }
+
+  try {
+    const pr = await pedir(url, {
+      method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ token: token, registros: [] })
+    });
+    linhas.push("POST envio  → " + descrever(pr));
+    try { JSON.parse(pr.texto); } catch (d) { linhas.push("→ " + mensagemDe({ tipo: classificar(pr.status, pr.texto) })); }
+  } catch (d) { linhas.push("POST envio  → falhou: " + mensagemDe(d)); }
+
+  if (S.diag && S.diag.em) {
+    linhas.push("");
+    linhas.push("Último erro (" + new Date(S.diag.em).toLocaleString("pt-BR") + ", " + S.diag.origem + "):");
+    linhas.push("  " + S.diag.tipo + " · HTTP " + S.diag.status);
+    if (S.diag.amostra) linhas.push("  resposta: " + S.diag.amostra.replace(/\s+/g, " ").slice(0, 120));
+  }
+
+  out.textContent = linhas.join("\n");
+};
 
 $("#btnSalvarCfg").onclick = async () => {
   S.cfg.endpoint = $("#cfgEndpoint").value.trim();
@@ -1168,11 +1274,11 @@ async function sincronizar(silencioso) {
         id: r.id, aluno: r.aluno, ts: r.ts,
         cardio: r.cardio, agua: r.agua, peso: r.peso, foto: r.foto || null
       }] };
-      const resp = await fetch(S.cfg.endpoint, {
+      const resposta = await pedir(S.cfg.endpoint, {
         method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(corpo), redirect: "follow"
+        body: JSON.stringify(corpo)
       });
-      const data = await resp.json();
+      const data = lerJson(resposta);
       if (!data || !data.ok) throw new Error((data && data.erro) || "falha no envio");
       const res = (data.resultados || [])[0] || { status: "erro" };
       if (res.status === "erro") throw new Error(res.mensagem || "registro recusado");
@@ -1181,7 +1287,11 @@ async function sincronizar(silencioso) {
       r.foto = null;
       ok++;
       LS.set("regs", S.regs);
-    } catch (e) { erro = e.message || "erro"; break; }
+    } catch (e) {
+      if (e && e.tipo) guardarDiag("envio", e);
+      erro = (e && e.tipo) ? mensagemDe(e) : (e.message || "erro");
+      break;
+    }
   }
   sincronizando = false;
   if (ok && !erro) { S.lastOk = Date.now(); LS.set("lastok", S.lastOk); }
