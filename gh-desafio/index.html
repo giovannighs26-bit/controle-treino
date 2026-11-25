@@ -122,6 +122,17 @@
   .rankItem .nm{font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .rankItem .pt{margin-left:auto;font-weight:800;font-size:14px}
   .rankItem .pt small{color:var(--muted);font-weight:600;font-size:10px}
+  .rk{display:flex;align-items:center;gap:11px;padding:11px 13px;border:1px solid var(--line);
+    border-radius:14px;background:var(--card)}
+  .rk.me{border-color:var(--gold);background:linear-gradient(180deg,#1a1710,#14161b)}
+  .rk .p{width:20px;text-align:center;font-weight:800;color:var(--gold);font-size:12px;flex:0 0 auto}
+  .rk .info{flex:1;min-width:0}
+  .rk .nm{font-weight:600;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .rk .bar{height:5px;background:#22262e;border-radius:3px;margin-top:6px;overflow:hidden}
+  .rk .bar i{display:block;height:100%;background:linear-gradient(90deg,#8a6d0b,#c9a227)}
+  .rk .pt{font-weight:800;font-size:13px;text-align:right;flex:0 0 auto}
+  .rk .pt small{display:block;color:var(--muted);font-weight:600;font-size:9.5px}
+  .ph{color:#3a3f4a;font-weight:800}
   [hidden]{display:none !important}
 </style>
 </head>
@@ -298,29 +309,28 @@
 
   <!-- ================= GRUPO ================= -->
   <section id="v-grupo" hidden>
-    <div class="row between" style="margin-bottom:12px">
+    <div class="row between" style="margin-bottom:10px">
       <h2 style="margin:0">Grupo</h2>
       <button class="btn ghost" id="btnGrupo" style="padding:8px 12px;font-size:12px">Atualizar</button>
+    </div>
+
+    <div class="card tight" style="margin-bottom:14px">
+      <div class="row" style="gap:9px">
+        <span class="dot" id="gDot"></span>
+        <span class="hint" id="gTxt" style="flex:1">—</span>
+      </div>
+      <button class="btn gold block" id="gCta" hidden style="margin-top:10px;padding:12px">Conectar agora</button>
     </div>
 
     <h2>Hoje</h2>
     <div class="hist" id="hojeLista"></div>
 
     <h2 style="margin-top:20px">Ranking</h2>
-    <div class="card tight" id="minhaPos" hidden>
-      <div class="row between">
-        <span class="muted">Sua posição</span>
-        <b id="minhaPosTxt" style="color:var(--gold)">—</b>
-      </div>
-    </div>
     <div class="hist" id="rankLista"></div>
 
-    <h2 style="margin-top:20px">Registros dos últimos 14 dias</h2>
+    <h2 style="margin-top:20px">Registros</h2>
     <div class="hist" id="feedLista"></div>
-    <p class="hint" id="grupoVazio" hidden>
-      Sem dados do grupo. Conecte o app em <b>Ajustes</b> e toque em Atualizar.
-    </p>
-    <p class="hint" id="grupoData" style="margin-top:12px"></p>
+    <p class="hint" id="grupoVazio" hidden style="margin-top:8px">—</p>
   </section>
 
   <!-- ================= AJUSTES ================= -->
@@ -373,7 +383,7 @@
     <div class="card">
       <button class="btn ghost block" id="btnLimpar" style="color:var(--err)">Apagar dados deste aparelho</button>
       <p class="hint" style="margin-top:12px">
-        GH Desafio · v3.2 · build 5 · funciona offline. Os check-ins ficam neste aparelho até o envio concluir;
+        GH Desafio · v3.3 · build 6 · funciona offline. Os check-ins ficam neste aparelho até o envio concluir;
         apagar remove o histórico local, o que já foi para a planilha permanece lá.
       </p>
     </div>
@@ -412,9 +422,9 @@
 const PADRAO = {
   endpoint: "",
   token: "",
-  meta: 160,
+  meta: 90,
   inicio: "2026-01-05",
-  semanas: 8,
+  dias: 30,
   metaCardio: 20,
   metaAgua: 3,
   pontos: { checkin: 1, cardio: 1, agua: 1, peso: 1 }
@@ -716,7 +726,7 @@ function renderProgresso() {
   const mx = sequenciaMax(meus);
   $("#pSeqMax").textContent = mx + (mx === 1 ? " dia" : " dias");
 
-  desenharSemanas(meus);
+  desenharDias(meus);
   desenharPeso(meus);
   desenharConquistas(meus, total, meta);
 
@@ -736,32 +746,41 @@ function renderProgresso() {
   });
 }
 
-function desenharSemanas(meus) {
+function desenharDias(meus) {
   const box = $("#chartSem");
   box.innerHTML = "";
-  const nsem = Number(S.cfg.semanas) || 8;
-  const inicio = new Date((S.cfg.inicio || iso(new Date())) + "T12:00:00");
-  const pts = new Array(nsem).fill(0);
+  box.style.gap = "3px";
 
-  meus.forEach((r) => {
-    const d = new Date(r.ts);
-    const idx = Math.floor((d - inicio) / 86400000 / 7);
-    if (idx >= 0 && idx < nsem) pts[idx] += ptsDe(r);
-  });
+  const dias = Number(S.cfg.dias) || 30;
+  const inicio = new Date((S.cfg.inicio || iso(new Date())) + "T12:00:00");
+  const porDia = {};
+  let total = 0;
+  meus.forEach((r) => { porDia[diaDoReg(r)] = ptsDe(r); total += ptsDe(r); });
+
+  const pts = [];
+  for (let i = 0; i < dias; i++) {
+    const d = new Date(inicio);
+    d.setDate(d.getDate() + i);
+    pts.push(porDia[iso(d)] || 0);
+  }
 
   const max = Math.max(4, ...pts);
   pts.forEach((p, i) => {
+    const d = new Date(inicio);
+    d.setDate(d.getDate() + i);
+    const rotulo = (i === 0 || (i + 1) % 5 === 0) ? String(d.getDate()).padStart(2, "0") : "";
     const el = document.createElement("div");
     el.className = "b";
-    el.innerHTML = `<b>${p || ""}</b>
-      <div class="fill${p ? "" : " zero"}" style="height:${Math.max(2, (p / max) * 82)}px"></div>
-      <span>S${i + 1}</span>`;
+    el.innerHTML = `<div class="fill${p ? "" : " zero"}" style="height:${p ? Math.max(4, (p / max) * 82) : 2}px"></div>` +
+                   `<span>${rotulo}</span>`;
     box.appendChild(el);
   });
 
-  const semanaAtual = Math.min(nsem, Math.max(1, Math.floor((new Date() - inicio) / 86400000 / 7) + 1));
-  $("#chartInfo").textContent = "Você está na semana " + semanaAtual + " de " + nsem +
-    ". A meta do ciclo é " + (Number(S.cfg.meta) || 160) + " pontos.";
+  const diaAtual = Math.min(dias, Math.max(1, Math.floor((new Date() - inicio) / 86400000) + 1));
+  const meta = Number(S.cfg.meta) || 90;
+  $("#chartInfo").textContent =
+    "Dia " + diaAtual + " de " + dias + " · " + total + " de " + meta + " pontos (" +
+    Math.round((total / meta) * 100) + "%)";
 }
 
 function desenharPeso(meus) {
@@ -799,14 +818,17 @@ function desenharConquistas(meus, total, meta) {
   const aguaOk = meus.filter((r) => Number(r.agua) >= (Number(S.cfg.metaAgua) || 3)).length;
   const cardioOk = meus.filter((r) => Number(r.cardio) >= (Number(S.cfg.metaCardio) || 20)).length;
   const seq = sequenciaMax(meus);
+  const diasCiclo = Number(S.cfg.dias) || 30;
 
   const lista = [
-    { ok: meus.length >= 1, t: "Primeiro check-in", d: "Começou. O difícil é o dia 1." },
-    { ok: seq >= 7, t: "7 dias seguidos", d: "Uma semana inteira sem falhar." },
-    { ok: seq >= 30, t: "30 dias seguidos", d: "Constância de atleta." },
-    { ok: aguaOk >= 7, t: "Hidratado", d: "Bateu a meta de água 7 vezes." },
-    { ok: cardioOk >= 10, t: "Cardio em dia", d: "10 dias batendo a meta de cardio." },
-    { ok: total >= meta, t: "Meta do ciclo", d: "Chegou aos " + meta + " pontos." }
+    { ok: meus.length >= 1, t: "Primeiro check-in", d: "Dia 1 registrado." },
+    { ok: seq >= 7, t: "7 dias seguidos", d: "Uma semana sem falhar." },
+    { ok: seq >= 15, t: "15 dias seguidos", d: "Metade do desafio." },
+    { ok: seq >= diasCiclo, t: diasCiclo + " dias seguidos", d: "Ciclo completo, todos os dias." },
+    { ok: aguaOk >= 10, t: "Hidratação", d: "Bateu a meta de água em 10 dias." },
+    { ok: cardioOk >= 15, t: "Cardio em dia", d: "Bateu a meta de cardio em 15 dias." },
+    { ok: total >= meta, t: "Meta do ciclo", d: "Chegou aos " + meta + " pontos." },
+    { ok: (meus.filter((r) => Number(r.peso) > 0).length) >= 10, t: "Peso acompanhado", d: "Registrou o peso em 10 dias." }
   ];
 
   const box = $("#achLista");
@@ -843,91 +865,163 @@ function sequenciaMax(meus) {
 }
 
 /* ---------------- grupo (feed compartilhado) ---------------- */
+function linhaRank(x, i) {
+  const meta = Number(S.cfg.meta) || 90;
+  const pct = Math.max(0, Math.min(1, (Number(x.pontos) || 0) / meta));
+  const el = document.createElement("div");
+  el.className = "rk" + (so(x.nome) === so(S.aluno) ? " me" : "");
+  el.innerHTML = `<span class="p">${x.pos || (i + 1)}</span>
+    <span class="info">
+      <div class="nm">${x.nome}</div>
+      <div class="bar"><i style="width:${(pct * 100).toFixed(0)}%"></i></div>
+    </span>
+    <span class="pt">${x.pontos || 0}<small>${Math.round(pct * 100)}% da meta</small></span>`;
+  return el;
+}
+
+function linhaHoje(h) {
+  const el = document.createElement("div");
+  el.className = "rk" + (so(h.nome) === so(S.aluno) ? " me" : "");
+  el.innerHTML = `<span class="p">${h.fez ? "✓" : "·"}</span>
+    <span class="info"><div class="nm">${h.nome}</div></span>
+    <span class="pt">${h.fez ? h.pontos + "<small>pts hoje</small>" : '<span class="ph">—</span><small>aguardando</small>'}</span>`;
+  return el;
+}
+
+function linhaFeed(r) {
+  const d = new Date(r.ts);
+  const hoje = iso(d) === iso(new Date());
+  const ontem = iso(d) === iso(new Date(Date.now() - 86400000));
+  const quando = hoje ? "hoje" : ontem ? "ontem"
+    : String(d.getDate()).padStart(2, "0") + "/" + String(d.getMonth() + 1).padStart(2, "0");
+  const peso = Number(r.peso) > 1 ? nf(r.peso, 1) + " kg" : (Number(r.peso) === 1 ? "peso ok" : "");
+
+  const el = document.createElement("div");
+  el.className = "rk" + (so(r.nome) === so(S.aluno) ? " me" : "");
+  el.style.flexDirection = "column";
+  el.style.alignItems = "stretch";
+  el.style.gap = "6px";
+  el.innerHTML =
+    `<div class="row" style="gap:8px">
+       <span class="nm" style="flex:1">${r.nome}</span>
+       <span class="muted" style="font-size:11px">${quando}</span>
+       <span class="pt">${r.pontos}<small>pts</small></span>
+     </div>
+     <div class="muted" style="font-size:12px">
+       ${(r.cardio || 0)} min cardio · ${nf(r.agua, 1)} L água${peso ? " · " + peso : ""}
+     </div>` +
+    (r.foto ? `<img src="${r.foto}" alt="" style="width:100%;max-height:150px;object-fit:cover;border-radius:10px;margin-top:4px">` : "");
+  return el;
+}
+
 function renderGrupo() {
-  const g = S.grupo;
-  const hojeBox = $("#hojeLista");
-  const rankBox = $("#rankLista");
-  const feedBox = $("#feedLista");
+  const g = S.grupo || { registros: [], hoje: [], ranking: [] };
+  const est = S.grupoEstado || "sem-config";
+  const dot = $("#gDot"), txt = $("#gTxt"), cta = $("#gCta");
+
+  const textos = {
+    "ok": ["ok", g.em ? "Conectado · atualizado às " + new Date(g.em).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "Conectado", null],
+    "sem-config": ["pend", "Falta ligar este aparelho à planilha.", "Conectar agora"],
+    "servidor-antigo": ["off", "O servidor respondeu, mas sem os registros. Reimplante o Web App com o script novo.", "Abrir Ajustes"],
+    "erro": ["off", "Sem resposta do servidor agora. Mostrando o último dado salvo.", "Tentar de novo"],
+    "vazio": ["pend", "Conectado. Nenhum check-in registrado ainda.", null],
+    "parcial": ["pend", "Conectado (só ranking). Reimplante o script para ver os registros.", "Abrir Ajustes"]
+  };
+  const t = textos[est] || textos["ok"];
+  dot.className = "dot " + t[0];
+  txt.textContent = t[1];
+  cta.hidden = !t[2];
+  if (t[2]) { cta.textContent = t[2]; cta.dataset.acao = (est === "erro") ? "retry" : "cfg"; }
+
+  const hojeBox = $("#hojeLista"), rankBox = $("#rankLista"), feedBox = $("#feedLista");
   hojeBox.innerHTML = ""; rankBox.innerHTML = ""; feedBox.innerHTML = "";
 
-  const vazio = !g || (!g.registros.length && !g.hoje.length);
-  $("#grupoVazio").hidden = !vazio;
-  $("#minhaPos").hidden = vazio || !S.aluno;
-  if (vazio) return;
+  const ranking = g.ranking || [];
+  const hoje = g.hoje || [];
+  const registros = g.registros || [];
 
-  (g.hoje || []).forEach((h) => {
-    const el = document.createElement("div");
-    el.className = "rankItem" + (so(h.nome) === so(S.aluno) ? " me" : "");
-    el.innerHTML = `<span class="pos">${h.fez ? "✓" : "·"}</span>
-      <span class="nm">${h.nome}</span>
-      <span class="pt">${h.fez ? h.pontos + "<small> pts</small>" : '<small>aguardando</small>'}</span>`;
-    hojeBox.appendChild(el);
-  });
+  (hoje.length ? hoje : S.roster.slice(0, 6).map((n) => ({ nome: n, fez: false, pontos: 0 })))
+    .forEach((h) => hojeBox.appendChild(linhaHoje(h)));
 
-  (g.ranking || []).slice(0, 10).forEach((x, i) => {
-    const el = document.createElement("div");
-    el.className = "rankItem" + (so(x.nome) === so(S.aluno) ? " me" : "");
-    el.innerHTML = `<span class="pos">${x.pos || (i + 1)}</span>
-      <span class="nm">${x.nome}</span>
-      <span class="pt">${x.pontos}<small> pts</small></span>`;
-    rankBox.appendChild(el);
-  });
+  if (ranking.length) {
+    ranking.slice(0, 12).forEach((x, i) => rankBox.appendChild(linhaRank(x, i)));
+  } else {
+    S.roster.slice(0, 6).forEach((n, i) => {
+      const el = document.createElement("div");
+      el.className = "rk";
+      el.innerHTML = `<span class="p">${i + 1}</span>
+        <span class="info"><div class="nm">${n}</div><div class="bar"><i style="width:0"></i></div></span>
+        <span class="pt"><span class="ph">—</span><small>sem dados</small></span>`;
+      rankBox.appendChild(el);
+    });
+  }
 
-  const eu = (g.ranking || []).find((x) => so(x.nome) === so(S.aluno));
-  if (eu) $("#minhaPosTxt").textContent = (eu.pos || "?") + "º de " + g.ranking.length + " · " + eu.pontos + " pts";
+  registros.forEach((r) => feedBox.appendChild(linhaFeed(r)));
 
-  (g.registros || []).forEach((r) => {
-    const d = new Date(r.ts);
-    const hoje = iso(d) === iso(new Date());
-    const ontem = iso(d) === iso(new Date(Date.now() - 86400000));
-    const quando = hoje ? "hoje" : ontem ? "ontem" : String(d.getDate()).padStart(2, "0") + "/" + String(d.getMonth() + 1).padStart(2, "0");
+  const semFeed = !registros.length;
+  const vazio = $("#grupoVazio");
+  vazio.hidden = !semFeed;
+  if (semFeed) {
+    vazio.textContent = est === "ok" || est === "vazio"
+      ? "O primeiro check-in do grupo aparece aqui."
+      : "Assim que a conexão estiver ativa, os registros dos três aparecem aqui.";
+  }
+}
 
-    const peso = Number(r.peso) > 1 ? nf(r.peso, 1) + " kg" : (Number(r.peso) === 1 ? "peso ok" : "—");
-    const el = document.createElement("div");
-    el.className = "rankItem" + (so(r.nome) === so(S.aluno) ? " me" : "");
-    el.style.flexDirection = "column";
-    el.style.alignItems = "stretch";
-    el.style.gap = "6px";
-    el.innerHTML =
-      `<div class="row" style="gap:8px">
-         <span class="nm" style="flex:1">${r.nome}</span>
-         <span class="muted" style="font-size:11px">${quando}</span>
-         <span class="pt">${r.pontos}<small> pts</small></span>
-       </div>
-       <div class="muted" style="font-size:12px">
-         ${(r.cardio || 0)} min cardio · ${nf(r.agua, 1)} L água · ${peso}
-       </div>` +
-      (r.foto ? `<img src="${r.foto}" alt="" style="width:100%;max-height:150px;object-fit:cover;border-radius:10px;margin-top:4px">` : "");
-    feedBox.appendChild(el);
-  });
+$("#gCta").onclick = () => {
+  if ($("#gCta").dataset.acao === "retry") carregarGrupo(false);
+  else { ir("v-cfg"); setTimeout(() => $("#cfgEndpoint").focus(), 250); }
+};
 
-  const quando = g.em ? new Date(g.em) : null;
-  $("#grupoData").textContent = quando
-    ? "Atualizado " + quando.toLocaleDateString("pt-BR") + " às " +
-      quando.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
-    : "";
+async function pegarJson(params) {
+  const url = S.cfg.endpoint + (S.cfg.endpoint.includes("?") ? "&" : "?") +
+    params + "&token=" + encodeURIComponent(S.cfg.token);
+  const resp = await fetch(url, { cache: "no-store" });
+  return resp.json();
 }
 
 async function carregarGrupo(silencioso) {
-  if (!S.cfg.endpoint || !S.cfg.token) { if (!silencioso) toast("Conecte o app em Ajustes", true); return; }
-  try {
-    const url = S.cfg.endpoint + (S.cfg.endpoint.includes("?") ? "&" : "?") +
-      "acao=feed&dias=14&token=" + encodeURIComponent(S.cfg.token);
-    const resp = await fetch(url, { cache: "no-store" });
-    const data = await resp.json();
-    if (!data || !data.ok) throw new Error((data && data.erro) || "falha");
-
-    S.grupo = { registros: data.dados.registros || [], hoje: data.dados.hoje || [],
-                ranking: data.ranking || [], em: new Date().toISOString() };
-    S.ranking = { lista: data.ranking || [], em: S.grupo.em };
-    LS.set("grupo", S.grupo);
-    LS.set("ranking", S.ranking);
-    aplicarConfig(data.config);
+  if (!S.cfg.endpoint || !S.cfg.token) {
+    S.grupoEstado = "sem-config";
     renderGrupo();
-    if (!silencioso) toast("Grupo atualizado");
+    if (!silencioso) toast("Conecte o app em Ajustes", true);
+    return;
+  }
+
+  try {
+    const d = await pegarJson("acao=feed&dias=14");
+    if (d && d.ok && d.dados) {
+      S.grupo = {
+        registros: d.dados.registros || [],
+        hoje: d.dados.hoje || [],
+        ranking: d.ranking || [],
+        em: new Date().toISOString()
+      };
+      S.ranking = { lista: d.ranking || [], em: S.grupo.em };
+      S.grupoEstado = (S.grupo.registros.length || S.grupo.hoje.length) ? "ok" : "vazio";
+      LS.set("grupo", S.grupo);
+      aplicarConfig(d.config);
+      renderGrupo();
+      if (!silencioso) toast("Grupo atualizado");
+      return;
+    }
+
+    // servidor sem a rota de feed (script antigo): tenta o ranking
+    const r = await pegarJson("acao=ranking");
+    if (r && r.ok && Array.isArray(r.ranking)) {
+      S.grupo = { registros: [], hoje: [], ranking: r.ranking, em: new Date().toISOString() };
+      S.grupoEstado = "parcial";
+      aplicarConfig(r.config);
+      LS.set("grupo", S.grupo);
+    } else {
+      S.grupoEstado = "servidor-antigo";
+    }
   } catch (e) {
+    S.grupoEstado = S.grupo ? "erro" : "erro";
     if (!silencioso) toast("Não consegui atualizar o grupo", true);
   }
+
+  renderGrupo();
 }
 
 $("#btnGrupo").onclick = () => carregarGrupo(false);
@@ -937,7 +1031,8 @@ function aplicarConfig(c) {
   if (!c) return;
   if (c.meta != null) S.cfg.meta = c.meta;
   if (c.inicio) S.cfg.inicio = c.inicio;
-  if (c.semanas != null) S.cfg.semanas = c.semanas;
+  if (c.dias != null) S.cfg.dias = c.dias;
+  else if (c.semanas != null) S.cfg.dias = c.semanas * 7;
   if (c.metaCardio != null) S.cfg.metaCardio = c.metaCardio;
   if (c.metaAgua != null) S.cfg.metaAgua = c.metaAgua;
   if (c.pontos) S.cfg.pontos = c.pontos;
