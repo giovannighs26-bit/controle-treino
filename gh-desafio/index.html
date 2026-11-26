@@ -452,7 +452,8 @@
         <label>Lista offline (um nome por linha)</label>
         <textarea id="cfgRoster" rows="5" placeholder="Ana Souza&#10;Bruno Lima"></textarea>
       </div>
-      <button class="btn ghost block" id="btnRosterLocal">Usar esta lista</button>
+      <button class="btn ghost block" id="btnRosterLocal">Salvar e enviar ao grupo</button>
+      <p class="hint" id="cfgRosterInfo" style="margin:10px 0 0"></p>
     </div>
 
     <h2>Sincronização</h2>
@@ -490,7 +491,7 @@
     <div class="card">
       <button class="btn ghost block" id="btnLimpar" style="color:var(--err)">Apagar dados deste aparelho</button>
       <p class="hint" style="margin-top:12px">
-        GH Desafio · v5.2 · build 16 · funciona offline. Os check-ins ficam neste aparelho até o envio concluir;
+        GH Desafio · v5.3 · build 17 · funciona offline. Os check-ins ficam neste aparelho até o envio concluir;
         apagar remove o histórico local, o que já foi para a planilha permanece lá.
       </p>
     </div>
@@ -1284,7 +1285,8 @@ function renderGrupo() {
     cta.hidden = false; cta.textContent = "Tentar de novo"; cta.dataset.acao = "retry";
   } else if (S.lastOk) {
     dot.className = "dot ok";
-    txt.textContent = "Sincronizado às " + new Date(S.lastOk).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    txt.textContent = "Sincronizado às " + new Date(S.lastOk).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) +
+      (S.roster.length ? " · " + S.roster.length + " alunos" : "");
   } else {
     dot.className = "dot pend";
     txt.textContent = "Conectado. Ainda sem sincronização.";
@@ -1400,6 +1402,11 @@ function renderCfg() {
       : "Ainda sem sincronização.";
   }
   $("#cfgRoster").value = S.roster.join("\n");
+  const info = $("#cfgRosterInfo");
+  if (info) {
+    info.textContent = S.roster.length + (S.roster.length === 1 ? " aluno" : " alunos") +
+      (temSala() ? " · a lista vale para os três celulares" : " · só neste aparelho (sem conexão)");
+  }
   renderMetasCfg();
   atualizarChip();
 }
@@ -1452,17 +1459,41 @@ $("#btnRoster").onclick = async () => {
   const nomes = Object.keys(S.remoto || {}).map((k) => S.remoto[k] && S.remoto[k].aluno).filter(Boolean);
   S.roster = Array.from(new Set([].concat(S.roster, nomes)));
   LS.set("roster", S.roster);
+
+  if (temSala()) {
+    try {
+      await pedir(salaUrl() + "/alunos.json", {
+        method: "PUT", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nomes: S.roster, em: new Date().toISOString() })
+      });
+    } catch (e) {}
+  }
   renderLista(); renderCfg(); renderGrupo();
   toast(ok ? "Nomes atualizados" : "Sem conexão");
 };
 
-$("#btnRosterLocal").onclick = () => {
+$("#btnRosterLocal").onclick = async () => {
   const nomes = $("#cfgRoster").value.split("\n").map((s) => s.trim()).filter(Boolean);
   if (!nomes.length) { toast("Cole pelo menos um nome", true); return; }
   S.roster = Array.from(new Set(nomes));
   LS.set("roster", S.roster);
-  toast(S.roster.length + " alunos salvos");
-  renderLista(); renderGrupo();
+
+  if (temSala()) {
+    try {
+      await pedir(salaUrl() + "/alunos.json", {
+        method: "PUT", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nomes: S.roster, em: new Date().toISOString() })
+      });
+      toast(S.roster.length + " alunos salvos e enviados ao grupo");
+    } catch (e) {
+      toast(S.roster.length + " alunos salvos (só neste aparelho)", true);
+    }
+  } else {
+    toast(S.roster.length + " alunos salvos");
+  }
+
+  renderLista(); renderGrupo(); renderCfg();
+  sincronizar(true);
 };
 
 $("#btnSync").onclick = () => sincronizar(false);
@@ -2195,6 +2226,26 @@ async function sincronizar(silencioso) {
       S.remoto = (d && typeof d === "object") ? d : {};
       LS.set("remoto", S.remoto);
 
+      // lista de alunos: união com o que está no banco
+      try {
+        const al = lerJson(await pedir(salaUrl() + "/alunos.json"));
+        const noBanco = (al && Array.isArray(al.nomes)) ? al.nomes : [];
+
+        const nomesDosRegistros = Object.values(S.remoto || {}).map((r) => r && r.aluno).filter(Boolean);
+        const uniao = Array.from(new Set([].concat(S.roster, noBanco, nomesDosRegistros)));
+
+        if (uniao.length !== S.roster.length) {
+          S.roster = uniao;
+          LS.set("roster", S.roster);
+        }
+        if (uniao.length > noBanco.length) {
+          await pedir(salaUrl() + "/alunos.json", {
+            method: "PUT", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ nomes: uniao, em: new Date().toISOString() })
+          });
+        }
+      } catch (e) {}
+
       const meta = lerJson(await pedir(salaUrl() + "/meta.json"));
 
       // ciclo reiniciado em outro aparelho
@@ -2317,7 +2368,7 @@ async function sincronizar(silencioso) {
 window.addEventListener("online", () => { atualizarChip(); sincronizar(true); });
 window.addEventListener("offline", atualizarChip);
 document.addEventListener("visibilitychange", () => { if (!document.hidden) { atualizarChip(); sincronizar(true); } });
-setInterval(() => { if (temSala()) sincronizar(true); }, 120000);
+setInterval(() => { if (temSala() && !document.hidden) sincronizar(true); }, 45000);
 
 /* ---------------- boot ---------------- */
 (function boot() {
