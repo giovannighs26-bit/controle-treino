@@ -679,6 +679,26 @@
       border:1px solid var(--line);border-radius:999px;padding:2px 9px;color:var(--muted);white-space:nowrap}
     .aula-ctx-prog.ok{border-color:var(--ok);color:var(--ok)}
     .aula-ctx-prog.zero{border-color:var(--accent);color:var(--accent)}
+
+    /* ===== MODO AULA ===== */
+    .sess-start{display:flex;flex-direction:column;gap:10px;align-items:flex-start;padding:6px 0 2px}
+    #sessCard .card-head{align-items:center;gap:10px;flex-wrap:wrap}
+    #aulaBtn{white-space:nowrap}
+    #session.aula-on #sessIdleHint{display:none}
+    #session.aula-on #aulaBtn{background:var(--ok);border-color:var(--ok);color:#0b1710}
+    .aula-live{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:2px 0 12px}
+    .aula-live b{font-size:13px}
+
+    /* acordeao do check-in */
+    .ck-sum{display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;
+      list-style:none;padding:2px 0}
+    .ck-sum::-webkit-details-marker{display:none}
+    .ck-sum-t{font-size:15px;font-weight:800}
+    .ck-sum::after{content:'▾';color:var(--muted);font-size:12px;transition:transform .18s}
+    #ckDet[open] .ck-sum::after{transform:rotate(180deg)}
+    #session .grid{padding-bottom:96px}
+    /* [hidden] perde para display:grid do .form - precisa forcar */
+    #sessCfg[hidden], #exWrap[hidden]{display:none!important}
 </style>
 </head>
 <body>
@@ -761,7 +781,7 @@
       <button class="tab active" data-page="dashboard" data-short="Visão">Visão geral</button>
       <button class="tab" data-page="fichas" data-short="Fichas">Fichas de treino</button>
       <button class="tab" data-page="montar" data-short="Montar">Montar treino</button>
-      <button class="tab" data-page="session" data-short="Aula">Registrar treino</button>
+      <button class="tab" data-page="session" data-short="Aula">Iniciar aula</button>
       <button class="tab" data-page="grupo" data-short="Grupo">Treino em grupo</button>
       <button class="tab" data-page="history" data-short="Histórico">Histórico</button>
       <button class="tab" data-page="aval" data-short="Avaliação">Avaliação física</button>
@@ -937,18 +957,14 @@
       <span class="aula-ctx-dia" id="aulaCtxDia">Selecione o treino do dia</span>
       <span class="aula-ctx-prog" id="aulaCtxProg">sem exercícios</span>
     </div>
-    <article class="card" id="checkinCard">
+    <article class="card" id="sessCard">
       <div class="card-head">
-        <h2>Check-in do dia</h2>
-        <span class="ck-verdict" id="ckVerdict">sem check-in</span>
+        <h2 id="sessTitle">Iniciar aula</h2>
+        <button class="btn" type="button" id="aulaBtn">▶ Iniciar aula</button>
       </div>
-      <p class="hint" style="margin:0 0 10px">Como o aluno chegou hoje? 1 = ruim, 5 = ótimo. Leva 15 segundos e muda a leitura da sessão.</p>
-      <div class="ck-grid" id="ckGrid"></div>
-    </article>
-    <article class="card">
-      <h2>Registrar treino</h2>
+      <p class="hint" id="sessIdleHint" style="margin:0 0 10px">Escolha o treino do dia e toque em <b>Iniciar aula</b>. O cronômetro começa junto e o treino é carregado para você registrar série por série.</p>
       <form id="sessionForm">
-        <div class="form">
+        <div class="form" id="sessCfg">
           <div class="field span4"><label>Treino do dia — ficha do aluno</label><select id="sessionDaySelect"></select></div>
           <div class="field span3"><label>&nbsp;</label><button type="button" class="btn secondary" id="loadDayBtn" style="width:100%">↻ Carregar treino do dia</button></div>
           <div class="field span2"><label>Data</label><input type="date" id="sessionDate" required></div>
@@ -965,8 +981,9 @@
             </div>
           </div>
         </div>
+        <div id="exWrap" hidden>
         <p class="hint" id="sessionPeriodHint"></p>
-        <h3 style="margin-top:16px">Exercícios — marque as séries feitas e ajuste carga, reps e RIR</h3>
+        <h3 style="margin-top:4px">Exercícios — marque as séries feitas e ajuste carga, reps e RIR</h3>
         <div id="sessionSync" class="sync-bar" hidden>
           <span id="sessionSyncText"></span>
           <button class="btn small" type="button" id="sessionSyncBtn">↻ Recarregar da ficha</button>
@@ -977,8 +994,20 @@
           <button type="submit" class="btn">Salvar sessão</button>
           <button type="button" class="btn ghost" id="clearSession">Limpar</button>
         </div>
+        </div>
       </form>
     </article>
+    <article class="card" id="checkinCard">
+      <details id="ckDet">
+        <summary class="ck-sum">
+          <span class="ck-sum-t">Check-in do dia</span>
+          <span class="ck-verdict" id="ckVerdict">sem check-in</span>
+        </summary>
+        <p class="hint" style="margin:8px 0 10px">Como o aluno chegou hoje? 1 = ruim, 5 = ótimo. Leva 15 segundos e muda a leitura da sessão.</p>
+        <div class="ck-grid" id="ckGrid"></div>
+      </details>
+    </article>
+    
   </div></section>
 
   <section class="page" id="grupo"><div class="grid">
@@ -1541,7 +1570,7 @@
 
   let state = load();
 
-  function blank(){ return {version:1, auth:null, activeStudentId:null, students:[], plans:{}, sessions:[], periodizations:{}, checkins:{}, aprovacoes:{}, assessments:[], group:null, finance:null, alertaDias:7}; }
+  function blank(){ return {version:1, auth:null, activeStudentId:null, students:[], plans:{}, sessions:[], periodizations:{}, checkins:{}, aprovacoes:{}, aula:null, assessments:[], group:null, finance:null, alertaDias:7}; }
   function load(){
     try { const p = JSON.parse(localStorage.getItem(KEY)); if (p && Array.isArray(p.students)) return Object.assign(blank(), p); } catch(e){}
     return blank();
@@ -3368,6 +3397,67 @@
     sel.innerHTML = plan.days.map((d,i) => `<option value="${i}">${esc(d.title)}</option>`).join('');
     sel.value = plan.days.some((_,i) => String(i) === cur) ? cur : String(guessTodayIndex(plan.days));
   }
+  /* ---------- MODO AULA: iniciar, acompanhar e finalizar ---------- */
+  function aulaState(){
+    const a = state.aula;
+    if (!a || !a.studentId) return null;
+    if (a.studentId !== state.activeStudentId) return null;
+    return a;
+  }
+  function aulaPaint(){
+    const page = $('#session'); if (!page) return;
+    const on = !!aulaState();
+    page.classList.toggle('aula-on', on);
+    const cfg = $('#sessCfg'), ex = $('#exWrap'), ck = $('#checkinCard');
+    if (cfg) cfg.hidden = on;
+    if (ex) ex.hidden = !on;
+    if (ck) ck.hidden = on;
+    const det = $('#ckDet'); if (det && on) det.open = false;
+    const t = $('#sessTitle'); if (t) t.textContent = on ? 'Aula em andamento' : 'Iniciar aula';
+    const b = $('#aulaBtn'); if (b) b.textContent = on ? '✓ Finalizar aula' : '▶ Iniciar aula';
+    aulaCtxRender();
+  }
+  function aulaIniciar(){
+    const s = active();
+    if (!s) return notify('Selecione um aluno no botão flutuante primeiro.', true);
+    const plan = plansOf(s.id);
+    if (!plan || !plan.days.length) return notify('Este aluno não tem ficha cadastrada.', true);
+    renderSessionDays();
+    const sel = $('#sessionDaySelect');
+    let idx = sel ? num(sel.value) : 0;
+    if (!(idx >= 0) || idx >= plan.days.length) idx = 0;
+    if (sel) sel.value = String(idx);
+    loadDayIntoSession(idx, true);
+    const day = plan.days[idx] || {};
+    state.aula = { studentId: s.id, dayIndex: idx, dayTitle: day.title || 'Treino',
+      date: ($('#sessionDate') || {}).value || today(), startedAt: new Date().toISOString() };
+    save();
+    if (!chrono.running) chronoStart();
+    aulaPaint();
+    notify(`Aula iniciada — ${day.title || 'treino'} · ${s.name.split(' ')[0]}`);
+  }
+  function aulaFinalizar(){
+    const a = aulaState();
+    if (!a) return;
+    const nome = $('#sessionName');
+    if (nome && !nome.value.trim()) nome.value = a.dayTitle || 'Treino';
+    const dur = $('#sessionDuration');
+    if (dur && !num(dur.value)){
+      const mins = Math.max(1, Math.round(chronoElapsed() / 60000));
+      dur.value = String(mins);
+    }
+    const cards = $$('#exerciseCards .ex-card').map(readExerciseCard).filter(Boolean);
+    const feitas = cards.reduce((n, e) => n + e.sets.filter(x => x.done).length, 0);
+    if (!feitas && !confirm('Nenhuma série foi marcada. Finalizar a aula mesmo assim?')) return;
+    const form = $('#sessionForm');
+    if (form) form.requestSubmit ? form.requestSubmit() : form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+  }
+  function aulaToggle(){
+    if (aulaState()) aulaFinalizar(); else aulaIniciar();
+  }
+  const aulaBtnEl = $('#aulaBtn');
+  if (aulaBtnEl) aulaBtnEl.addEventListener('click', aulaToggle);
+
   /* ---------- CONTEXTO DA AULA (aluno + treino do dia + progresso) ---------- */
   function aulaCtxRender(){
     const nome = $('#aulaCtxNome');
@@ -3376,14 +3466,20 @@
     nome.textContent = s ? s.name : 'Nenhum aluno selecionado';
     const sel = $('#sessionDaySelect');
     const dia = $('#aulaCtxDia');
+    const ativa = aulaState();
     if (dia){
-      const opt = sel && sel.selectedIndex >= 0 ? sel.options[sel.selectedIndex].text : '';
-      dia.textContent = (opt && !/^Sem ficha/.test(opt)) ? opt : 'Sem treino do dia carregado';
+      if (!ativa) dia.textContent = 'Aula não iniciada';
+      else {
+        const opt = sel && sel.selectedIndex >= 0 ? sel.options[sel.selectedIndex].text : '';
+        dia.textContent = ativa.dayTitle || ((opt && !/^Sem ficha/.test(opt)) ? opt : 'Treino do dia');
+      }
     }
     const prog = $('#aulaCtxProg');
     if (!prog) return;
     const work = $$('#exerciseCards .set-row').filter(r => rowKind(r) === 'trabalho');
     const feitas = work.filter(r => r.querySelector('.s-done').checked).length;
+    if (!ativa){ prog.hidden = true; prog.textContent = ''; prog.className = 'aula-ctx-prog'; return; }
+    prog.hidden = false;
     prog.textContent = work.length ? `${feitas}/${work.length} séries` : 'sem exercícios';
     prog.className = 'aula-ctx-prog' + (work.length ? (feitas === work.length ? ' ok' : (feitas ? '' : ' zero')) : '');
   }
@@ -3467,19 +3563,18 @@
 
   function autoLoadToday(){
     renderSessionDays();
-    const cards = $$('#exerciseCards .ex-card');
-    const onlyBlank = cards.length === 1 && !cards[0].querySelector('.ex-name').value.trim()
-      && ![...cards[0].querySelectorAll('.s-done')].some(c => c.checked);
-    const s = active(); const plan = s ? plansOf(s.id) : null;
-    const idx = num($('#sessionDaySelect').value) || 0;
-    const day = plan && plan.days ? plan.days[idx] : null;
-    const trocouAluno = !!(sessionStudent && s && sessionStudent !== s.id);
-    const mudouFicha = sessionSig !== null && fichaSigDay(day) !== sessionSig;
-    /* Recarrega sozinho quando não há nada digitado; se o usuário já mexeu, não apaga
-       nada — mostra a faixa e deixa ele decidir. */
-    const seguro = (trocouAluno || mudouFicha) && !sessionDirty();
-    if (plan && plan.days.length && (cards.length === 0 || onlyBlank || seguro))
-      loadDayIntoSession(idx, true);
+    const a = aulaState();
+    const box = $('#exerciseCards');
+    const cards = box ? [...box.children] : [];
+    const soVazio = cards.length === 0 ||
+      (cards.length === 1 && !cards[0].querySelector('.ex-name').value.trim() &&
+        ![...cards[0].querySelectorAll('.s-done')].some(c => c.checked));
+    if (a && soVazio){
+      const sel = $('#sessionDaySelect');
+      if (sel && String(a.dayIndex) !== sel.value) sel.value = String(a.dayIndex);
+      loadDayIntoSession(a.dayIndex, true);
+    }
+    aulaPaint();
     sessionCheckSync();
   }
   function clearSession(){
@@ -3507,7 +3602,12 @@
     const sel = $('#sessionDaySelect');
     if (sel){ renderSessionDays(); sel.value = String(dayIndex); }
     loadDayIntoSession(dayIndex, true);
-    notify(`“${day.title}” carregado. Ajuste as cargas e salve.`);
+    state.aula = { studentId: state.activeStudentId, dayIndex, dayTitle: day.title || 'Treino',
+      date: ($('#sessionDate') || {}).value || today(), startedAt: new Date().toISOString() };
+    save();
+    if (!chrono.running) chronoStart();
+    aulaPaint();
+    notify(`Aula iniciada — ${day.title || 'treino'}.`);
   }
   $('#sessionForm').addEventListener('submit', e => {
     e.preventDefault();
@@ -3518,7 +3618,8 @@
     state.sessions.push({id: uid(), studentId: state.activeStudentId, date: $('#sessionDate').value,
       name: $('#sessionName').value.trim(), week: num($('#sessionWeek').value),
       duration: num($('#sessionDuration').value), exercises, createdAt: new Date().toISOString()});
-    save(); clearSession(); notify(`Sessão salva — ${done} série(s) registrada(s).`); showPage('dashboard');
+    state.aula = null;
+    save(); clearSession(); aulaPaint(); notify(`Aula finalizada — ${done} série(s) registrada(s).`); showPage('dashboard');
   });
 
   /* ---------- TREINO EM GRUPO ---------- */
