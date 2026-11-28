@@ -630,7 +630,38 @@
       .fin-month input[type=month]{flex:1;min-width:0}
     }
   
-  </style>
+      /* ===== CHECK-IN DO DIA ===== */
+    .ck-grid{display:grid;gap:7px}
+    .ck-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .ck-lbl{flex:1 1 120px;min-width:100px;font-size:12px;font-weight:700;color:var(--muted)}
+    .ck-chips{display:flex;gap:5px}
+    .ck-chip{width:31px;height:31px;border-radius:9px;border:1px solid var(--line);background:var(--panel);
+      color:var(--muted);font-size:12px;font-weight:800;cursor:pointer;display:grid;place-items:center;
+      transition:background .12s,border-color .12s,color .12s}
+    .ck-chip:hover{border-color:var(--accent);color:var(--accent)}
+    .ck-chip.on{background:var(--accent);border-color:var(--accent);color:#101a13}
+    .ck-chip.inv.on{background:#d98f3a;border-color:#d98f3a;color:#1a1004}
+    .ck-verdict{font-size:10.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;
+      border:1px solid currentColor;border-radius:999px;padding:3px 9px;white-space:nowrap;color:var(--muted)}
+
+    /* ===== MOTOR DE PROGRESSÃO ===== */
+    .motor-row{display:flex;flex-direction:column;gap:6px;padding:11px 0;border-bottom:1px solid var(--line)}
+    .motor-row:last-child{border-bottom:0;padding-bottom:0}
+    .motor-row:first-child{padding-top:2px}
+    .motor-top{display:flex;align-items:center;gap:8px;justify-content:space-between}
+    .motor-nome{font-size:13px;font-weight:800}
+    .motor-badge{font-size:9.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;
+      border:1px solid currentColor;border-radius:999px;padding:2px 8px;white-space:nowrap}
+    .motor-why{font-size:11.5px;line-height:1.5;color:var(--muted)}
+    .motor-sug{font-size:12px;line-height:1.45;background:rgba(255,255,255,.035);
+      border-left:2px solid var(--accent);border-radius:0 8px 8px 0;padding:7px 10px}
+    .motor-acts{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+    .motor-btn{border:1px solid var(--line);background:var(--panel);color:var(--muted);
+      border-radius:8px;padding:5px 11px;font-size:11px;font-weight:700;cursor:pointer}
+    .motor-btn:hover{filter:brightness(1.25)}
+    .motor-btn.ok{border-color:#63c58b;color:#63c58b}
+    .motor-btn.no{border-color:#df6a67;color:#df6a67}
+</style>
 </head>
 <body>
 
@@ -812,7 +843,7 @@
       <div class="bars" id="topExercises"></div>
     </article>
 
-    <article class="card half"><h2>Sensor de progressão</h2><div id="progressCard" class="empty">Registre um treino para ver a sugestão de progressão.</div></article>
+    <article class="card half"><h2>Motor de progressão</h2><div id="progressCard" class="empty">Registre um treino para ver a análise de desempenho.</div></article>
     <article class="card half">
         <div class="card-head">
           <h2>Dicas do dia</h2>
@@ -853,10 +884,13 @@
           <button class="btn secondary" id="printFichaBtn">🖨 PDF da ficha</button>
           <button class="btn" id="shareFichaBtn">🔗 Compartilhar com o aluno</button>
           <button class="btn secondary" id="importFichaBtn">Importar ficha</button>
+          <button class="btn secondary" id="dupPlanBtn">⧉ Duplicar ficha</button>
+          <button class="btn secondary" id="evolReportBtn">📈 Relatório de evolução</button>
           <button class="btn" id="newPlanBtn">+ Nova ficha</button>
         </div>
       </div>
       <p class="hint" style="margin-top:0">Toque em um treino para ver os exercícios e registrá-lo em 1 clique.</p>
+      <div id="dupPlanBox" hidden style="margin-bottom:12px"></div>
       <div id="planList"></div>
     </article>
   </div></section>
@@ -878,6 +912,14 @@
   </div></section>
 
   <section class="page" id="session"><div class="grid">
+    <article class="card" id="checkinCard">
+      <div class="card-head">
+        <h2>Check-in do dia</h2>
+        <span class="ck-verdict" id="ckVerdict">sem check-in</span>
+      </div>
+      <p class="hint" style="margin:0 0 10px">Como o aluno chegou hoje? 1 = ruim, 5 = ótimo. Leva 15 segundos e muda a leitura da sessão.</p>
+      <div class="ck-grid" id="ckGrid"></div>
+    </article>
     <article class="card">
       <h2>Registrar treino</h2>
       <form id="sessionForm">
@@ -1474,7 +1516,7 @@
 
   let state = load();
 
-  function blank(){ return {version:1, auth:null, activeStudentId:null, students:[], plans:{}, sessions:[], periodizations:{}, assessments:[], group:null, finance:null, alertaDias:7}; }
+  function blank(){ return {version:1, auth:null, activeStudentId:null, students:[], plans:{}, sessions:[], periodizations:{}, checkins:{}, aprovacoes:{}, assessments:[], group:null, finance:null, alertaDias:7}; }
   function load(){
     try { const p = JSON.parse(localStorage.getItem(KEY)); if (p && Array.isArray(p.students)) return Object.assign(blank(), p); } catch(e){}
     return blank();
@@ -3284,7 +3326,7 @@
     (day.items.length ? day.items : ['']).forEach(it => {
       const p = it ? parseItem(it) : {};
       addExerciseCard({ name: p.name || '', setsPlanned: p.sets, reps: p.reps, repsMin: p.repsMin, repsMax: p.repsMax,
-        load: p.load, rir: p.rir, rest: p.rest, method: p.method, blocks: p.blocks });
+        load: (s ? cargaAprovada(s.id, p.name) : 0) || p.load, rir: p.rir, rest: p.rest, method: p.method, blocks: p.blocks });
     });
     const sel = $('#sessionDaySelect'); if (sel) sel.value = String(index);
     updateSessionHint();
@@ -3727,25 +3769,195 @@
     if ($('#dashboard').classList.contains('active')) requestAnimationFrame(drawDashboardCharts);
   }
   /* ---------- SENSOR DE PROGRESSÃO ---------- */
+  /* ---------- MOTOR DE ANÁLISE DE DESEMPENHO ---------- */
+  const MOTOR_ESTADOS = {
+    evoluindo:   { label:'Evoluindo',           cor:'#63c58b' },
+    estavel:     { label:'Estável',             cor:'#6fa8d6' },
+    estagnacao:  { label:'Possível estagnação', cor:'#d8a93d' },
+    queda:       { label:'Queda de desempenho', cor:'#df6a67' },
+    fadiga:      { label:'Alerta de fadiga',    cor:'#d98f3a' },
+    insuficiente:{ label:'Dados insuficientes', cor:'#8a8f8b' }
+  };
+  function exKey(nome){ return noAccent(String(nome || '').trim()).replace(/\s+/g, ' '); }
+  function historyFor(studentId, nome){
+    const key = exKey(nome);
+    if (!key) return [];
+    return state.sessions.filter(x => x.studentId === studentId)
+      .slice().sort((x, y) => String(x.date).localeCompare(String(y.date)))
+      .map(x => {
+        const e = (x.exercises || []).find(y => exKey(y.name) === key);
+        if (!e) return null;
+        const ws = workSets(e).filter(v => v.done);
+        if (!ws.length) return null;
+        const loads = ws.map(v => num(v.load)).filter(v => v > 0);
+        const reps  = ws.map(v => num(v.reps)).filter(v => v > 0);
+        if (!loads.length || !reps.length) return null;
+        const rirs = ws.map(v => num(v.rir));
+        const top = Math.max(...loads);
+        const vol = ws.reduce((n, v) => n + num(v.load) * num(v.reps), 0);
+        const e1rm = Math.max(...ws.map(v => num(v.load) * (1 + num(v.reps) / 30)));
+        return { date:x.date, top,
+          repsAtTop: ws.filter(v => num(v.load) === top).map(v => num(v.reps)),
+          avgReps: reps.reduce((p, c) => p + c, 0) / reps.length,
+          avgRir: rirs.reduce((p, c) => p + c, 0) / rirs.length,
+          vol, e1rm: Math.round(e1rm * 10) / 10, sets: ws.length,
+          rMin: num(e.repsMin) || num(e.reps) || 0,
+          rMax: num(e.repsMax) || num(e.reps) || 0 };
+      })
+      .filter(Boolean);
+  }
+  function apAprov(){
+    const s = active(); if (!s) return null;
+    state.aprovacoes = state.aprovacoes || {};
+    return (state.aprovacoes[s.id] = state.aprovacoes[s.id] || {});
+  }
+  function cargaAprovada(studentId, nome){
+    const m = (state.aprovacoes || {})[studentId] || {};
+    const a = m[exKey(nome)];
+    return a && a.status === 'aprovada' && num(a.para) ? num(a.para) : 0;
+  }
+  function motorFor(studentId, nome){
+    const hist = historyFor(studentId, nome);
+    const out = { nome, hist, estado:'insuficiente', motivo:'', sugestao:null };
+    if (!hist.length){ out.motivo = 'Nenhuma sessão com séries de trabalho registrada neste exercício.'; return out; }
+    if (hist.length < 2){
+      out.motivo = `Só há 1 sessão registrada (${dateFmt(hist[0].date)}). A comparação precisa de pelo menos 2.`;
+      return out;
+    }
+    const ult = hist[hist.length - 1], ant = hist[hist.length - 2];
+    const rMin = ult.rMin || ant.rMin || 0, rMax = ult.rMax || ant.rMax || 0;
+    const inc = Math.max(1, roundHalf(ult.top * 0.025));
+    const dLoad = roundHalf(ult.top - ant.top);
+    const dReps = Math.round((ult.avgReps - ant.avgReps) * 10) / 10;
+    const dRir  = Math.round((ult.avgRir - ant.avgRir) * 10) / 10;
+    const dVol  = ant.vol > 0 ? Math.round((ult.vol - ant.vol) / ant.vol * 100) : 0;
+    const dPr   = ant.e1rm > 0 ? Math.round((ult.e1rm - ant.e1rm) / ant.e1rm * 100) : 0;
+    const ck = ((state.checkins || {})[studentId] || {})[ult.date] || {};
+    const ckSc = ckScore(ck);
+    const ult3 = hist.slice(-3);
+    const cargas = ult3.map(x => x.top);
+    const caindo = ult3.length >= 3 && cargas[0] >= cargas[1] && cargas[1] > cargas[2];
+
+    if (ckSc !== null && ckSc < 45){
+      out.estado = 'fadiga';
+      out.motivo = `O check-in de ${dateFmt(ult.date)} marcou recuperação baixa (${ckSc}/100 — sono, energia e dores puxando para baixo).`;
+      out.sugestao = { acao:'revisar', de:ult.top, para:ult.top,
+        texto:`Repetir ${fmt(ult.top)} kg com 1–2 séries a menos e revisar sono e recuperação antes de pensar em subir carga.` };
+      return out;
+    }
+    if (caindo && dRir <= 0){
+      out.estado = 'fadiga';
+      out.motivo = `A carga caiu em ${ult3.length} sessões seguidas (${cargas.map(c => fmt(c)).join(' → ')} kg) sem mais folga de RIR.`;
+      out.sugestao = { acao:'deload', de:ult.top, para:roundHalf(ult.top * 0.9),
+        texto:`Semana de descarga: ~${fmt(roundHalf(ult.top * 0.9))} kg (−10%), metade das séries e RIR 4–5.` };
+      return out;
+    }
+    const caiuCarga = dLoad < 0, caiuReps = dReps <= -2;
+    if (caiuCarga || (caiuReps && dRir <= 0)){
+      out.estado = 'queda';
+      out.motivo = caiuCarga
+        ? `Carga caiu ${fmt(Math.abs(dLoad))} kg (${fmt(ant.top)} → ${fmt(ult.top)} kg)${caiuReps ? ` e as repetições médias caíram ${fmt(Math.abs(dReps))}` : ''}.`
+        : `Carga mantida, mas as repetições médias caíram ${fmt(Math.abs(dReps))} sem mais folga de RIR.`;
+      out.sugestao = { acao:'reduzir', de:ult.top, para:roundHalf(ult.top * 0.95),
+        texto:`Voltar a ~${fmt(roundHalf(ult.top * 0.95))} kg (−5%) e reconstruir as repetições dentro da faixa antes de subir de novo.` };
+      return out;
+    }
+    const iguais = ult3.length >= 3 &&
+      (Math.max(...cargas) - Math.min(...cargas)) <= inc &&
+      Math.abs(ult.e1rm - ult3[0].e1rm) / Math.max(1, ult3[0].e1rm) < 0.015;
+    if (iguais){
+      out.estado = 'estagnacao';
+      out.motivo = `As últimas ${ult3.length} sessões ficaram na mesma carga (${fmt(ult.top)} kg) sem ganho de repetições nem de 1RM estimado.`;
+      out.sugestao = { acao:'mudar', de:ult.top, para:roundHalf(ult.top + inc),
+        texto:`Trocar o estímulo: subir para ${fmt(roundHalf(ult.top + inc))} kg e trabalhar no topo da faixa — ou manter a carga e acrescentar 1 série na semana.` };
+      return out;
+    }
+    const bateuTopo = rMax > 0 && ult.repsAtTop.length && ult.repsAtTop.every(r => r >= rMax);
+    if (bateuTopo && ult.avgRir >= 1.5 && dReps > -2 && dRir > -1){
+      out.estado = 'evoluindo';
+      out.motivo = `Fechou o topo da faixa (${rMax} reps) em todas as séries de ${fmt(ult.top)} kg com RIR médio ${fmt(ult.avgRir)}.`;
+      out.sugestao = { acao:'aumentar', de:ult.top, para:roundHalf(ult.top + inc),
+        texto:`Subir para ${fmt(roundHalf(ult.top + inc))} kg (+${fmt(inc)}) e voltar para ${rMin || rMax} reps.` };
+      return out;
+    }
+    if (dPr >= 2 && dReps >= -1){
+      out.estado = 'evoluindo';
+      out.motivo = `1RM estimado subiu ${dPr}% (${fmt(ant.e1rm)} → ${fmt(ult.e1rm)} kg) sem perder repetições.`;
+      out.sugestao = { acao:'manter', de:ult.top, para:ult.top,
+        texto:`Manter ${fmt(ult.top)} kg e buscar ${rMax || 'o topo da faixa'} reps em todas as séries antes do próximo aumento.` };
+      return out;
+    }
+    if (dLoad > 0 && dReps <= -2){
+      out.estado = 'estavel';
+      out.motivo = `Subiu ${fmt(dLoad)} kg, mas as repetições médias caíram ${fmt(Math.abs(dReps))} — o estímulo não melhorou de fato.`;
+      out.sugestao = { acao:'manter', de:ult.top, para:ult.top,
+        texto:`Consolidar ${fmt(ult.top)} kg até recuperar ${rMin || 'a faixa'} reps em todas as séries.` };
+      return out;
+    }
+    out.estado = 'estavel';
+    out.motivo = `Variação pequena desde ${dateFmt(ant.date)}: carga ${dLoad >= 0 ? '+' : ''}${fmt(dLoad)} kg, repetições ${dReps >= 0 ? '+' : ''}${fmt(dReps)}, volume ${dVol >= 0 ? '+' : ''}${dVol}%.`;
+    out.sugestao = { acao:'reps', de:ult.top, para:ult.top,
+      texto:`Manter ${fmt(ult.top)} kg e buscar +1 repetição por série antes de mexer na carga.` };
+    return out;
+  }
   function renderSensorCard(){
     const box = $('#progressCard'); if (!box) return;
     const s = active();
     if (!s){ box.className = 'empty'; box.textContent = 'Selecione um aluno.'; return; }
     const sessions = sessionsFor();
-    if (!sessions.length){ box.className = 'empty'; box.textContent = 'Registre um treino para ver a sugestão de progressão.'; return; }
+    if (!sessions.length){ box.className = 'empty'; box.textContent = 'Registre um treino para ver a análise de desempenho.'; return; }
     const last = sessions[0];
-    const items = (last.exercises || []).map(e => ({name: e.name, st: sensorFor(e)})).filter(x => x.st.level !== 'none');
-    if (!items.length){ box.className = 'empty'; box.textContent = 'O último treino não tem séries de trabalho marcadas.'; return; }
-    const ready = items.filter(x => x.st.level === 'progress').length;
-    const att = items.filter(x => x.st.level === 'regress').length;
+    const nomes = [];
+    (last.exercises || []).forEach(e => { const k = exKey(e.name); if (k && !nomes.some(n => exKey(n) === k)) nomes.push(e.name); });
+    if (!nomes.length){ box.className = 'empty'; box.textContent = 'O último treino não tem exercícios.'; return; }
+    const res = nomes.map(n => motorFor(s.id, n));
+    const ordem = ['fadiga','queda','estagnacao','evoluindo','estavel','insuficiente'];
+    res.sort((x, y) => ordem.indexOf(x.estado) - ordem.indexOf(y.estado));
+    const apr = apAprov() || {};
     box.className = '';
-    box.innerHTML = `
-      <p class="hint" style="margin:0 0 10px">Último treino: ${esc(last.name || 'Treino')} · ${dateFmt(last.date)}</p>
-      <div class="list sensor-list">${items.slice(0,6).map(x => `
-        <div class="item s-${x.st.level}"><div><div class="item-title">${esc(shortName(x.name))}</div>
-          <div class="item-meta">${x.st.text}</div></div>
-          <span class="badge">${x.st.title}</span></div>`).join('')}</div>
-      ${ready || att ? `<p class="hint">${ready} pronto(s) para aumentar a carga e reduzir as repetições${att ? ` · ${att} pedindo atenção` : ''}.</p>` : ''}`;
+    box.innerHTML = `<p class="hint" style="margin:0 0 2px">Último treino: ${esc(last.name || 'Treino')} · ${dateFmt(last.date)}</p>` +
+      res.slice(0, 5).map(r => {
+        const st = MOTOR_ESTADOS[r.estado] || MOTOR_ESTADOS.insuficiente;
+        const a = apr[exKey(r.nome)];
+        const aprov = a && a.status === 'aprovada';
+        const acts = !r.sugestao ? '' : (aprov
+          ? `<span class="motor-why" style="color:#63c58b">Aprovado: ${fmt(a.para)} kg${a.data ? ' · ' + dateFmt(a.data) : ''}</span>
+             <button class="motor-btn no" type="button" data-motor="limpar" data-ex="${esc(r.nome)}">Desfazer</button>`
+          : `<button class="motor-btn ok" type="button" data-motor="ok" data-ex="${esc(r.nome)}">Aprovar</button>
+             <button class="motor-btn" type="button" data-motor="edit" data-ex="${esc(r.nome)}">Ajustar</button>
+             <button class="motor-btn no" type="button" data-motor="no" data-ex="${esc(r.nome)}">Dispensar</button>`);
+        return `<div class="motor-row">
+          <div class="motor-top"><span class="motor-nome">${esc(shortName(r.nome))}</span>
+            <span class="motor-badge" style="color:${st.cor}">${st.label}</span></div>
+          <div class="motor-why">${esc(r.motivo)}</div>
+          ${r.sugestao ? `<div class="motor-sug">${esc(r.sugestao.texto)}</div><div class="motor-acts">${acts}</div>` : ''}
+        </div>`;
+      }).join('');
+    if (!box.dataset.wired){
+      box.dataset.wired = '1';
+      box.addEventListener('click', e => {
+        const btn = e.target.closest('[data-motor]'); if (!btn) return;
+        const nome = btn.dataset.ex;
+        const st = motorFor(state.activeStudentId, nome);
+        const m = apAprov(); if (!m) return;
+        const k = exKey(nome);
+        const modo = btn.dataset.motor;
+        if (modo === 'ok'){
+          m[k] = { status:'aprovada', de: st.sugestao ? st.sugestao.de : 0, para: st.sugestao ? st.sugestao.para : 0, data: today() };
+        } else if (modo === 'no'){
+          m[k] = { status:'recusada', data: today() };
+        } else if (modo === 'limpar'){
+          delete m[k];
+        } else if (modo === 'edit'){
+          const v = prompt(`Carga aprovada para ${shortName(nome)} (kg):`, st.sugestao ? String(st.sugestao.para) : '');
+          if (v === null) return;
+          const n = num(String(v).replace(',', '.'));
+          if (!n) return notify('Informe um número válido.', true);
+          m[k] = { status:'aprovada', de: st.sugestao ? st.sugestao.de : 0, para: n, data: today() };
+        }
+        save(); renderSensorCard(); notify('Decisão registrada.');
+      });
+    }
   }
 
   /* ---------- VISÃO GERAL: séries, gráficos, dicas e notícias ---------- */
@@ -4526,6 +4738,7 @@
   .ft{margin-top:22px;font-size:10px;color:#8a8a8a;border-top:1px solid #e6e1d6;padding-top:7px}
   @page{size:A4;margin:13mm}
   @media print{body{padding:0}.noprint{display:none}}
+
 </style></head><body>
 <div class="hd"><div class="lg">GH</div><div>
   <h1>${esc(ghOwner())}</h1><div class="sub">GH Performance · engenharia do estímulo real</div></div></div>
@@ -6050,9 +6263,201 @@ ${corpo}
   }
 
   /* ---------- RENDER ---------- */
-  function renderAll(){ renderPicker(); alWire(); alunoPickWire(); alRender(); renderAlunoFab(); geralRender(); renderDashboard(); renderDashAlerts(); renderPlans(); renderHistory(); renderData(); renderSessionDays(); updateSessionHint(); renderAval(); renderGrupo();
+    /* ---------- CHECK-IN DO DIA ---------- */
+  const CK_ITEMS = [
+    { id:'energia',     label:'Energia',           inv:false },
+    { id:'sonoQual',    label:'Qualidade do sono', inv:false },
+    { id:'motivacao',   label:'Motivação',         inv:false },
+    { id:'recuperacao', label:'Recuperação',       inv:false },
+    { id:'estresse',    label:'Estresse',          inv:true  },
+    { id:'doms',        label:'Dor muscular',      inv:true  },
+    { id:'dorArtic',    label:'Dor articular',     inv:true  }
+  ];
+  const CK_SONO = [5, 6, 7, 8, 9];
+  function ckDay(){ const el = $('#sessionDate'); return (el && el.value) || today(); }
+  function ckAll(){
+    const s = active(); if (!s) return {};
+    state.checkins = state.checkins || {};
+    return (state.checkins[s.id] = state.checkins[s.id] || {});
+  }
+  function ckGet(){ return ckAll()[ckDay()] || {}; }
+  function ckSet(campo, valor){
+    if (!active()) return;
+    const m = ckAll(), d = ckDay();
+    const reg = m[d] = m[d] || {};
+    if (num(reg[campo]) === valor) delete reg[campo]; else reg[campo] = valor;
+    if (!Object.keys(reg).length) delete m[d];
+    save(); ckRender();
+  }
+  function ckScore(reg){
+    reg = reg || {};
+    const vals = [];
+    ['energia','sonoQual','motivacao','recuperacao'].forEach(k => { if (num(reg[k])) vals.push(num(reg[k])); });
+    ['estresse','doms','dorArtic'].forEach(k => { if (num(reg[k])) vals.push(6 - num(reg[k])); });
+    if (!vals.length) return null;
+    return Math.round(vals.reduce((a, b) => a + b, 0) / vals.length / 5 * 100);
+  }
+  function ckVerdict(reg){
+    const sc = ckScore(reg);
+    if (sc == null) return { txt:'sem check-in', cor:'var(--muted)' };
+    if (num(reg.dorArtic) >= 4) return { txt:'avaliar dor antes', cor:'#df6a67' };
+    if (sc >= 70) return { txt:'pronto para treinar', cor:'#63c58b' };
+    if (sc >= 45) return { txt:'atenção · carga normal', cor:'#d8a93d' };
+    return { txt:'reduzir volume hoje', cor:'#df6a67' };
+  }
+  function ckRender(){
+    const grid = $('#ckGrid'), ver = $('#ckVerdict');
+    if (!grid) return;
+    ckWire();
+    if (!active()){
+      grid.innerHTML = '<p class="hint" style="margin:0">Selecione um aluno para registrar o check-in.</p>';
+      if (ver){ ver.textContent = 'sem check-in'; ver.style.color = 'var(--muted)'; }
+      return;
+    }
+    const reg = ckGet();
+    const sonoAtual = num(reg.sono);
+    let html = '<div class="ck-row"><span class="ck-lbl">Horas de sono</span><span class="ck-chips">' +
+      CK_SONO.map(n => `<button type="button" class="ck-chip${sonoAtual === n ? ' on' : ''}" data-ck="sono" data-val="${n}">${n}</button>`).join('') +
+      '</span></div>';
+    CK_ITEMS.forEach(it => {
+      const v = num(reg[it.id]);
+      html += `<div class="ck-row"><span class="ck-lbl">${it.label}</span><span class="ck-chips">` +
+        [1,2,3,4,5].map(n => `<button type="button" class="ck-chip${it.inv ? ' inv' : ''}${v === n ? ' on' : ''}" data-ck="${it.id}" data-val="${n}">${n}</button>`).join('') +
+        '</span></div>';
+    });
+    grid.innerHTML = html;
+    if (ver){ const v = ckVerdict(reg); ver.textContent = v.txt; ver.style.color = v.cor; }
+  }
+  function ckWire(){
+    const grid = $('#ckGrid');
+    if (grid && !grid.dataset.wired){
+      grid.dataset.wired = '1';
+      grid.addEventListener('click', e => {
+        const b = e.target.closest('[data-ck]'); if (!b) return;
+        ckSet(b.dataset.ck, num(b.dataset.val));
+      });
+    }
+    const sd = $('#sessionDate');
+    if (sd && !sd.dataset.ckwired){ sd.dataset.ckwired = '1'; sd.addEventListener('change', ckRender); }
+  }
+
+  /* ---------- DUPLICAR FICHA + RELATÓRIO DE EVOLUÇÃO ---------- */
+  function dupPlanRender(){
+    const box = $('#dupPlanBox'); if (!box) return;
+    const s = active();
+    const outros = state.students.filter(x => !s || x.id !== s.id);
+    if (!outros.length){
+      box.innerHTML = '<p class="hint" style="margin:0">Cadastre outro aluno para poder duplicar a ficha.</p>';
+      return;
+    }
+    box.innerHTML = `<div class="form" style="align-items:flex-end">
+        <div class="field span8"><label>Duplicar a ficha de <b>${esc(s ? s.name : '—')}</b> para</label>
+          <select id="dupPlanTo">${outros.map(x => `<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select></div>
+        <div class="field span4"><button class="btn" type="button" id="dupPlanGo" style="width:100%">Duplicar</button></div>
+      </div>
+      <p class="hint" style="margin:6px 0 0">Vai só o planejamento (exercícios, séries, faixas, técnicas e descanso). Avaliações, histórico e financeiro <b>não</b> são copiados.</p>`;
+    const go = $('#dupPlanGo');
+    if (go) go.addEventListener('click', dupPlanGo);
+  }
+  function dupPlanGo(){
+    const s = active();
+    if (!s) return notify('Selecione o aluno de origem.', true);
+    const plan = plansOf(s.id);
+    if (!plan || !plan.days.length) return notify('Este aluno não tem ficha para duplicar.', true);
+    const sel = $('#dupPlanTo'); if (!sel || !sel.value) return;
+    const dest = state.students.find(x => x.id === sel.value);
+    if (!dest) return;
+    const jaTem = state.plans[dest.id] && state.plans[dest.id].days && state.plans[dest.id].days.length;
+    if (jaTem && !confirm(`${dest.name} já tem uma ficha. Substituir pela de ${s.name}?`)) return;
+    state.plans[dest.id] = JSON.parse(JSON.stringify({ title: plan.title || 'Ficha', days: plan.days }));
+    save();
+    const box = $('#dupPlanBox'); if (box) box.hidden = true;
+    notify(`Ficha duplicada para ${dest.name}.`);
+    renderPlans();
+  }
+  function relatorioEvolucao(){
+    const s = active();
+    if (!s) return notify('Selecione um aluno.', true);
+    const sessions = sessionsFor(s.id);
+    if (!sessions.length) return notify('Este aluno ainda não tem treinos registrados.', true);
+    const asc = sessions.slice().reverse();
+    const ini = asc[0].date, fim = asc[asc.length - 1].date;
+    const semanas = Math.max(1, Math.ceil((new Date(fim + 'T12:00:00') - new Date(ini + 'T12:00:00')) / (7 * 86400000)) + 1);
+    const plan = plansOf(s.id);
+    const alvoSemana = (plan && plan.days.length) ? plan.days.length : 0;
+    const porSemana = Math.round(sessions.length / semanas * 10) / 10;
+    const adesao = alvoSemana ? Math.min(100, Math.round(sessions.length / (semanas * alvoSemana) * 100)) : null;
+    const volTotal = sessions.reduce((n, x) => n + sessionVolume(x), 0);
+    const volMedia = Math.round(volTotal / sessions.length);
+
+    const nomes = [];
+    sessions.forEach(x => (x.exercises || []).forEach(e => {
+      const k = exKey(e.name);
+      if (k && !nomes.some(n => exKey(n) === k)) nomes.push(e.name);
+    }));
+    const linhas = nomes.map(n => {
+      const hist = historyFor(s.id, n);
+      if (!hist.length) return null;
+      const p = hist[0], u = hist[hist.length - 1];
+      const vp = p.top ? Math.round((u.top - p.top) / p.top * 100) : 0;
+      const pr = hist.reduce((a, b) => b.e1rm > a.e1rm ? b : a, hist[0]);
+      return { nome: shortName(n), ini: p.top, atu: u.top, vp, e1rm: pr.e1rm, prData: pr.date, n: hist.length };
+    }).filter(Boolean).sort((a, b) => b.n - a.n);
+
+    const prs = linhas.slice().sort((a, b) => b.e1rm - a.e1rm).slice(0, 8);
+    const motor = nomes.map(n => motorFor(s.id, n)).filter(m => m.estado !== 'insuficiente');
+
+    const corpo = `
+      <div class="meta">
+        <div><span>Aluno</span><b>${esc(s.name)}</b></div>
+        <div><span>Objetivo</span><b>${esc(s.goal || '—')}</b></div>
+        <div><span>Nível</span><b>${esc(s.level || '—')}</b></div>
+        <div><span>Período</span><b>${dateFmt(ini)} a ${dateFmt(fim)}</b></div>
+      </div>
+      <h2>Adesão e frequência</h2>
+      <table><tr><th>Sessões registradas</th><th>Semanas no período</th><th>Sessões por semana</th><th>Treinos na ficha</th><th>Adesão estimada</th></tr>
+        <tr><td class="n">${sessions.length}</td><td class="n">${semanas}</td><td class="n">${fmt(porSemana)}</td>
+        <td class="n">${alvoSemana || '—'}</td><td class="n">${adesao === null ? '—' : adesao + '%'}</td></tr></table>
+      <p style="font-size:10.5px;color:#777;margin:5px 0 0">Adesão estimada = sessões registradas ÷ (semanas × treinos por semana da ficha atual).</p>
+      <h2>Volume de treinamento</h2>
+      <table><tr><th>Volume total</th><th>Média por sessão</th><th>Melhor sessão</th></tr>
+        <tr><td class="n">${fmt(volTotal)} kg</td><td class="n">${fmt(volMedia)} kg</td>
+        <td class="n">${fmt(Math.max(...sessions.map(x => sessionVolume(x))))} kg</td></tr></table>
+      <h2>Evolução por exercício</h2>
+      <table><tr><th>Exercício</th><th class="n">Sessões</th><th class="n">Carga inicial</th><th class="n">Carga atual</th><th class="n">Variação</th><th class="n">1RM est.</th></tr>
+        ${linhas.map(l => `<tr><td>${esc(l.nome)}</td><td class="n">${l.n}</td><td class="n">${fmt(l.ini)} kg</td>
+          <td class="n">${fmt(l.atu)} kg</td><td class="n ${l.vp > 0 ? 'ok' : (l.vp < 0 ? 'warn' : '')}">${l.vp > 0 ? '+' : ''}${l.vp}%</td>
+          <td class="n">${fmt(l.e1rm)} kg</td></tr>`).join('') || '<tr><td colspan="6">Sem dados comparáveis.</td></tr>'}
+      </table>
+      <h2>Recordes pessoais (1RM estimado)</h2>
+      <table><tr><th>Exercício</th><th class="n">1RM estimado</th><th class="n">Data</th></tr>
+        ${prs.map(p => `<tr><td>${esc(p.nome)}</td><td class="n">${fmt(p.e1rm)} kg</td><td class="n">${dateFmt(p.prData)}</td></tr>`).join('') || '<tr><td colspan="3">Sem dados.</td></tr>'}
+      </table>
+      <h2>Leitura do próximo ciclo</h2>
+      <table><tr><th>Exercício</th><th>Classificação</th><th>Conduta sugerida</th></tr>
+        ${motor.slice(0, 10).map(m => `<tr><td>${esc(shortName(m.nome))}</td>
+          <td>${esc((MOTOR_ESTADOS[m.estado] || {}).label || m.estado)}</td>
+          <td>${esc(m.sugestao ? m.sugestao.texto : 'Manter e reavaliar na próxima sessão.')}</td></tr>`).join('') || '<tr><td colspan="3">Sem sessões comparáveis.</td></tr>'}
+      </table>
+      <p style="font-size:10.5px;color:#777;margin-top:8px">1RM estimado pela equação de Epley (carga × (1 + reps ÷ 30)) — é uma estimativa, mais confiável em séries de até 10 repetições próximas da falha. As sugestões são indicações técnicas e dependem da aprovação do profissional.</p>
+      <div class="assin">${esc(s.name)}</div>
+    `;
+    printDoc(`Relatório de evolução — ${s.name}`, corpo);
+    notify('Relatório gerado.');
+  }
+  const dupPlanBtn = $('#dupPlanBtn');
+  if (dupPlanBtn) dupPlanBtn.addEventListener('click', () => {
+    const box = $('#dupPlanBox');
+    if (!box) return;
+    box.hidden = !box.hidden;
+    if (!box.hidden) dupPlanRender();
+  });
+  const evolReportBtn = $('#evolReportBtn');
+  if (evolReportBtn) evolReportBtn.addEventListener('click', relatorioEvolucao);
+
+function renderAll(){ renderPicker(); alWire(); alunoPickWire(); alRender(); renderAlunoFab(); geralRender(); renderDashboard(); renderDashAlerts(); renderPlans(); renderHistory(); renderData(); renderSessionDays(); updateSessionHint(); renderAval(); renderGrupo();
     if ($('#montar') && $('#montar').classList.contains('active')) mtRender();
-    finRender(); }
+    finRender(); ckRender(); ckWire(); }
   $('#sessionDate').value = today();
   clearSession();
   // Modo aluno: renderiza a visao do aluno e nunca abre o app do treinador.
