@@ -33,8 +33,15 @@
     .brand h1{font-size:20px;margin:0;letter-spacing:.4px}
     .brand p{margin:2px 0 0;color:var(--accent);font-size:10px;letter-spacing:2.2px;text-transform:uppercase;font-weight:700}
     .student-picker{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;min-width:min(100%,430px)}
-    .tabs{display:flex;gap:8px;overflow:auto;padding:4px 0 14px;scrollbar-width:none}
+    .tabs-wrap{position:relative}
+    .tabs-wrap::after{content:'';position:absolute;top:0;right:-1px;bottom:12px;width:36px;pointer-events:none;
+      background:linear-gradient(90deg,rgba(10,15,12,0),rgba(10,15,12,.96));opacity:0;transition:opacity .2s}
+    .tabs-wrap.more-right::after{opacity:1}
+    .tabs{display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;padding:4px 0 14px;
+      scrollbar-width:none;scroll-behavior:smooth;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
     .tabs::-webkit-scrollbar{display:none}
+    .tab{scroll-snap-align:center}
+    @media (max-width:560px){ .tab{padding:9px 12px;font-size:13px} .tabs{gap:6px} }
     /* ===== BOTAO FLUTUANTE DO ALUNO + SELETOR ===== */
     .aluno-fab{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom));z-index:88;
       display:flex;align-items:center;gap:9px;padding:7px 15px 7px 7px;border-radius:999px;
@@ -661,6 +668,17 @@
     .motor-btn:hover{filter:brightness(1.25)}
     .motor-btn.ok{border-color:#63c58b;color:#63c58b}
     .motor-btn.no{border-color:#df6a67;color:#df6a67}
+
+    /* ===== FAIXA DE CONTEXTO DA AULA ===== */
+    .aula-ctx{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px;
+      padding:9px 13px;border:1px solid var(--line);border-radius:12px;background:var(--panel2)}
+    .aula-ctx-nome{font-size:13px;font-weight:800;white-space:nowrap}
+    .aula-ctx-dia{font-size:12px;color:var(--muted);flex:1 1 120px;min-width:0;
+      overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .aula-ctx-prog{font-size:10.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;
+      border:1px solid var(--line);border-radius:999px;padding:2px 9px;color:var(--muted);white-space:nowrap}
+    .aula-ctx-prog.ok{border-color:var(--ok);color:var(--ok)}
+    .aula-ctx-prog.zero{border-color:var(--accent);color:var(--accent)}
 </style>
 </head>
 <body>
@@ -737,19 +755,21 @@
   </div>
 
 
-  <nav class="tabs" aria-label="Navegação">
-    <button class="tab" data-page="alunos">Alunos</button>
-    <button class="tab active" data-page="dashboard">Visão geral</button>
-    <button class="tab" data-page="fichas">Fichas de treino</button>
-    <button class="tab" data-page="montar">Montar treino</button>
-    <button class="tab" data-page="session">Registrar treino</button>
-    <button class="tab" data-page="grupo">Treino em grupo</button>
-    <button class="tab" data-page="history">Histórico</button>
-    <button class="tab" data-page="aval">Avaliação física</button>
-    <button class="tab" data-page="financeiro">Financeiro</button>
-    <button class="tab" data-page="data">Dados e backup</button>
-    <button class="tab" data-page="geral">Geral</button>
-  </nav>
+  <div class="tabs-wrap" id="tabsWrap">
+    <nav class="tabs" aria-label="Navegação">
+      <button class="tab" data-page="alunos" data-short="Alunos">Alunos</button>
+      <button class="tab active" data-page="dashboard" data-short="Visão">Visão geral</button>
+      <button class="tab" data-page="fichas" data-short="Fichas">Fichas de treino</button>
+      <button class="tab" data-page="montar" data-short="Montar">Montar treino</button>
+      <button class="tab" data-page="session" data-short="Aula">Registrar treino</button>
+      <button class="tab" data-page="grupo" data-short="Grupo">Treino em grupo</button>
+      <button class="tab" data-page="history" data-short="Histórico">Histórico</button>
+      <button class="tab" data-page="aval" data-short="Avaliação">Avaliação física</button>
+      <button class="tab" data-page="financeiro" data-short="Financeiro">Financeiro</button>
+      <button class="tab" data-page="data" data-short="Dados">Dados e backup</button>
+      <button class="tab" data-page="geral" data-short="Geral">Geral</button>
+    </nav>
+  </div>
 
   <section class="page" id="alunos"><div class="grid">
     <article class="card">
@@ -912,6 +932,11 @@
   </div></section>
 
   <section class="page" id="session"><div class="grid">
+    <div class="aula-ctx" id="aulaCtx">
+      <span class="aula-ctx-nome" id="aulaCtxNome">—</span>
+      <span class="aula-ctx-dia" id="aulaCtxDia">Selecione o treino do dia</span>
+      <span class="aula-ctx-prog" id="aulaCtxProg">sem exercícios</span>
+    </div>
     <article class="card" id="checkinCard">
       <div class="card-head">
         <h2>Check-in do dia</h2>
@@ -2311,9 +2336,48 @@
     localStorage.removeItem(AUTHED); showLogin(); renderAuth(); authMsg('Você saiu do app.', 'ok');
   });
 
+  /* ---------- NAVEGAÇÃO: rótulos curtos, rolagem e indicador ---------- */
+  function applyTabLabels(){
+    const curto = window.matchMedia('(max-width: 560px)').matches;
+    $$('#tabsWrap .tab').forEach(b => {
+      const cheio = b.dataset.full || b.textContent.trim();
+      b.dataset.full = cheio;
+      const txt = curto ? (b.dataset.short || cheio) : cheio;
+      if (b.textContent !== txt) b.textContent = txt;
+    });
+  }
+  function paintTabsFade(){
+    const wrap = $('#tabsWrap'); if (!wrap) return;
+    const bar = wrap.querySelector('.tabs'); if (!bar) return;
+    const sobra = bar.scrollWidth > bar.clientWidth + 2;
+    const mais = bar.scrollWidth - bar.clientWidth - bar.scrollLeft > 10;
+    wrap.classList.toggle('more-right', sobra && mais);
+  }
+  function tabScrollIntoView(page){
+    const wrap = $('#tabsWrap'); if (!wrap) return;
+    const bar = wrap.querySelector('.tabs'); if (!bar) return;
+    const b = bar.querySelector(`.tab[data-page="${page}"]`); if (!b) return;
+    const alvo = b.offsetLeft - (bar.clientWidth - b.offsetWidth) / 2;
+    bar.scrollTo({ left: Math.max(0, alvo), behavior: 'smooth' });
+    setTimeout(paintTabsFade, 340);
+  }
+  function tabsWrapWire(){
+    const wrap = $('#tabsWrap');
+    if (!wrap) return;
+    const bar = wrap.querySelector('.tabs');
+    if (bar && !wrap.dataset.wired){
+      wrap.dataset.wired = '1';
+      bar.addEventListener('scroll', paintTabsFade, { passive: true });
+      window.addEventListener('resize', () => { applyTabLabels(); paintTabsFade(); });
+    }
+    applyTabLabels();
+    paintTabsFade();
+  }
+
   /* ---------- NAVEGAÇÃO ---------- */
   function showPage(id){
     $$('.tab').forEach(b => b.classList.toggle('active', b.dataset.page === id));
+    tabScrollIntoView(id);
     $$('.page').forEach(p => p.classList.toggle('active', p.id === id));
     if (id === 'history') setTimeout(drawChart, 30);
     if (id === 'alunos') alRender();
@@ -3304,7 +3368,28 @@
     sel.innerHTML = plan.days.map((d,i) => `<option value="${i}">${esc(d.title)}</option>`).join('');
     sel.value = plan.days.some((_,i) => String(i) === cur) ? cur : String(guessTodayIndex(plan.days));
   }
+  /* ---------- CONTEXTO DA AULA (aluno + treino do dia + progresso) ---------- */
+  function aulaCtxRender(){
+    const nome = $('#aulaCtxNome');
+    if (!nome) return;
+    const s = active();
+    nome.textContent = s ? s.name : 'Nenhum aluno selecionado';
+    const sel = $('#sessionDaySelect');
+    const dia = $('#aulaCtxDia');
+    if (dia){
+      const opt = sel && sel.selectedIndex >= 0 ? sel.options[sel.selectedIndex].text : '';
+      dia.textContent = (opt && !/^Sem ficha/.test(opt)) ? opt : 'Sem treino do dia carregado';
+    }
+    const prog = $('#aulaCtxProg');
+    if (!prog) return;
+    const work = $$('#exerciseCards .set-row').filter(r => rowKind(r) === 'trabalho');
+    const feitas = work.filter(r => r.querySelector('.s-done').checked).length;
+    prog.textContent = work.length ? `${feitas}/${work.length} séries` : 'sem exercícios';
+    prog.className = 'aula-ctx-prog' + (work.length ? (feitas === work.length ? ' ok' : (feitas ? '' : ' zero')) : '');
+  }
+
   function updateSessionHint(){
+    aulaCtxRender();
     const box = $('#sessionPeriodHint'); if (!box) return;
     const cards = $$('#exerciseCards .ex-card');
     if (!cards.length){ box.textContent = ''; return; }
@@ -6457,7 +6542,7 @@ ${corpo}
 
 function renderAll(){ renderPicker(); alWire(); alunoPickWire(); alRender(); renderAlunoFab(); geralRender(); renderDashboard(); renderDashAlerts(); renderPlans(); renderHistory(); renderData(); renderSessionDays(); updateSessionHint(); renderAval(); renderGrupo();
     if ($('#montar') && $('#montar').classList.contains('active')) mtRender();
-    finRender(); ckRender(); ckWire(); }
+    finRender(); ckRender(); ckWire(); tabsWrapWire(); }
   $('#sessionDate').value = today();
   clearSession();
   // Modo aluno: renderiza a visao do aluno e nunca abre o app do treinador.
